@@ -8,7 +8,8 @@ Based out of Summit, NJ <br />
 
     What you should find in this repository:
     1) Source Folder for code during the season
-    2) Archive Folder for code that has been deprecated in the event of a code clean-up (So it may still be easilt accesible in case of clean-up issues)
+    2) Deprecation Folder for code that has been deprecated in the event of a code clean-up
+    3) Test Folder for proof of concept code
     
     Contact us on Discord or email if you are trying to implement code and would like our help:
         - Vex Discord @4610Z
