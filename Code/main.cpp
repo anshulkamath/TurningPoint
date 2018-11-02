@@ -1,4 +1,5 @@
 #include "robot-config.h"
+
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -6,14 +7,49 @@
 #include <thread>
 #include <fstream>
 using namespace std;
+using namespace vex;
+
+const double PI = 3.1415;
 string intToString(double val)
 {
     ostringstream ss;
     ss<<val;
     return ss.str();
 }
+;
 
+double distance(double x, double y)
+{
+    double W0 = 36;
+    double H0 = 38;
+    double dist0 = 36.5;
+    double dx = (W0/x)*dist0;
+    double dy = (H0/y)*dist0;
+    double d = (dx+dy)/2;
+    
+    return d;
+}
 
+void forward(double inches)
+{
+    double rev = (inches/(5 * PI))*360;
+    
+    FrontLeft.rotateFor(rev, rotationUnits::deg, 50, velocityUnits::pct, false);
+    FrontRight.rotateFor(rev, rotationUnits::deg, 50, velocityUnits::pct, false);
+    BackLeft.rotateFor(rev, rotationUnits::deg, 50, velocityUnits::pct, false);
+    BackRight.rotateFor(rev, rotationUnits::deg, 50, velocityUnits::pct, true);    
+}
+
+void backward(double inches)
+{
+    double rev = (inches/(5 * PI))*360;
+    
+    FrontLeft.rotateFor(-rev, rotationUnits::deg, 50, velocityUnits::pct, false);
+    FrontRight.rotateFor(-rev, rotationUnits::deg, 50, velocityUnits::pct, false);
+    BackLeft.rotateFor(-rev, rotationUnits::deg, 50, velocityUnits::pct, false);
+    BackRight.rotateFor(-rev, rotationUnits::deg, 50, velocityUnits::pct, true);    
+    
+}
 
 int runVision()
 {
@@ -44,6 +80,12 @@ int runVision()
     } 
     int redFlagsF1 = 0;
     string diff = "";
+    double distAvg = 0;
+    for(int i = 0; i<redFlags.size(); i++)
+    {
+        distAvg += distance(redFlags[i].width, redFlags[i].height);
+    }
+    
     for(int i = 0; i<redFlags.size(); i++)
     {
        // diff += "R:" + intToString(redFlags[i].originX) +"x" + intToString(redFlags[i].width);
@@ -57,7 +99,15 @@ int runVision()
                 
                 if(abs(redFlags[i].originY - greenFlags[s].originY) < 20)
                 {
-int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
+                    if(distAvg > 47)
+                    {
+                        forward(distAvg - 42);
+                    }else if(distAvg < 39)
+                    {
+                        backward(42- distAvg);
+                    }
+                    
+                    int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
                     diff = intToString(redFlags[i].centerX);
                     redFlagsF1++;
                     diff = intToString(redFlags[i].angle);
@@ -66,20 +116,20 @@ int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue =
                     Controller1.Screen.print(diff.c_str());                    
                     if((redFlags[i].centerX-148) < -10)
                     { 
-                        int v = -1;
-                        double t = 0;
-                        frontLeftValue = 30*v;
-                        backLeftValue = -frontLeftValue;
-                        frontRightValue = -30*v;
-                        backRightValue = 30*v;                         
-                    }else if((redFlags[i].centerX - 148) > 10)
-                    {
                         int v = 1;
                         double t = 0;
-                        frontLeftValue = 30*v;
+                        frontLeftValue = 10*v;
                         backLeftValue = -frontLeftValue;
-                        frontRightValue = -30*v;
-                        backRightValue = 30*v;                         
+                        frontRightValue = -10*v;
+                        backRightValue = 10*v;                         
+                    }else if((redFlags[i].centerX - 148) > 10)
+                    {
+                        int v = -1;
+                        double t = 0;
+                        frontLeftValue = 10*v;
+                        backLeftValue = -frontLeftValue;
+                        frontRightValue = -10*v;
+                        backRightValue = 10*v;                         
                     }else
                     {
                         
@@ -142,7 +192,7 @@ int taskShooter()
 {
     while(true)
     {
-        if(Controller1.ButtonR1.pressing() || fire)
+        if(Controller1.ButtonX.pressing() || fire)
         {
             fire = false;
             inUse = true;
@@ -160,7 +210,7 @@ int taskShooter()
             while(Limit1.pressing());
             
             Shooter.stop();
-            Shooter.rotateFor(1800,rotationUnits::deg,100,velocityUnits::pct); 
+            Shooter.rotateFor(1400,rotationUnits::deg,100,velocityUnits::pct); 
             inUse = false;
         }       
         if(Limit2.pressing())
@@ -325,9 +375,20 @@ int main() {
             backLeftValue = -frontLeftValue -t*2;
             frontRightValue = -100*v -t*2;
             backRightValue = 100*v + t*2;           
-        }        
+        }   
         
-        if(Controller1.ButtonR2.pressing())
+        if(Controller1.ButtonR1.pressing())
+        {
+            Lift.spin(directionType::fwd, 100, velocityUnits::pct);
+        }else if(Controller1.ButtonR2.pressing())
+        {
+            Lift.spin(directionType::rev, 100, velocityUnits::pct);
+        }else
+        {
+            Lift.stop(brakeType::hold);
+        }
+        
+        if(Controller1.ButtonY.pressing())
         {
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
         }else if(!inUse)
@@ -337,7 +398,7 @@ int main() {
         
         if(Controller1.ButtonB.pressing())
         {
-            if(abs(getAngle()) < 22.5)
+            /*if(abs(getAngle()) < 22.5)
             {
                 turnTo(0);
             }else if(abs(abs(getAngle())-45) < 22.5)
@@ -346,11 +407,11 @@ int main() {
             }else
             {
                 Controller1.rumble("-.-.-.-.-");
-            }
+            }*/
             //if(n)
             {
-              //  while(runVision() == -1);
-                //fire = true;
+                while(runVision() == -1);
+                fire = true;
             }
         }
         
@@ -364,14 +425,26 @@ int main() {
         {
             Intake.stop(brakeType::hold);
         }   
+        
+        if(Controller1.ButtonUp.pressing())
+        {
+            SpinnyThingy.spin(directionType::fwd, 50,  velocityUnits::pct);
+        }else if(Controller1.ButtonDown.pressing())
+        {
+            SpinnyThingy.spin(directionType::rev, 50,  velocityUnits::pct);            
+        }else
+        {
+            SpinnyThingy.stop(brakeType::hold);            
+        }
 
         // 1924.8 1788 2008.4
         FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
         BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
         BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);     
-        string val = "Value: " + intToString(Shooter.rotation(rotationUnits::deg) - encoderPositionShooter) + " " + intToString(Shooter.power(powerUnits::watt)) + " " + intToString(Shooter.rotation(rotationUnits::deg));
-        string toque = intToString(getAngle()) + " Rotation: " + intToString(FrontRight.rotation(rotationUnits::deg));
+        //string val = "Value: " + intToString(Shooter.rotation(rotationUnits::deg) - encoderPositionShooter) + " " + intToString(Shooter.power(powerUnits::watt)) + " " + intToString(Shooter.rotation(rotationUnits::deg));
+        string toque = intToString(getAngle()) + " " + intToString(GyroS.value(rotationUnits::deg)) + " "
+            + intToString(GyroI.value(rotationUnits::deg));
         Brain.Screen.clearLine();
         Brain.Screen.print(toque.c_str());
        // Brain.Screen.
@@ -380,4 +453,5 @@ int main() {
         //Brain.Screen.print(eff.c_str());
         task::sleep(100);
     }
+    return -1;
 }
