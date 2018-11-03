@@ -20,8 +20,8 @@ string intToString(double val)
 
 double distance(double x, double y)
 {
-    double W0 = 36;
-    double H0 = 38;
+    double W0 = 38;
+    double H0 = 40;
     double dist0 = 36.5;
     double dx = (W0/x)*dist0;
     double dy = (H0/y)*dist0;
@@ -81,11 +81,13 @@ int runVision()
     int redFlagsF1 = 0;
     string diff = "";
     double distAvg = 0;
+    int num = 0;
     for(int i = 0; i<redFlags.size(); i++)
     {
         distAvg += distance(redFlags[i].width, redFlags[i].height);
+        num++;
     }
-    
+    distAvg /= num;
     for(int i = 0; i<redFlags.size(); i++)
     {
        // diff += "R:" + intToString(redFlags[i].originX) +"x" + intToString(redFlags[i].width);
@@ -99,6 +101,9 @@ int runVision()
                 
                 if(abs(redFlags[i].originY - greenFlags[s].originY) < 20)
                 {
+                                        diff = intToString(distAvg);
+                    Brain.Screen.clearLine();
+                    Brain.Screen.print(diff.c_str());
                     if(distAvg > 47)
                     {
                         forward(distAvg - 42);
@@ -108,28 +113,28 @@ int runVision()
                     }
                     
                     int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
-                    diff = intToString(redFlags[i].centerX);
+                    //diff = intToString(redFlags[i].centerX);
                     redFlagsF1++;
-                    diff = intToString(redFlags[i].angle);
+                   // diff = distAvg;//intToString(redFlags[i].angle);
                     Controller1.Screen.clearScreen();
                     Controller1.Screen.clearLine();    
                     Controller1.Screen.print(diff.c_str());                    
-                    if((redFlags[i].centerX-148) < -10)
+                    if((redFlags[i].centerX-148) < -20)
                     { 
-                        int v = 1;
-                        double t = 0;
-                        frontLeftValue = 10*v;
-                        backLeftValue = -frontLeftValue;
-                        frontRightValue = -10*v;
-                        backRightValue = 10*v;                         
-                    }else if((redFlags[i].centerX - 148) > 10)
-                    {
                         int v = -1;
                         double t = 0;
-                        frontLeftValue = 10*v;
+                        frontLeftValue = 20*v;
                         backLeftValue = -frontLeftValue;
-                        frontRightValue = -10*v;
-                        backRightValue = 10*v;                         
+                        frontRightValue = -20*v;
+                        backRightValue = 20*v;                         
+                    }else if((redFlags[i].centerX - 148) > 20)
+                    {
+                        int v = 1;
+                        double t = 0;
+                        frontLeftValue = 20*v;
+                        backLeftValue = -frontLeftValue;
+                        frontRightValue = -20*v;
+                        backRightValue = 20*v;                         
                     }else
                     {
                         
@@ -137,8 +142,7 @@ int runVision()
                     FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
                     FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
                     BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
-                    BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);     
-                    task::sleep(50);
+                    BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);      
                     if(frontLeftValue == 0) return 0;
                     //runVision();
                     // Red Flag Found
@@ -210,7 +214,7 @@ int taskShooter()
             while(Limit1.pressing());
             
             Shooter.stop();
-            Shooter.rotateFor(1400,rotationUnits::deg,100,velocityUnits::pct); 
+            Shooter.rotateFor(1800,rotationUnits::deg,100,velocityUnits::pct); 
             inUse = false;
         }       
         if(Limit2.pressing())
@@ -318,7 +322,11 @@ int main() {
     double fourthHundred = 0;
     double angleStrafe = 0;
     bool strafing = false;
-    task::sleep(1000);
+
+    GyroS.startCalibration(3000);
+    GyroI.startCalibration(3000);    
+    task::sleep(3000);
+    //while(GyroS.isCalibrating() || GyroI.isCalibrating());
     while(true)
     {  
         int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
