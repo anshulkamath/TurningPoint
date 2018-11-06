@@ -104,13 +104,7 @@ int runVision()
                                         diff = intToString(distAvg);
                     Brain.Screen.clearLine();
                     Brain.Screen.print(diff.c_str());
-                    if(distAvg > 47)
-                    {
-                        forward(distAvg - 42);
-                    }else if(distAvg < 39)
-                    {
-                        backward(42- distAvg);
-                    }
+
                     
                     int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
                     //diff = intToString(redFlags[i].centerX);
@@ -119,7 +113,7 @@ int runVision()
                     Controller1.Screen.clearScreen();
                     Controller1.Screen.clearLine();    
                     Controller1.Screen.print(diff.c_str());                    
-                    if((redFlags[i].centerX-148) < -20)
+                    if((redFlags[i].centerX-148) < -5)
                     { 
                         int v = -1;
                         double t = 0;
@@ -127,7 +121,7 @@ int runVision()
                         backLeftValue = -frontLeftValue;
                         frontRightValue = -20*v;
                         backRightValue = 20*v;                         
-                    }else if((redFlags[i].centerX - 148) > 20)
+                    }else if((redFlags[i].centerX - 148) > 10)
                     {
                         int v = 1;
                         double t = 0;
@@ -143,7 +137,17 @@ int runVision()
                     FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
                     BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
                     BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);      
-                    if(frontLeftValue == 0) return 0;
+                    if(frontLeftValue == 0) 
+                    {
+                        if(distAvg > 44)
+                        {
+                            forward(distAvg - 42);
+                        }else if(distAvg < 40)
+                        {
+                            backward(42- distAvg);
+                        }                        
+                        return 0;
+                    }
                     //runVision();
                     // Red Flag Found
                 }
@@ -233,9 +237,14 @@ int taskShooter()
 
 double getAngle()
 {
-    double val = GyroS.value(rotationUnits::deg) - GyroI.value(rotationUnits::deg);
-    
+    double val = -(GyroS.value(rotationUnits::rev)) 
+        + (GyroI.value(rotationUnits::rev));
     return val/2;
+    //double val = -fmod(GyroS.value(rotationUnits::deg), 270) 
+        //+ fmod(GyroI.value(rotationUnits::deg), 270);
+    //const double gyroScale = 4.0/3.0;
+    
+   // return fmod(((val/2) * gyroScale), 360);
 }
 
 void turnToRight(int angle)
@@ -326,6 +335,7 @@ int main() {
     GyroS.startCalibration(3000);
     GyroI.startCalibration(3000);    
     task::sleep(3000);
+    Controller1.Screen.clearScreen();
     //while(GyroS.isCalibrating() || GyroI.isCalibrating());
     while(true)
     {  
@@ -396,6 +406,14 @@ int main() {
             Lift.stop(brakeType::hold);
         }
         
+        if(Controller1.ButtonDown.pressing())
+        {
+            FrontLeft.stop(brakeType::hold);
+            FrontRight.stop(brakeType::hold);
+            BackLeft.stop(brakeType::hold);
+            BackRight.stop(brakeType::hold);            
+        }
+        
         if(Controller1.ButtonY.pressing())
         {
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
@@ -444,17 +462,17 @@ int main() {
         {
             SpinnyThingy.stop(brakeType::hold);            
         }
-
+        
         // 1924.8 1788 2008.4
         FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
         BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
         BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);     
         //string val = "Value: " + intToString(Shooter.rotation(rotationUnits::deg) - encoderPositionShooter) + " " + intToString(Shooter.power(powerUnits::watt)) + " " + intToString(Shooter.rotation(rotationUnits::deg));
-        string toque = intToString(getAngle()) + " " + intToString(GyroS.value(rotationUnits::deg)) + " "
-            + intToString(GyroI.value(rotationUnits::deg));
-        Brain.Screen.clearLine();
-        Brain.Screen.print(toque.c_str());
+        string toque = intToString(getAngle()) + " " + intToString(GyroS.value(rotationUnits::rev)) + " "
+            + intToString(GyroI.value(rotationUnits::rev));
+        Controller1.Screen.clearLine();
+        Controller1.Screen.print(toque.c_str());
        // Brain.Screen.
         //string eff = intToString(Intake.efficiency(percentUnits::pct)) + " " + intToString(Intake.temperature(percentUnits::pct));
         
