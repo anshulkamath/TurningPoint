@@ -84,8 +84,14 @@ int runVision()
     int num = 0;
     for(int i = 0; i<redFlags.size(); i++)
     {
-        distAvg += distance(redFlags[i].width, redFlags[i].height);
-        num++;
+        if(redFlags[i].height > 12 && redFlags[i].width > 12)
+        {
+            //if(abs(redFlags[i].centerX - redFlags[i].width/2 - greenFlags[s].originX) < 20)
+            {
+                distAvg += distance(redFlags[i].width, redFlags[i].height);
+                num++;
+            }
+        }
     }
     distAvg /= num;
     for(int i = 0; i<redFlags.size(); i++)
@@ -177,21 +183,6 @@ int runVision()
     return -1;
 }
 
-int visionTask()
-{
-    while(true)
-    {
-        runVision();
-        task::sleep(100);
-    }
-    return 0;
-}
-
-void targetFlag(int offset)
-{
-    
-}
-
 
 bool inUse = false;
 bool inTakeInUse = false;
@@ -218,7 +209,7 @@ int taskShooter()
             while(Limit1.pressing());
             
             Shooter.stop();
-            Shooter.rotateFor(1800,rotationUnits::deg,100,velocityUnits::pct); 
+            Shooter.rotateFor(1850,rotationUnits::deg,100,velocityUnits::pct); 
             inUse = false;
         }       
         if(Limit2.pressing())
@@ -234,90 +225,45 @@ int taskShooter()
     return 0;
 }
 
-
+double prev1 = 0;
+double offset = 0;
+bool first = true;
 double getAngle()
 {
-    double val = -(GyroS.value(rotationUnits::rev)) 
-        + (GyroI.value(rotationUnits::rev));
-    return val/2;
-    //double val = -fmod(GyroS.value(rotationUnits::deg), 270) 
-        //+ fmod(GyroI.value(rotationUnits::deg), 270);
-    //const double gyroScale = 4.0/3.0;
+    double gyroValue = -GyroS.value(rotationUnits::deg) 
+        + GyroI.value(rotationUnits::deg);
+    gyroValue /= 2;
+    double val = -fmod(GyroS.value(rotationUnits::deg), 270) 
+        + fmod(GyroI.value(rotationUnits::deg), 270);
+    const double gyroScale = 4.0/3.0;
     
-   // return fmod(((val/2) * gyroScale), 360);
-}
 
-void turnToRight(int angle)
-{
-        /*FrontLeft.spin(directionType::fwd, 75, velocityUnits::pct);
-            FrontRight.spin(directionType::rev, 75, velocityUnits::pct);
-            BackLeft.spin(directionType::fwd, 75, velocityUnits::pct);
-            BackRight.spin(directionType::rev, 75, velocityUnits::pct);*/
-   double angleStart = getAngle();
-    FrontLeft.spin(directionType::fwd, 75, velocityUnits::pct);
-    FrontRight.spin(directionType::rev, 75, velocityUnits::pct);
-    BackLeft.spin(directionType::fwd, 75, velocityUnits::pct);
-    BackRight.spin(directionType::rev, 75, velocityUnits::pct);
-    //double deg = 415.48;
-
-    //FrontLeft.rotateFor(deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-    //FrontRight.rotateFor(-deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-    //BackLeft.rotateFor(deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-    //BackRight.rotateFor(-deg, rotationUnits::deg, 75, velocityUnits::pct, true);          
-    if(90 + angleStart > 360)
+    
+    if(gyroValue >= 0 && gyroValue < 90 && prev1 > 270 && prev1 < 360)
     {
-        angleStart = (90 + (int)angleStart)%360;
+        if(!first)
+        {
+            offset += 90;
+            Controller1.rumble("-.-.-.-");            
+        }else
+        {
+            first = false;
+        }
+    }else if(gyroValue < 360 && gyroValue >= 270 && prev1 >= 0 && prev1 < 90)
+    {
+        if(!first)
+        {
+            offset -= 90;
+            Controller1.rumble("-.-.-.-");
+        }else
+        {
+            first = false;
+        }
     }
-    while(getAngle() - angleStart < angle*.9)
-    {
-    }
-    FrontLeft.stop(brakeType::brake);
-    FrontRight.stop(brakeType::brake); 
-    BackLeft.stop(brakeType::brake);
-    BackRight.stop(brakeType::brake);         
-               
-}
-
-void turnToLeft(int angle)
-{
-        /*FrontLeft.spin(directionType::fwd, 75, velocityUnits::pct);
-            FrontRight.spin(directionType::rev, 75, velocityUnits::pct);
-            BackLeft.spin(directionType::fwd, 75, velocityUnits::pct);
-            BackRight.spin(directionType::rev, 75, velocityUnits::pct);*/
-   double angleStart = getAngle();
-    FrontLeft.spin(directionType::fwd, -75, velocityUnits::pct);
-    FrontRight.spin(directionType::rev, -75, velocityUnits::pct);
-    BackLeft.spin(directionType::fwd, -75, velocityUnits::pct);
-    BackRight.spin(directionType::rev, -75, velocityUnits::pct);
-    //double deg = 415.48;
-
-    //FrontLeft.rotateFor(deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-    //FrontRight.rotateFor(-deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-    //BackLeft.rotateFor(deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-    //BackRight.rotateFor(-deg, rotationUnits::deg, 75, velocityUnits::pct, true);          
-    if(abs(-90 + angleStart) > 360)
-    {
-        angleStart = -((90 + abs((int)angleStart))%360);
-    }
-    while(abs(getAngle() - angleStart) < angle*.9)
-    {
-    }
-    FrontLeft.stop(brakeType::brake);
-    FrontRight.stop(brakeType::brake); 
-    BackLeft.stop(brakeType::brake);
-    BackRight.stop(brakeType::brake);         
-               
-}
-
-void turnTo(double angle)
-{
-    if(getAngle() - angle < 180)
-    {
-        turnToLeft(getAngle());
-    }else 
-    {
-        turnToRight(-getAngle() + angle);
-    }
+    
+    prev1 = gyroValue;
+    double curr = fmod(((val/2 + offset) * gyroScale), 360);
+    return curr;
 }
 
 int main() {
@@ -335,6 +281,7 @@ int main() {
     GyroS.startCalibration(3000);
     GyroI.startCalibration(3000);    
     task::sleep(3000);
+    bool braked = false;
     Controller1.Screen.clearScreen();
     //while(GyroS.isCalibrating() || GyroI.isCalibrating());
     while(true)
@@ -355,32 +302,7 @@ int main() {
         }
         // 100.65 -455.6
         // 199.9  -914
-        if(Controller1.ButtonX.pressing())
-        {
-            double angle = getAngle();
-            FrontLeft.spin(directionType::fwd, 75, velocityUnits::pct);
-            FrontRight.spin(directionType::rev, 75, velocityUnits::pct);
-            BackLeft.spin(directionType::fwd, 75, velocityUnits::pct);
-            BackRight.spin(directionType::rev, 75, velocityUnits::pct);
-            //double deg = 415.48;
-           
-            //FrontLeft.rotateFor(deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-            //FrontRight.rotateFor(-deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-            //BackLeft.rotateFor(deg, rotationUnits::deg, 75, velocityUnits::pct, false);
-            //BackRight.rotateFor(-deg, rotationUnits::deg, 75, velocityUnits::pct, true);          
-            if(90 + angle > 360)
-            {
-                angle = (90 + (int)angle)%360;
-            }
-            while(getAngle() - angle < angle)
-            {
-            }
-            FrontLeft.stop(brakeType::brake);
-            FrontRight.stop(brakeType::brake); 
-            BackLeft.stop(brakeType::brake);
-            BackRight.stop(brakeType::brake);         
-            
-        }
+       
        if(Controller1.ButtonRight.pressing() || Controller1.ButtonLeft.pressing())
         {
             if(!strafing) angleStrafe = getAngle(); 
@@ -395,10 +317,10 @@ int main() {
             backRightValue = 100*v + t*2;           
         }   
         
-        if(Controller1.ButtonR1.pressing())
+        if(Controller1.ButtonR1.pressing() && Lift.rotation(rotationUnits::rev) < 2.42)
         {
             Lift.spin(directionType::fwd, 100, velocityUnits::pct);
-        }else if(Controller1.ButtonR2.pressing())
+        }else if(Controller1.ButtonR2.pressing() && Lift.rotation(rotationUnits::deg) > 20)
         {
             Lift.spin(directionType::rev, 100, velocityUnits::pct);
         }else
@@ -408,10 +330,19 @@ int main() {
         
         if(Controller1.ButtonDown.pressing())
         {
-            FrontLeft.stop(brakeType::hold);
-            FrontRight.stop(brakeType::hold);
-            BackLeft.stop(brakeType::hold);
-            BackRight.stop(brakeType::hold);            
+            if(!braked) {
+                FrontLeft.stop(brakeType::hold);
+                FrontRight.stop(brakeType::hold);
+                BackLeft.stop(brakeType::hold);
+                BackRight.stop(brakeType::hold);    
+            }else
+            {
+                FrontLeft.setStopping(brakeType::coast);
+                FrontRight.setStopping(brakeType::coast);
+                BackLeft.setStopping(brakeType::coast);
+                BackRight.setStopping(brakeType::coast);                 
+            }
+            braked = !braked;
         }
         
         if(Controller1.ButtonY.pressing())
