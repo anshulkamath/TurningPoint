@@ -10,6 +10,8 @@ using namespace std;
 using namespace vex;
 
 const double PI = 3.1415;
+double gyroValue = 0;
+
 string intToString(double val)
 {
     ostringstream ss;
@@ -122,7 +124,6 @@ int runVision()
                     if((redFlags[i].centerX-148) < -5)
                     { 
                         int v = -1;
-                        double t = 0;
                         frontLeftValue = 20*v;
                         backLeftValue = -frontLeftValue;
                         frontRightValue = -20*v;
@@ -225,6 +226,35 @@ int taskShooter()
     return 0;
 }
 
+int taskGyro()
+{
+    double prevVal, currVal, delta;
+    while (true)
+    {
+        currVal = GyroS.value(rotationUnits::deg) - GyroI.value(rotationUnits::deg);
+        currVal /= 2;
+        delta = currVal - prevVal;
+        
+        // Gyro roll-over
+        if (currVal >= 0 && currVal < 90 && prevVal > 270 && prevVal < 360)
+        {
+            delta -= 360;
+        }
+        else if (prevVal >= 0 && prevVal < 90 && currVal > 270 && currVal < 360)
+        {
+            delta += 360;
+        }
+        
+        gyroValue += fmod((delta * 4/3), 360);
+        
+        prevVal = currVal;
+        task::sleep(50);
+    }
+    
+    return -1;
+}
+
+/*
 double prev1 = 0;
 double offset = 0;
 bool first = true;
@@ -265,11 +295,13 @@ double getAngle()
     double curr = fmod(((val/2 + offset) * gyroScale), 360);
     return curr;
 }
+*/
 
 int main() {
     int encoderPositionShooter = Shooter.rotation(rotationUnits::deg);
     //task shooterTask(taskShooter);
-   vex::task(taskShooter, 1);
+    vex::task(taskShooter, 1);
+    vex::task(taskGyro, 1);
     //vex::task(visionTask, 1);
     double firstHundred = 0;
     double secondHundred = 0;
@@ -305,12 +337,12 @@ int main() {
        
        if(Controller1.ButtonRight.pressing() || Controller1.ButtonLeft.pressing())
         {
-            if(!strafing) angleStrafe = getAngle(); 
+            if(!strafing) angleStrafe = gyroValue(); 
             strafing = true;
             int v = 1;
             if(Controller1.ButtonLeft.pressing()) v = -1;
             double t = 0;
-            t = (getAngle() - angleStrafe);
+            t = (gyroValue - angleStrafe);
             frontLeftValue = 100*v + t*2;
             backLeftValue = -frontLeftValue -t*2;
             frontRightValue = -100*v -t*2;
@@ -400,7 +432,7 @@ int main() {
         BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
         BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);     
         //string val = "Value: " + intToString(Shooter.rotation(rotationUnits::deg) - encoderPositionShooter) + " " + intToString(Shooter.power(powerUnits::watt)) + " " + intToString(Shooter.rotation(rotationUnits::deg));
-        string toque = intToString(getAngle()) + " " + intToString(GyroS.value(rotationUnits::rev)) + " "
+        string toque = intToString(gyroValue) + " " + intToString(GyroS.value(rotationUnits::rev)) + " "
             + intToString(GyroI.value(rotationUnits::rev));
         Controller1.Screen.clearLine();
         Controller1.Screen.print(toque.c_str());
