@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <math.h>
 using namespace std;
 using namespace vex;
 double PI = 3.1415;
@@ -57,6 +58,25 @@ void turnRight(double degrees)
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
     BackRight.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, true);    
 }
+
+void strafeLeft(double inches)
+{
+    double rots = inches/(wheelDiameter*PI) * sqrt(2);
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, true);
+}
+
+void strafeRight(double inches)
+{
+    double rots = inches/(wheelDiameter*PI) * sqrt(2);
+    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, true);
+}
+
 int intakeCont = 0;
 int intakeControl()
 {
@@ -246,9 +266,9 @@ int taskShooter()
     return 0;
 }
 
-
-int main() {
-    string color = "Blue";
+void autonFunc1(string side)
+{
+    color = side;
     // Front
     task intakeTask = task(intakeControl);
     task shooterTask = task(taskShooter);
@@ -260,12 +280,12 @@ int main() {
     if(color == "Red")
     {
         forward(34);
-    task::sleep(600);        
+        task::sleep(600);        
         turnRight(90);
     }else
     {
         forward(33);
-    task::sleep(600);        
+        task::sleep(600);        
         turnLeft(90);
     }
     Brain.resetTimer();
@@ -275,7 +295,20 @@ int main() {
     while(runVision() == -1);
     fire = true; 
     task::sleep(600);
-    // Strafe
+    if (color == "Red")
+    {
+       strafeRight(7); 
+    }
+    else if (color == "Blue")
+    {
+        strafeLeft(7);
+    }
     forward(75);
+}
+
+
+int main() {
+    
+    autonFunc1("Blue");
     
 }
