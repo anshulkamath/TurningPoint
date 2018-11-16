@@ -266,6 +266,7 @@ int taskShooter()
     return 0;
 }
 
+// Grabs ball, flips cap, shoots, scores bottom flag
 void autonFunc1(string side)
 {
     color = side;
@@ -304,6 +305,13 @@ void autonFunc1(string side)
         strafeLeft(7);
     }
     forward(75);
+}
+
+// What do we want to do for this auton?
+void auton2(string side)
+{
+    color = side;
+    
 }
 
 
