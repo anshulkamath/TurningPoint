@@ -238,24 +238,24 @@ int taskGyro()
         // Gyro roll-over
         if (currVal >= 0 && currVal < 90 && prevVal > 270 && prevVal < 360)
         {
-            delta -= 360;
+            delta += 360;
         }
         else if (prevVal >= 0 && prevVal < 90 && currVal > 270 && currVal < 360)
         {
-            delta += 360;
+            delta -= 360;
         }
  
         if (currVal <= 0 && currVal > -90 && prevVal < -270 && prevVal > -360)
         {
-            delta += 360;
+            delta -= 360;
         }
         else if (prevVal <= 0 && prevVal > -90 && currVal < -270 && currVal > -360)
         {
-            delta -= 360;
+            delta += 360;
         }
 
         gyroValue += fmod((delta * 4/3), 360);
-        
+        gyroValue = fmod(gyroValue, 360);
         prevVal = currVal;
         task::sleep(50);
     }
