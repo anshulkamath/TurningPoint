@@ -8,6 +8,8 @@ using namespace vex;
 double PI = 3.1415;
 double wheelDiameter = 4;
 double wheelBaseLength = 12;
+double maxHeightLift = 36;
+double liftGearRatio = 5;
 
 double distance(double x, double y)
 {
@@ -264,6 +266,15 @@ int taskShooter()
         
     }
     return 0;
+}
+
+void moveArm(double inches)
+{
+    double percentOfMax = inches/maxHeightLift;
+    
+    double rot = perecentOfMax * liftGearRatio;
+    
+    Lift.rotateFor(rot, rotationUnits::rev, 100, velocityUnits::pct);
 }
 
 // Grabs ball, flips cap, shoots, scores bottom flag
