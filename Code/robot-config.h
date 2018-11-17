@@ -6,7 +6,7 @@ vex::motor BackLeft(vex::PORT7, vex::gearSetting::ratio18_1, false);
 vex::motor FrontLeft(vex::PORT10, vex::gearSetting::ratio18_1, false);
 vex::motor Shooter(vex::PORT6, vex::gearSetting::ratio18_1, true);
 vex::motor Intake(vex::PORT5, vex::gearSetting::ratio18_1, true);
-vex::motor Lift(vex::PORT4, vex::gearSetting::ratio18_1, true);
+vex::motor Lift(vex::PORT4, vex::gearSetting::ratio18_1, false);
 vex::motor SpinnyThingy(vex::PORT3, vex::gearSetting::ratio18_1, false);
 
 vex::limit Limit1(Brain.ThreeWirePort.H);
