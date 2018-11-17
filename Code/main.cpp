@@ -109,7 +109,7 @@ int runVision()
                 
                 if(abs(redFlags[i].originY - greenFlags[s].originY) < 20)
                 {
-                                        diff = intToString(distAvg);
+                    diff = intToString(distAvg);
                     Brain.Screen.clearLine();
                     Brain.Screen.print(diff.c_str());
 
@@ -228,7 +228,7 @@ int taskShooter()
 
 int taskGyro()
 {
-    double prevVal = 0, currVal = 0, delta = 0;
+    double prevVal, currVal, delta;
     while (true)
     {
         currVal = GyroS.value(rotationUnits::deg) - GyroI.value(rotationUnits::deg);
@@ -317,6 +317,7 @@ int main() {
     double fourthHundred = 0;
     double angleStrafe = 0;
     bool strafing = false;
+    bool slow = false;
 
     GyroS.startCalibration(3000);
     GyroI.startCalibration(3000);    
@@ -327,19 +328,35 @@ int main() {
     while(true)
     {  
         int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
-        if(abs(Controller1.Axis3.value()) > 20)
+        Controller1.Screen.print("%B", braked);
+        
+        if(slow == false && abs(Controller1.Axis3.value()) > 20)
         {
             frontLeftValue = Controller1.Axis3.value();
             backLeftValue = Controller1.Axis3.value();  
             strafing = false;
         }
            
-        if(abs(Controller1.Axis2.value()) > 20)
+        if(slow == false && abs(Controller1.Axis2.value()) > 20)
         {
             frontRightValue = Controller1.Axis2.value();
             backRightValue = frontRightValue;
             strafing = false;
         }
+        if(slow == true && abs(Controller1.Axis3.value()) > 20)
+        {
+            frontLeftValue = Controller1.Axis3.value() / 2;
+            backLeftValue = frontLeftValue;  
+            strafing = false;
+        }
+           
+        if(slow == true && abs(Controller1.Axis2.value()) > 20)
+        {
+            frontRightValue = Controller1.Axis2.value() / 2;
+            backRightValue = frontRightValue;
+            strafing = false;
+        }
+        
         // 100.65 -455.6
         // 199.9  -914
        
@@ -385,7 +402,13 @@ int main() {
             }
             braked = !braked;
             
-            task::sleep(200);
+            while(Controller1.ButtonDown.pressing()){}
+        }
+        
+        if (Controller1.ButtonUp.pressing())
+        {
+            slow = !slow;
+            while(Controller1.ButtonUp.pressing()){}
         }
         
         if(Controller1.ButtonY.pressing())
@@ -450,6 +473,7 @@ int main() {
         //string eff = intToString(Intake.efficiency(percentUnits::pct)) + " " + intToString(Intake.temperature(percentUnits::pct));
         
         //Brain.Screen.print(eff.c_str());
+        
         task::sleep(100);
     }
     return -1;
