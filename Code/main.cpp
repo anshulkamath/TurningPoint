@@ -228,7 +228,7 @@ int taskShooter()
 
 int taskGyro()
 {
-    double prevVal, currVal, delta;
+    double prevVal = 0, currVal = 0, delta = 0;
     while (true)
     {
         currVal = GyroS.value(rotationUnits::deg) - GyroI.value(rotationUnits::deg);
@@ -276,7 +276,6 @@ double getAngle()
         + fmod(GyroI.value(rotationUnits::deg), 270);
     const double gyroScale = 4.0/3.0;
     
-
     
     if(gyroValue >= 0 && gyroValue < 90 && prev1 > 270 && prev1 < 360)
     {
@@ -346,7 +345,7 @@ int main() {
        
        if(Controller1.ButtonRight.pressing() || Controller1.ButtonLeft.pressing())
         {
-            if(!strafing) angleStrafe = gyroValue(); 
+            if(!strafing) angleStrafe = gyroValue; 
             strafing = true;
             int v = 1;
             if(Controller1.ButtonLeft.pressing()) v = -1;
@@ -358,10 +357,11 @@ int main() {
             backRightValue = 100*v + t*2;           
         }   
         
-        if(Controller1.ButtonR1.pressing() && Lift.rotation(rotationUnits::rev) < 2.42)
+        if(Controller1.ButtonR1.pressing())
         {
             Lift.spin(directionType::fwd, 100, velocityUnits::pct);
-        }else if(Controller1.ButtonR2.pressing() && Lift.rotation(rotationUnits::deg) > 20)
+        }
+        else if(Controller1.ButtonR2.pressing())
         {
             Lift.spin(directionType::rev, 100, velocityUnits::pct);
         }else
@@ -384,6 +384,8 @@ int main() {
                 BackRight.setStopping(brakeType::coast);                 
             }
             braked = !braked;
+            
+            task::sleep(200);
         }
         
         if(Controller1.ButtonY.pressing())
@@ -445,7 +447,6 @@ int main() {
             + intToString(GyroI.value(rotationUnits::rev));
         Controller1.Screen.clearLine();
         Controller1.Screen.print(toque.c_str());
-       // Brain.Screen.
         //string eff = intToString(Intake.efficiency(percentUnits::pct)) + " " + intToString(Intake.temperature(percentUnits::pct));
         
         //Brain.Screen.print(eff.c_str());
