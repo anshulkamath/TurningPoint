@@ -234,7 +234,7 @@ int taskShooter()
 {
     while(true)
     {
-        if(Controller1.ButtonX.pressing() || fire)
+        if(fire)
         {
             fire = false;
             inUse = true;
@@ -272,7 +272,7 @@ void moveArm(double inches)
 {
     double percentOfMax = inches/maxHeightLift;
     
-    double rot = perecentOfMax * liftGearRatio;
+    double rot = percentOfMax * liftGearRatio;
     
     Lift.rotateFor(rot, rotationUnits::rev, 100, velocityUnits::pct);
 }
@@ -280,54 +280,59 @@ void moveArm(double inches)
 // Grabs ball, flips cap, shoots, scores bottom flag
 void autonFunc1(string side)
 {
-    color = side;
     // Front
-    task intakeTask = task(intakeControl);
+    //task intakeTask = task(intakeControl);
     task shooterTask = task(taskShooter);
     
-    intakeCont = 1;
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
     backward(38.5);
     
-    task::sleep(500);    
-    if(color == "Red")
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    task::sleep(300);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    task::sleep(1000);    
+    
+    if(side == "Red")
     {
-        forward(34);
+        forward(35);
         task::sleep(600);        
         turnRight(90);
     }else
     {
-        forward(33);
+        forward(35);
         task::sleep(600);        
         turnLeft(90);
     }
-    Brain.resetTimer();
-    while(!Limit2.pressing() || Brain.timer(timeUnits::msec) < 700);
-    intakeCont = -1;
-    task::sleep(500);
-    while(runVision() == -1);
-    fire = true; 
+    task::sleep(700);
+    //Brain.resetTimer();
+    //while(!Limit2.pressing() || Brain.timer(timeUnits::msec) < 700);
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    task::sleep(1500);
+    //while(runVision() == -1);
+    fire = true;
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(600);
-    if (color == "Red")
+    if (side == "Red")
     {
-       strafeRight(7); 
+       strafeRight(3); 
     }
-    else if (color == "Blue")
+    else if (side == "Blue")
     {
-        strafeLeft(7);
+        strafeLeft(3);
     }
-    forward(75);
+    forward(50);
 }
 
 // What do we want to do for this auton?
 void auton2(string side)
 {
-    color = side;
+    string color = side;
     
 }
 
 
 int main() {
-    
-    autonFunc1("Blue");
+
+   autonFunc1("Blue");
     
 }
