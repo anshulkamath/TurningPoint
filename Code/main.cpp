@@ -12,7 +12,7 @@ using namespace vex;
 const double PI = 3.1415;
 double gyroValue = 0;
 
-string intToString(double val)
+string toString(double val)
 {
     ostringstream ss;
     ss<<val;
@@ -52,135 +52,98 @@ void backward(double inches)
     BackRight.rotateFor(-rev, rotationUnits::deg, 50, velocityUnits::pct, true);    
     
 }
-
-int runVision()
+// Red = 0, Blue = 0
+int runVision(string color)
 {
+    // Take Snapshot of the field, puts variables into arrays
     vector<vex::vision::object> greenFlags, redFlags, blueFlags;
     Vision.takeSnapshot(GREENFLAG);
     for(int i = 0; i<Vision.objectCount; i++)
-    {
-        //if(Vision.objects[i].id == 1)
-        {
-            greenFlags.push_back(Vision.objects[i]);
-        }
-    }
+        greenFlags.push_back(Vision.objects[i]);
+    
     Vision.takeSnapshot(BLUEFLAG);
     for(int i = 0; i<Vision.objectCount; i++)
-    {
-        //if(Vision.objects[i].id == 2)
-        {
-            blueFlags.push_back(Vision.objects[i]);
-        }
-    }
+        blueFlags.push_back(Vision.objects[i]);
+    
     Vision.takeSnapshot(REDFLAG);
     for(int i = 0; i<Vision.objectCount; i++)
-    {
-        //if(Vision.objects[i].id == 3)
-        {
-            redFlags.push_back(Vision.objects[i]);
-        }
-    } 
-    int redFlagsF1 = 0;
-    string diff = "";
+        redFlags.push_back(Vision.objects[i]);
+    
+    // Finds the distance from each flag
     double distAvg = 0;
     int num = 0;
-    for(int i = 0; i<redFlags.size(); i++)
+    for(int i = 0; i<color == "RED" ? redFlags.size() : blueFlags.size(); i++)
     {
-        if(redFlags[i].height > 12 && redFlags[i].width > 12)
+        if(color == "RED" && redFlags[i].height > 12 && redFlags[i].width > 12)
         {
-            //if(abs(redFlags[i].centerX - redFlags[i].width/2 - greenFlags[s].originX) < 20)
-            {
-                distAvg += distance(redFlags[i].width, redFlags[i].height);
-                num++;
-            }
+            distAvg += distance(redFlags[i].width, redFlags[i].height);
+            num++;
+        }
+        else if(color == "BLUE" && blueFlags[i].height > 12 && blueFlags[i].width > 12)
+        {
+            distAvg += distance(blueFlags[i].width, blueFlags[i].height);
+            num++;            
         }
     }
+
     distAvg /= num;
-    for(int i = 0; i<redFlags.size(); i++)
-    {
-       // diff += "R:" + intToString(redFlags[i].originX) +"x" + intToString(redFlags[i].width);
-        for(int s = 0; s<greenFlags.size(); s++)
-        {
-            //diff += "G:"+intToString(greenFlags[s].originY);
-            if(abs(redFlags[i].centerX - redFlags[i].width/2 - greenFlags[s].originX) < 20)
-            {
-
-              
-                
-                if(abs(redFlags[i].originY - greenFlags[s].originY) < 20)
-                {
-                    diff = intToString(distAvg);
-                    Brain.Screen.clearLine();
-                    Brain.Screen.print(diff.c_str());
-
-                    
-                    int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
-                    //diff = intToString(redFlags[i].centerX);
-                    redFlagsF1++;
-                   // diff = distAvg;//intToString(redFlags[i].angle);
-                    Controller1.Screen.clearScreen();
-                    Controller1.Screen.clearLine();    
-                    Controller1.Screen.print(diff.c_str());                    
-                    if((redFlags[i].centerX-148) < -5)
-                    { 
-                        int v = -1;
-                        frontLeftValue = 20*v;
-                        backLeftValue = -frontLeftValue;
-                        frontRightValue = -20*v;
-                        backRightValue = 20*v;                         
-                    }else if((redFlags[i].centerX - 148) > 10)
-                    {
-                        int v = 1;
-                        double t = 0;
-                        frontLeftValue = 20*v;
-                        backLeftValue = -frontLeftValue;
-                        frontRightValue = -20*v;
-                        backRightValue = 20*v;                         
-                    }else
-                    {
-                        
-                    }
-                    FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
-                    FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
-                    BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
-                    BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);      
-                    if(frontLeftValue == 0) 
-                    {
-                        if(distAvg > 44)
-                        {
-                            forward(distAvg - 42);
-                        }else if(distAvg < 40)
-                        {
-                            backward(42- distAvg);
-                        }                        
-                        return 0;
-                    }
-                    //runVision();
-                    // Red Flag Found
-                }
-            }
-        }
-    }
-    int blueFlagsF1 = 0;
-    for(int i = 0; i<blueFlags.size(); i++)
-    {
-        for(int s = 0; s<greenFlags.size(); s++)
-        {
-            if(abs(blueFlags[i].originX - (greenFlags[s].originX+greenFlags[s].width)) < 10)
-            {
-                if(abs(blueFlags[i].originY - greenFlags[s].originY) < 10)
-                {
-                    blueFlagsF1++;
-                    // Blue Flag Found
-                }
-            }
-        }
-    }
     
-    string line = intToString(blueFlags.size()) + " " + intToString(redFlags.size()) + " " + intToString(greenFlags.size()) + " " + intToString(redFlagsF1);
-    Controller1.Screen.clearScreen();
-    Controller1.Screen.clearLine();    
-    Controller1.Screen.print(diff.c_str());
+    // Puts all color into one arraylist
+    vector<vex::vision::object> flagsTemp;    
+    if(color == "RED")
+        flagsTemp = redFlags;
+    else if(color == "BLUE")
+        flagsTemp = blueFlags;
+    
+    // Find Flags
+    for(int i = 0; i<flagsTemp.size(); i++)
+    {
+        for(int s = 0; s<greenFlags.size(); s++)
+        {
+            // Make sure that the flag and green flag indices are matching
+            if(abs(flagsTemp[i].centerX - flagsTemp[i].width/2 - greenFlags[s].originX) < 20
+                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 20)
+            {
+                // Strafe to the flags 
+                int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
+                
+                if((flagsTemp[i].centerX - 148) < -5)
+                { 
+                    int v = -1;
+                    frontLeftValue = 20*v;
+                    backLeftValue = -frontLeftValue;
+                    frontRightValue = -20*v;
+                    backRightValue = 20*v;                         
+                }
+                else if((flagsTemp[i].centerX - 148) > 10)
+                {
+                    int v = 1;
+                    double t = 0;
+                    frontLeftValue = 20*v;
+                    backLeftValue = -frontLeftValue;
+                    frontRightValue = -20*v;
+                    backRightValue = 20*v;                         
+                }
+                
+                FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
+                FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
+                BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
+                BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);      
+                if(frontLeftValue == 0) 
+                {
+                    // Go forward/backward to the flags
+                    if(distAvg > 44)
+                    {
+                        forward(distAvg - 42);
+                    }else if(distAvg < 40)
+                    {
+                        backward(42- distAvg);
+                    }                        
+                    return 0;
+                }
+            }
+        }
+    }
     return -1;
 }
 
@@ -263,47 +226,36 @@ int taskGyro()
     return -1;
 }
 
-/*
-double prev1 = 0;
-double offset = 0;
-bool first = true;
-double getAngle()
+void turnLeft(double degrees)
 {
-    double gyroValue = -GyroS.value(rotationUnits::deg) 
-        + GyroI.value(rotationUnits::deg);
-    gyroValue /= 2;
-    double val = -fmod(GyroS.value(rotationUnits::deg), 270) 
-        + fmod(GyroI.value(rotationUnits::deg), 270);
-    const double gyroScale = 4.0/3.0;
+    double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 1.693;
     
-    
-    if(gyroValue >= 0 && gyroValue < 90 && prev1 > 270 && prev1 < 360)
-    {
-        if(!first)
-        {
-            offset += 90;
-            Controller1.rumble("-.-.-.-");            
-        }else
-        {
-            first = false;
-        }
-    }else if(gyroValue < 360 && gyroValue >= 270 && prev1 >= 0 && prev1 < 90)
-    {
-        if(!first)
-        {
-            offset -= 90;
-            Controller1.rumble("-.-.-.-");
-        }else
-        {
-            first = false;
-        }
-    }
-    
-    prev1 = gyroValue;
-    double curr = fmod(((val/2 + offset) * gyroScale), 360);
-    return curr;
+    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, true);    
 }
-*/
+
+void turnRight(double degrees)
+{
+    double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 1.71;
+    
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, true);    
+}
+
+void turnTo(double degrees)
+{
+    if(gyroValue < degrees)
+    {
+        turnRight(degrees - gyroValue);
+    }else if(gyroValue > degrees)
+    {
+        turnLeft(gyroValue - degrees);
+    }
+}
 
 int main() {
     int encoderPositionShooter = Shooter.rotation(rotationUnits::deg);
@@ -328,34 +280,29 @@ int main() {
     while(true)
     {  
         int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
-        Controller1.Screen.print("%B", braked);
         
-        if(slow == false && abs(Controller1.Axis3.value()) > 20)
+        if (slow == false && abs(Controller1.Axis3.value()) > 20)
         {
             frontLeftValue = Controller1.Axis3.value();
             backLeftValue = Controller1.Axis3.value();  
             strafing = false;
         }
            
-        if(slow == false && abs(Controller1.Axis2.value()) > 20)
+        if (slow == false && abs(Controller1.Axis2.value()) > 20)
         {
             frontRightValue = Controller1.Axis2.value();
             backRightValue = frontRightValue;
             strafing = false;
         }
-        if(slow == true && abs(Controller1.Axis3.value()) > 20)
+        
+        if (slow)
         {
-            frontLeftValue = Controller1.Axis3.value() / 2;
-            backLeftValue = frontLeftValue;  
-            strafing = false;
+            frontRightValue /= 2;
+            backLeftValue /= 2;
+            backRightValue /2;
+            frontLeftValue /=2;
         }
-           
-        if(slow == true && abs(Controller1.Axis2.value()) > 20)
-        {
-            frontRightValue = Controller1.Axis2.value() / 2;
-            backRightValue = frontRightValue;
-            strafing = false;
-        }
+        
         
         // 100.65 -455.6
         // 199.9  -914
@@ -374,26 +321,23 @@ int main() {
             backRightValue = 100*v + t*2;           
         }   
         
-        if(Controller1.ButtonR1.pressing())
-        {
+        if (Controller1.ButtonR1.pressing())
             Lift.spin(directionType::fwd, 100, velocityUnits::pct);
-        }
-        else if(Controller1.ButtonR2.pressing())
-        {
+        else if (Controller1.ButtonR2.pressing())
             Lift.spin(directionType::rev, 100, velocityUnits::pct);
-        }else
-        {
+        else
             Lift.stop(brakeType::hold);
-        }
         
         if(Controller1.ButtonDown.pressing())
         {
-            if(!braked) {
+            if(!braked) 
+            {
                 FrontLeft.stop(brakeType::hold);
                 FrontRight.stop(brakeType::hold);
                 BackLeft.stop(brakeType::hold);
                 BackRight.stop(brakeType::hold);    
-            }else
+            }
+            else
             {
                 FrontLeft.setStopping(brakeType::coast);
                 FrontRight.setStopping(brakeType::coast);
@@ -411,68 +355,69 @@ int main() {
             while(Controller1.ButtonUp.pressing()){}
         }
         
-        if(Controller1.ButtonY.pressing())
-        {
+        if (Controller1.ButtonY.pressing())
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
-        }else if(!inUse)
-        {
+        else if(!inUse)
             Shooter.stop();
-        }
         
         if(Controller1.ButtonB.pressing())
         {
-            /*if(abs(getAngle()) < 22.5)
+            int d = 0;
+            if(abs(gyroValue) < 22.5)
             {
                 turnTo(0);
-            }else if(abs(abs(getAngle())-45) < 22.5)
+                d = 1;
+            }
+            else if(abs(abs(gyroValue)-45) < 22.5)
             {
                 turnTo(45);
-            }else
-            {
+                d = 1;
+            }
+            else
                 Controller1.rumble("-.-.-.-.-");
-            }*/
-            //if(n)
+            if(d == 1)
             {
                 while(runVision() == -1);
                 fire = true;
             }
         }
         
-        if(Controller1.ButtonL1.pressing())
-        {
+        if (Controller1.ButtonL1.pressing())
             Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-        }else if(Controller1.ButtonL2.pressing())
-        {
+        
+        else if(Controller1.ButtonL2.pressing())
             Intake.spin(directionType::rev, 100, velocityUnits::pct);
-        }else if(!inTakeInUse)
-        {
+        
+        else if(!inTakeInUse)
             Intake.stop(brakeType::hold);
-        }   
         
-        if(Controller1.ButtonUp.pressing())
-        {
+        if (Controller1.ButtonUp.pressing())
             SpinnyThingy.spin(directionType::fwd, 50,  velocityUnits::pct);
-        }else if(Controller1.ButtonDown.pressing())
-        {
-            SpinnyThingy.spin(directionType::rev, 50,  velocityUnits::pct);            
-        }else
-        {
-            SpinnyThingy.stop(brakeType::hold);            
-        }
         
-        // 1924.8 1788 2008.4
+        else if(Controller1.ButtonDown.pressing())
+            SpinnyThingy.spin(directionType::rev, 50,  velocityUnits::pct);            
+        
+        else
+            SpinnyThingy.stop(brakeType::hold);            
+        
+       
         FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
         BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
         BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);     
-        //string val = "Value: " + intToString(Shooter.rotation(rotationUnits::deg) - encoderPositionShooter) + " " + intToString(Shooter.power(powerUnits::watt)) + " " + intToString(Shooter.rotation(rotationUnits::deg));
-        string toque = intToString(gyroValue) + " " + intToString(GyroS.value(rotationUnits::rev)) + " "
-            + intToString(GyroI.value(rotationUnits::rev));
-        Controller1.Screen.clearLine();
-        Controller1.Screen.print(toque.c_str());
-        //string eff = intToString(Intake.efficiency(percentUnits::pct)) + " " + intToString(Intake.temperature(percentUnits::pct));
         
-        //Brain.Screen.print(eff.c_str());
+        string toque = toString(gyroValue) + " " + toString(GyroS.value(rotationUnits::rev)) + " "
+            + toString(GyroI.value(rotationUnits::rev));
+        
+        Controller1.Screen.clearSreen();
+        
+        string isBraked = "Brakes: " + toString(braked);
+        Controller1.Screen.print(braked);
+        
+        Controller1.Screen.newLine();
+        
+        string isSlow = "Slow: " + toString(slow);
+        Controller1.Screen.print(slow);
         
         task::sleep(100);
     }
