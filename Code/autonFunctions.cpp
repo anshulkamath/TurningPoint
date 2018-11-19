@@ -86,17 +86,11 @@ int intakeControl()
     while(true)
     {
         if(intakeCont == 0)
-        {
             Intake.stop();
-        }
-        if(intakeCont == -1)
-        {
+        else if(intakeCont == -1)
             Intake.spin(vex::directionType::rev);
-        }
-        if(intakeCont == 1)
-        {
+        else if(intakeCont == 1)
             Intake.spin(vex::directionType::fwd);
-        }
     }
     return -1;
 }
@@ -241,9 +235,7 @@ int taskShooter()
             Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
             bool notTop = false;
             while(!Limit1.pressing())
-            {
                 notTop = true;
-            }
             
             Shooter.stop();
             task::sleep(500);
@@ -280,7 +272,6 @@ void moveArm(double inches)
 // Grabs ball, flips cap, shoots, scores bottom flag
 void autonFunc1(string side)
 {
-    // Front
     //task intakeTask = task(intakeControl);
     task shooterTask = task(taskShooter);
     
@@ -295,9 +286,10 @@ void autonFunc1(string side)
     if(side == "Red")
     {
         forward(35);
-        task::sleep(600);        
+        task::sleep(600);
         turnRight(90);
-    }else
+    }
+    else
     {
         forward(35);
         task::sleep(600);        
@@ -326,13 +318,11 @@ void autonFunc1(string side)
 // What do we want to do for this auton?
 void auton2(string side)
 {
-    string color = side;
     
 }
 
 
-int main() {
-
+int main()
+{
    autonFunc1("Blue");
-    
 }
