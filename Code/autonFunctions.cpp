@@ -23,13 +23,13 @@ double distance(double x, double y)
     return d;
 }
 
-void forward(double inches)
+void forward(double inches, double speed = 70)
 {
     double rots = inches/(wheelDiameter*PI);
-    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, true);    
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);    
 }
 
 void backward(double inches)
@@ -98,132 +98,6 @@ bool inUse = false;
 bool inTakeInUse = false;
 bool fire = false;
 
-int runVision()
-{
-    vector<vex::vision::object> greenFlags, redFlags, blueFlags;
-    Vision.takeSnapshot(GREENFLAG);
-    for(int i = 0; i<Vision.objectCount; i++)
-    {
-        //if(Vision.objects[i].id == 1)
-        {
-            greenFlags.push_back(Vision.objects[i]);
-        }
-    }
-    Vision.takeSnapshot(BLUEFLAG);
-    for(int i = 0; i<Vision.objectCount; i++)
-    {
-        //if(Vision.objects[i].id == 2)
-        {
-            blueFlags.push_back(Vision.objects[i]);
-        }
-    }
-    Vision.takeSnapshot(REDFLAG);
-    for(int i = 0; i<Vision.objectCount; i++)
-    {
-        //if(Vision.objects[i].id == 3)
-        {
-            redFlags.push_back(Vision.objects[i]);
-        }
-    } 
-    int redFlagsF1 = 0;
-    string diff = "";
-    double distAvg = 0;
-    int num = 0;
-    for(int i = 0; i<redFlags.size(); i++)
-    {
-        distAvg += distance(redFlags[i].width, redFlags[i].height);
-        num++;
-    }
-    distAvg /= num;
-    for(int i = 0; i<redFlags.size(); i++)
-    {
-       // diff += "R:" + intToString(redFlags[i].originX) +"x" + intToString(redFlags[i].width);
-        for(int s = 0; s<greenFlags.size(); s++)
-        {
-            //diff += "G:"+intToString(greenFlags[s].originY);
-            if(abs(redFlags[i].centerX - redFlags[i].width/2 - greenFlags[s].originX) < 20)
-            {
-
-              
-                
-                if(abs(redFlags[i].originY - greenFlags[s].originY) < 20)
-                {
-                  //                      diff = intToString(distAvg);
-                    Brain.Screen.clearLine();
-                    Brain.Screen.print(diff.c_str());
-
-                    
-                    int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
-                    //diff = intToString(redFlags[i].centerX);
-                    redFlagsF1++;
-                   // diff = distAvg;//intToString(redFlags[i].angle);
-                    Controller1.Screen.clearScreen();
-                    Controller1.Screen.clearLine();    
-                    Controller1.Screen.print(diff.c_str());                    
-                    if((redFlags[i].centerX-148) < -5)
-                    { 
-                        int v = -1;
-                        double t = 0;
-                        frontLeftValue = 20*v;
-                        backLeftValue = -frontLeftValue;
-                        frontRightValue = -20*v;
-                        backRightValue = 20*v;                         
-                    }else if((redFlags[i].centerX - 148) > 10)
-                    {
-                        int v = 1;
-                        double t = 0;
-                        frontLeftValue = 20*v;
-                        backLeftValue = -frontLeftValue;
-                        frontRightValue = -20*v;
-                        backRightValue = 20*v;                         
-                    }else
-                    {
-                        
-                    }
-                    FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
-                    FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
-                    BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
-                    BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);      
-                    if(frontLeftValue == 0) 
-                    {
-                        if(distAvg > 44)
-                        {
-                            forward(distAvg - 42);
-                        }else if(distAvg < 40)
-                        {
-                            backward(42- distAvg);
-                        }                        
-                        return 0;
-                    }
-                    //runVision();
-                    // Red Flag Found
-                }
-            }
-        }
-    }
-    int blueFlagsF1 = 0;
-    for(int i = 0; i<blueFlags.size(); i++)
-    {
-        for(int s = 0; s<greenFlags.size(); s++)
-        {
-            if(abs(blueFlags[i].originX - (greenFlags[s].originX+greenFlags[s].width)) < 10)
-            {
-                if(abs(blueFlags[i].originY - greenFlags[s].originY) < 10)
-                {
-                    blueFlagsF1++;
-                    // Blue Flag Found
-                }
-            }
-        }
-    }
-    
-    //string line = intToString(blueFlags.size()) + " " + intToString(redFlags.size()) + " " + intToString(greenFlags.size()) + " " + intToString(redFlagsF1);
-    Controller1.Screen.clearScreen();
-    Controller1.Screen.clearLine();    
-    Controller1.Screen.print(diff.c_str());
-    return -1;
-}
-
 int taskShooter()
 {
     while(true)
@@ -269,14 +143,20 @@ void moveArm(double inches)
     Lift.rotateFor(rot, rotationUnits::rev, 100, velocityUnits::pct);
 }
 
+void getOnPlatform()
+{
+    forward(35, 100);
+    forward(60, 100);
+}
+
 // Grabs ball, flips cap, shoots, scores bottom flag
 void autonFunc1(string side)
 {
     //task intakeTask = task(intakeControl);
     task shooterTask = task(taskShooter);
-    
+    Lift.rotateFor(30, rotationUnits::deg, 50, velocityUnits::pct, true);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    backward(38.5);
+    backward(37.5);
     
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(300);
@@ -285,7 +165,7 @@ void autonFunc1(string side)
     
     if(side == "Red")
     {
-        forward(35);
+        forward(38);
         task::sleep(600);
         turnRight(90);
     }
@@ -306,13 +186,13 @@ void autonFunc1(string side)
     task::sleep(600);
     if (side == "Red")
     {
-       strafeRight(3); 
+       strafeRight(5.5); 
     }
     else if (side == "Blue")
     {
         strafeLeft(3);
     }
-    forward(50);
+    forward(43);
 }
 
 // What do we want to do for this auton?
@@ -324,5 +204,6 @@ void auton2(string side)
 
 int main()
 {
-   autonFunc1("Blue");
+   autonFunc1("Red");
+    //getOnPlatform();
 }
