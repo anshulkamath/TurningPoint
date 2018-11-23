@@ -257,9 +257,12 @@ int taskGyro()
         currVal = -GyroS.value(rotationUnits::deg) + GyroI.value(rotationUnits::deg);
         currVal /= 2;
         delta = currVal - prevVal;
-        
+        /*if(abs(delta) > 180)
+        {
+            delta = fmod(delta, 360);
+        }*/
         // Gyro roll-over
-        if (currVal >= 0 && currVal < 90 && prevVal > 270 && prevVal < 360)
+        /*if (currVal >= 0 && currVal < 90 && prevVal > 270 && prevVal < 360)
         {
             delta += 360;
         }
@@ -275,10 +278,10 @@ int taskGyro()
         else if (prevVal <= 0 && prevVal > -90 && currVal < -270 && currVal > -360)
         {
             delta += 360;
-        }
+        }*/
         
-        gyroValue += fmod((delta * 4/3), 360);
-        gyroValue = fmod(gyroValue, 360);
+        gyroValue += fmod((delta), 360);
+        //gyroValue = fmod(gyroValue, 360);
         //gyroValue = -GyroS.value(rotationUnits::) + GyroI.value(analogUnits::range12bit);
         //gyroValue /= 2;
         string isBraked = toString(gyroValue);
