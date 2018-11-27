@@ -6,6 +6,7 @@ vex::competition    Competition;
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <sstream>
 using namespace std;
 using namespace vex;
 double PI = 3.1415;
@@ -13,11 +14,13 @@ double wheelDiameter = 4;
 double wheelBaseLength = 12;
 double maxHeightLift = 36;
 double liftGearRatio = 5;
+double gyroValue = 0;
 
 void pre_auton( void ) {
-  // All activities that occur before the competition starts
-  // Example: clearing encoders, setting servo positions, ...
-  
+    GyroS.startCalibration(3000);
+    GyroI.startCalibration(3000);    
+    task::sleep(3000);
+    gyroValue = 0;
 }
 double distance(double x, double y)
 {
@@ -26,7 +29,8 @@ double distance(double x, double y)
     double dist0 = 36.5;
     double dx = (W0/x)*dist0;
     double dy = (H0/y)*dist0;
-    double d = (dx+dy)/2;
+    //double dgy = (H0/greenY) * dist0;
+    double d = (dx * .1 + dy * .9);
     
     return d;
 }
@@ -105,19 +109,20 @@ int intakeControl()
 bool inUse = false;
 bool inTakeInUse = false;
 bool fire = false;
-
 int taskShooter()
 {
     while(true)
     {
-        if(fire)
+        if(Controller1.ButtonX.pressing() || fire)
         {
             fire = false;
             inUse = true;
             Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
             bool notTop = false;
             while(!Limit1.pressing())
+            {
                 notTop = true;
+            }
             
             Shooter.stop();
             task::sleep(500);
@@ -126,7 +131,7 @@ int taskShooter()
             while(Limit1.pressing());
             
             Shooter.stop();
-            Shooter.rotateFor(1800,rotationUnits::deg,100,velocityUnits::pct); 
+            Shooter.rotateFor(1850,rotationUnits::deg,100,velocityUnits::pct); 
             inUse = false;
         }       
         if(Limit2.pressing())
@@ -186,11 +191,11 @@ void autonFunc1(string side)
     {
         forward(34.5);
         task::sleep(600);
-        turnRight(93);
+        turnRight(90);
     }
     else
     {
-        forward(35.5);
+        forward(29.5);
         task::sleep(300);        
         turnLeft(90);
     }
@@ -209,8 +214,9 @@ void autonFunc1(string side)
     }
     else if (side == "Blue")
     {
-        strafeLeft(3);
+        strafeLeft(2.5);
     }
+    fire = false;
     forward(53);
 }
 
@@ -220,10 +226,7 @@ void auton2(string side)
     
 }
 void autonomous( void ) {
-  // ..........................................................................
-  // Insert autonomous user code here.
-  // ..........................................................................
-
+    autonFunc1("Blue");
 }
 string toString(double val)
 {
@@ -301,22 +304,22 @@ int runVision(string color)
                 // Strafe to the flags 
                 int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
                 
-                if((flagsTemp[i].centerX - 136) <= -5)
+                if((flagsTemp[i].centerX - 130) < -1)
                 { 
-                    int v = -1;
-                    frontLeftValue = 15*v;
-                    backLeftValue = -frontLeftValue;
-                    frontRightValue = -15*v;
+                    int v = 1;
+                    frontLeftValue = -15*v;
+                    backLeftValue = frontLeftValue;
+                    frontRightValue = 15*v;
                     backRightValue = 15*v;                         
                 }
-                else if((flagsTemp[i].centerX - 136) > 10)
+                else if((flagsTemp[i].centerX - 130) > 1)
                 {
                     int v = 1;
                     double t = 0;
                     frontLeftValue = 15*v;
-                    backLeftValue = -frontLeftValue;
+                    backLeftValue = frontLeftValue;
                     frontRightValue = -15*v;
-                    backRightValue = 15*v;                         
+                    backRightValue = -15*v;                         
                 }
                 
                 FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
@@ -325,21 +328,14 @@ int runVision(string color)
                 BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);      
                 if(frontLeftValue == 0) 
                 {
-                    int d = 0;
-                    if(abs(gyroValue) < 22.5)
-                    {
-                        //turnTo(0);
-                        d = 1;
-                    }
-                    else
-                        Controller1.rumble("-.-.-.-.-");                    
+                    int d = 0;                 
                     // Go forward/backward to the flags
                     if(distAvg > 44)
                     {
-                        forward(distAvg - 42);
+                        //forward(distAvg - 42);
                     }else if(distAvg < 40)
                     {
-                        backward(42- distAvg);
+                        //backward(42- distAvg);
                     }                     
                     task::sleep(200);
                     return 0;
@@ -347,74 +343,47 @@ int runVision(string color)
             }
         }
     }
+    if(flagsTemp.size() < 1) return 2;
     return -1;
 }
 
 
-bool inUse = false;
-bool inTakeInUse = false;
-bool fire = false;
-int taskShooter()
-{
-    while(true)
-    {
-        if(Controller1.ButtonX.pressing() || fire)
-        {
-            fire = false;
-            inUse = true;
-            Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
-            bool notTop = false;
-            while(!Limit1.pressing())
-            {
-                notTop = true;
-            }
-            
-            Shooter.stop();
-            task::sleep(500);
-            Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
-            
-            while(Limit1.pressing());
-            
-            Shooter.stop();
-            Shooter.rotateFor(1850,rotationUnits::deg,100,velocityUnits::pct); 
-            inUse = false;
-        }       
-        if(Limit2.pressing())
-        {
-            inTakeInUse = true;
-            Intake.spin(directionType::rev, 100, velocityUnits::pct);
-            task::sleep(500);
-            Intake.stop();
-            inTakeInUse = false;
-        }
-        
-    }
-    return 0;
-}
+
 
 int taskGyro()
 {
     double prevVal, currVal, delta;
     while (true)
     {
-        currVal = -GyroS.value(rotationUnits::deg) + GyroI.value(rotationUnits::deg);
+        currVal = GyroS.value(rotationUnits::deg) - GyroI.value(rotationUnits::deg);
         currVal /= 2;
         delta = currVal - prevVal;
-        /*if(abs(delta) > 180)
-        {
-            delta = fmod(delta, 360);
-        }*/
+        
         // Gyro roll-over
-        /*if (currVal >= 0 && currVal < 90 && prevVal > 270 && prevVal < 360)
+		if(abs(delta) > 180)
+		{
+		
+			if(delta > 0)
+			{
+				delta = -(360 - delta);
+			}else
+			{
+				delta = (delta + 360);
+			}
+		}
+
+		if(abs(delta) > 5)
+		{
+			int x = 0;
+		}
+       /* if (currVal >= 0 && currVal < 90 && prevVal > 270 && prevVal < 360)
         {
             delta += 360;
         }
         else if (prevVal >= 0 && prevVal < 90 && currVal > 270 && currVal < 360)
         {
             delta -= 360;
-        }
- 
-        if (currVal <= 0 && currVal > -90 && prevVal < -270 && prevVal > -360)
+        }else if (currVal <= 0 && currVal > -90 && prevVal < -270 && prevVal > -360)
         {
             delta -= 360;
         }
@@ -422,11 +391,10 @@ int taskGyro()
         {
             delta += 360;
         }*/
-        
-        gyroValue += fmod((delta), 360);
-        //gyroValue = fmod(gyroValue, 360);
-        //gyroValue = -GyroS.value(rotationUnits::) + GyroI.value(analogUnits::range12bit);
-        //gyroValue /= 2;
+
+        gyroValue += fmod(((delta) * 4/3), 360);
+        gyroValue = fmod(gyroValue, 360);
+        prevVal = currVal;
         string isBraked = toString(gyroValue);
         Controller1.Screen.clearLine();
         Controller1.Screen.print(isBraked.c_str());        
@@ -452,9 +420,7 @@ void usercontrol() {
     bool strafing = false;
     bool slow = false;
 
-    GyroS.startCalibration(3000);
-    GyroI.startCalibration(3000);    
-    task::sleep(3000);
+    
     bool braked = false;
     Controller1.Screen.clearScreen();
     //while(GyroS.isCalibrating() || GyroI.isCalibrating());
@@ -543,18 +509,16 @@ void usercontrol() {
         
         if(Controller1.ButtonB.pressing())
         {
-            int d = 0;
-            if(abs(gyroValue) < 22.5)
-            {
-              //  turnTo(0);
-                d = 1;
-            }
-            else
-                Controller1.rumble("-.-.-.-.-");
+            int d = 1;
             if(d == 1)
             {
-                while(runVision("RED") == -1);
-                fire = true;
+                int c = -1;
+                while(c == -1) c = runVision("RED");
+                if(c == 2)
+                {
+                    
+                }else
+                    fire = true;
             }
         }
         
@@ -593,7 +557,6 @@ void usercontrol() {
         
         task::sleep(20);
     }
-    return -1;
 }
 //
 // Main will set up the competition functions and callbacks.
