@@ -25,12 +25,12 @@ void pre_auton( void ) {
 double distance(double x, double y)
 {
     double W0 = 38;
-    double H0 = 40;
-    double dist0 = 36.5;
+    double H0 = 36;
+    double dist0 = 39.2;
     double dx = (W0/x)*dist0;
     double dy = (H0/y)*dist0;
     //double dgy = (H0/greenY) * dist0;
-    double d = (dx * .1 + dy * .9);
+    double d = (dx+dy)/2;
     
     return d;
 }
@@ -44,13 +44,13 @@ void forward(double inches, double speed = 70)
     BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);    
 }
 
-void backward(double inches)
+void backward(double inches, double speed = 70)
 {
     double rots = inches/(wheelDiameter*PI);
-    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, true);        
+    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);        
 }
 
 void turnLeft(double degrees)
@@ -131,7 +131,7 @@ int taskShooter()
             while(Limit1.pressing());
             
             Shooter.stop();
-            Shooter.rotateFor(1850,rotationUnits::deg,100,velocityUnits::pct); 
+            Shooter.rotateFor(1700,rotationUnits::deg,100,velocityUnits::pct); 
             inUse = false;
         }       
         if(Limit2.pressing())
@@ -247,10 +247,10 @@ void turnTo(double degrees)
         turnLeft(gyroValue - degrees);
     }
 }
-
+int prevError = 100;
 
 // Red = 0, Blue = 0
-int runVision(string color)
+int runVision(string color, bool check = false)
 {
     // Take Snapshot of the field, puts variables into arrays
     vector<vex::vision::object> greenFlags, redFlags, blueFlags;
@@ -269,28 +269,33 @@ int runVision(string color)
     // Finds the distance from each flag
     double distAvg = 0;
     int num = 0;
-    for(int i = 0; i<((color == "RED") ? redFlags.size() : blueFlags.size()); i++)
-    {
-        if(color == "RED" && redFlags[i].height > 12 && redFlags[i].width > 12)
-        {
-            distAvg += distance(redFlags[i].width, redFlags[i].height);
-            num++;
-        }
-        else if(color == "BLUE" && blueFlags[i].height > 12 && blueFlags[i].width > 12)
-        {
-            distAvg += distance(blueFlags[i].width, blueFlags[i].height);
-            num++;            
-        }
-    }
-
-    distAvg /= num;
-    
     // Puts all color into one arraylist
     vector<vex::vision::object> flagsTemp;    
     if(color == "RED")
         flagsTemp = redFlags;
     else if(color == "BLUE")
         flagsTemp = blueFlags;
+    for(int i = 0; i<flagsTemp.size(); i++)
+    {
+        for(int s = 0; s<greenFlags.size(); s++)
+        {
+            // Make sure that the flag and green flag indices are matching
+            if(abs(flagsTemp[i].centerX - flagsTemp[i].width/2 - greenFlags[s].originX) < 12
+                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 10 && flagsTemp[i].originY < 175
+              && abs(flagsTemp[i].width/flagsTemp[i].height - 1) < .25)
+            {        
+                if(flagsTemp[i].height > 15 && flagsTemp[i].width > 15 && flagsTemp[i].width <= flagsTemp[i].height + 5 && abs(flagsTemp[i].width/flagsTemp[i].height - 1) < .25)
+                {
+                    distAvg += distance(flagsTemp[i].width, flagsTemp[i].height);
+                    num++;
+                }
+            }
+        } 
+    }
+
+    distAvg /= num;
+    
+
     
     // Find Flags
     for(int i = 0; i<flagsTemp.size(); i++)
@@ -299,20 +304,25 @@ int runVision(string color)
         {
             // Make sure that the flag and green flag indices are matching
             if(abs(flagsTemp[i].centerX - flagsTemp[i].width/2 - greenFlags[s].originX) < 20
-                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 20)
+                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 20 && flagsTemp[i].originY < 175
+              && abs(flagsTemp[i].width/flagsTemp[i].height - 1) < .25)
             {
                 // Strafe to the flags 
                 int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
-                
-                if((flagsTemp[i].centerX - 130) < -1)
+                int error = abs(flagsTemp[i].originX - 128);
+                bool done = false;
+               // if(check && (error + prevError)/2 < 1.5) done = true;
+                //if(!check && (error + prevError)/2 < 8) done = true;
+                prevError = error;
+                if(!done && !check && (flagsTemp[i].originX - 128) < -12)
                 { 
                     int v = 1;
                     frontLeftValue = -15*v;
                     backLeftValue = frontLeftValue;
-                    frontRightValue = 15*v;
+                    frontRightValue =15*v;
                     backRightValue = 15*v;                         
                 }
-                else if((flagsTemp[i].centerX - 130) > 1)
+                else if(!done && !check && (flagsTemp[i].originX - 128) > 12)
                 {
                     int v = 1;
                     double t = 0;
@@ -320,25 +330,52 @@ int runVision(string color)
                     backLeftValue = frontLeftValue;
                     frontRightValue = -15*v;
                     backRightValue = -15*v;                         
+                }                
+                if(!done && check && (flagsTemp[i].originX - 128) < -1)
+                { 
+                    int v = 1;
+                    frontLeftValue = -6.5*v;
+                    backLeftValue = frontLeftValue;
+                    frontRightValue =6.5*v;
+                    backRightValue = 6.5*v;                         
                 }
-                
+                else if(!done && check && (flagsTemp[i].originX - 128) > 1)
+                {
+                    int v = 1;
+                    double t = 0;
+                    frontLeftValue = 6.5*v;
+                    backLeftValue = frontLeftValue;
+                    frontRightValue = -6.5*v;
+                    backRightValue = -6.5*v;                         
+                }
+                Controller1.Screen.clearLine();
+                string diff = toString(flagsTemp[i].originX) + " " + color;
+                Controller1.Screen.print(diff.c_str());
                 FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
                 FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
                 BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
                 BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);      
-                if(frontLeftValue == 0) 
+                if(frontLeftValue == 0 || done) 
                 {
+                    if(check == true) return 0;
+                    task::sleep(100);
                     int d = 0;                 
                     // Go forward/backward to the flags
-                    if(distAvg > 44)
+                    if(distAvg > 38)
                     {
-                        //forward(distAvg - 42);
-                    }else if(distAvg < 40)
+                        forward(distAvg - 37, 40);
+                    }else if(distAvg < 36)
                     {
-                        //backward(42- distAvg);
-                    }                     
-                    task::sleep(200);
+                        backward(37 - distAvg, 40);
+                    }
+                    
+                    if(check) return 0;
+                   task::sleep(100);                    
+                    while(runVision(color, true) == -1);
+                    task::sleep(300);
                     return 0;
+ 
+                   // return 0;
                 }
             }
         }
@@ -396,8 +433,8 @@ int taskGyro()
         gyroValue = fmod(gyroValue, 360);
         prevVal = currVal;
         string isBraked = toString(gyroValue);
-        Controller1.Screen.clearLine();
-        Controller1.Screen.print(isBraked.c_str());        
+       // Controller1.Screen.clearLine();
+     //   Controller1.Screen.print(isBraked.c_str());        
         prevVal = currVal;
         task::sleep(10);
     }
@@ -513,7 +550,7 @@ void usercontrol() {
             if(d == 1)
             {
                 int c = -1;
-                while(c == -1) c = runVision("RED");
+                while(c == -1) c = runVision("BLUE");
                 if(c == 2)
                 {
                     
