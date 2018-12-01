@@ -6,7 +6,7 @@ vex::motor BackLeft(vex::PORT7, vex::gearSetting::ratio18_1, false);
 vex::motor FrontLeft(vex::PORT10, vex::gearSetting::ratio18_1, false);
 vex::motor Shooter(vex::PORT6, vex::gearSetting::ratio18_1, true);
 vex::motor Intake(vex::PORT5, vex::gearSetting::ratio18_1, true);
-vex::motor Lift(vex::PORT4, vex::gearSetting::ratio18_1, true);
+vex::motor Lift(vex::PORT4, vex::gearSetting::ratio18_1, false);
 vex::motor SpinnyThingy(vex::PORT3, vex::gearSetting::ratio18_1, false);
 
 vex::limit Limit1(Brain.ThreeWirePort.H);
@@ -15,11 +15,14 @@ vex::limit Limit2(Brain.ThreeWirePort.Port[6]);
 
 vex::gyro GyroS(Brain.ThreeWirePort.F);
 vex::gyro GyroI(Brain.ThreeWirePort.E);
-
+/*
+vex::vision::signature GREENFLAG (1, -3117, -2419, -2768, -5135, -4253, -4694, 5.8, 0);
+vex::vision::signature REDFLAG (2, 8415, 8889, 8652, -911, -697, -804, 5.900000095367432, 0);
+vex::vision::signature BLUEFLAG (3, -3709, -2777, -3243, 8191, 11565, 9878, 4.5, 0);*/
 vex::controller Controller1;
-vex::vision::signature GREENFLAG (1, -2719, -2015, -2367, -5071, -4169, -4620, 3.799999952316284, 0);
-vex::vision::signature REDFLAG (2, 8117, 9023, 8570, -831, -431, -631, 5.9, 0);
-vex::vision::signature BLUEFLAG (3, -4337, -3475, -3906, 11999, 13213, 12606, 6.3, 0);
+vex::vision::signature GREENFLAG (1, -2919, -2505, -2712, -5069, -4731, -4900, 11, 0);
+vex::vision::signature REDFLAG (2, 7281, 7735, 7508, -1115, -679, -896, 5, 0);
+vex::vision::signature BLUEFLAG (3, -3745, -3319, -3532, 10485, 11833, 11159, 7.3, 0);
 vex::vision::signature SIG_4 (4, 0, 0, 0, 0, 0, 0, 3, 0);
 vex::vision::signature SIG_5 (5, 0, 0, 0, 0, 0, 0, 3, 0);
 vex::vision::signature SIG_6 (6, 0, 0, 0, 0, 0, 0, 3, 0);
