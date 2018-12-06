@@ -7,6 +7,7 @@ vex::competition    Competition;
 #include <vector>
 #include <math.h>
 #include <sstream>
+
 using namespace std;
 using namespace vex;
 double PI = 3.1415;
@@ -16,11 +17,34 @@ double maxHeightLift = 36;
 double liftGearRatio = 5;
 double gyroValue = 0;
 
+string side = "RED";
+
+void sideSelect()
+{
+    int pressX = Brain.Screen.xPosition();
+    int pressY = Brain.Screen.yPosition();
+    
+    if(pressX < 100) side = "BLUE";
+    if(pressX > 100) side = "RED";
+    /*if(side == "BLUE")
+        Vision.setLedColor(vex::color::blue);
+    if(side == "RED")
+        Vision.setLedColor(vex::color::red);*/
+    Brain.Screen.clearScreen();
+    Brain.Screen.print(("Side: " + side).c_str());
+    
+    
+}
+
 void pre_auton( void ) {
     GyroS.startCalibration(3000);
     GyroI.startCalibration(3000);    
     task::sleep(3000);
     gyroValue = 0;
+    Brain.Screen.setPenColor(vex::color::blue);
+    Brain.Screen.drawRectangle(0, 0, 100, 100, vex::color::blue);
+    Brain.Screen.drawRectangle(101, 0, 100, 100, vex::color::red); 
+    Brain.Screen.pressed(sideSelect);
 }
 double distance(double x, double y)
 {
@@ -31,7 +55,7 @@ double distance(double x, double y)
     double dy = (H0/y)*dist0;
     //double dgy = (H0/greenY) * dist0;
     double d = (dx+dy)/2;
-    
+    d = cos(.3594444 * PI) * d;
     return d;
 }
 
@@ -44,7 +68,7 @@ void forward(double inches, double speed = 70)
     BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);    
 }
 
-void backward(double inches, double speed = 70)
+void backward(double inches, double speed = 50)
 {
     double rots = inches/(wheelDiameter*PI);
     FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
@@ -131,7 +155,7 @@ int taskShooter()
             while(Limit1.pressing());
             
             Shooter.stop();
-            Shooter.rotateFor(1700,rotationUnits::deg,100,velocityUnits::pct); 
+            Shooter.rotateFor(1800,rotationUnits::deg,100,velocityUnits::pct); 
             inUse = false;
         }       
         if(Limit2.pressing())
@@ -178,7 +202,7 @@ void autonFunc1(string side)
 {
     //task intakeTask = task(intakeControl);
     task shooterTask = task(taskShooter);
-    Lift.rotateFor(30, rotationUnits::deg, 50, velocityUnits::pct, true);
+    Lift.rotateFor(-30, rotationUnits::deg, 50, velocityUnits::pct, true);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
     backward(39.5);
     
@@ -187,7 +211,7 @@ void autonFunc1(string side)
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
     task::sleep(1000);    
     
-    if(side == "Red")
+    if(side == "RED")
     {
         forward(34.5);
         task::sleep(600);
@@ -205,16 +229,17 @@ void autonFunc1(string side)
     Intake.spin(directionType::rev, 100, velocityUnits::pct);
     task::sleep(1500);
     //while(runVision("BLUE") == -1);
+    forward(14, 50);
     fire = true;
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    task::sleep(600);
-    if (side == "Red")
+    task::sleep(1000);
+    if (side == "RED")
     {
        strafeRight(2.5); 
     }
-    else if (side == "Blue")
+    else if (side == "BLUE")
     {
-        strafeLeft(2.5);
+        strafeLeft(3);
     }
     fire = false;
     forward(53);
@@ -223,10 +248,21 @@ void autonFunc1(string side)
 // What do we want to do for this auton?
 void auton2(string side)
 {
-    
+   task shooterTask = task(taskShooter);
+    Lift.rotateFor(-30, rotationUnits::deg, 50, velocityUnits::pct, true);    
+    forward(32);
+    if(side == "BLUE")
+    {
+        turnRight(90);
+    }else if(side == "RED")
+    {
+        turnLeft(90);
+    }
+    forward(38, 100);
 }
 void autonomous( void ) {
-    autonFunc1("Blue");
+    autonFunc1(side);
+    //auton2(side);
 }
 string toString(double val)
 {
@@ -281,8 +317,8 @@ int runVision(string color, bool check = false)
         {
             // Make sure that the flag and green flag indices are matching
             if(abs(flagsTemp[i].centerX - flagsTemp[i].width/2 - greenFlags[s].originX) < 12
-                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 10 && flagsTemp[i].originY < 175
-              && abs(flagsTemp[i].width/flagsTemp[i].height - 1) < .25)
+                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 10
+              )
             {        
                 if(flagsTemp[i].height > 15 && flagsTemp[i].width > 15 && flagsTemp[i].width <= flagsTemp[i].height + 5 && abs(flagsTemp[i].width/flagsTemp[i].height - 1) < .25)
                 {
@@ -295,8 +331,9 @@ int runVision(string color, bool check = false)
 
     distAvg /= num;
     
-
-    
+                Controller1.Screen.clearLine();
+                string diff = toString(flagsTemp.size()) + " " + color;
+    Controller1.Screen.print(diff.c_str());
     // Find Flags
     for(int i = 0; i<flagsTemp.size(); i++)
     {
@@ -304,8 +341,8 @@ int runVision(string color, bool check = false)
         {
             // Make sure that the flag and green flag indices are matching
             if(abs(flagsTemp[i].centerX - flagsTemp[i].width/2 - greenFlags[s].originX) < 20
-                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 20 && flagsTemp[i].originY < 175
-              && abs(flagsTemp[i].width/flagsTemp[i].height - 1) < .25)
+                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 20 
+              )
             {
                 // Strafe to the flags 
                 int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
@@ -314,7 +351,7 @@ int runVision(string color, bool check = false)
                // if(check && (error + prevError)/2 < 1.5) done = true;
                 //if(!check && (error + prevError)/2 < 8) done = true;
                 prevError = error;
-                if(!done && !check && (flagsTemp[i].originX - 128) < -12)
+                if(!done && !check && (flagsTemp[i].originX - 142) < -12)
                 { 
                     int v = 1;
                     frontLeftValue = -15*v;
@@ -322,7 +359,7 @@ int runVision(string color, bool check = false)
                     frontRightValue =15*v;
                     backRightValue = 15*v;                         
                 }
-                else if(!done && !check && (flagsTemp[i].originX - 128) > 12)
+                else if(!done && !check && (flagsTemp[i].originX - 142) > 12)
                 {
                     int v = 1;
                     double t = 0;
@@ -331,7 +368,7 @@ int runVision(string color, bool check = false)
                     frontRightValue = -15*v;
                     backRightValue = -15*v;                         
                 }                
-                if(!done && check && (flagsTemp[i].originX - 128) < -1)
+                if(!done && check && (flagsTemp[i].originX - 142) < -1)
                 { 
                     int v = 1;
                     frontLeftValue = -6.5*v;
@@ -339,7 +376,7 @@ int runVision(string color, bool check = false)
                     frontRightValue =6.5*v;
                     backRightValue = 6.5*v;                         
                 }
-                else if(!done && check && (flagsTemp[i].originX - 128) > 1)
+                else if(!done && check && (flagsTemp[i].originX - 142) > 1)
                 {
                     int v = 1;
                     double t = 0;
@@ -348,8 +385,7 @@ int runVision(string color, bool check = false)
                     frontRightValue = -6.5*v;
                     backRightValue = -6.5*v;                         
                 }
-                Controller1.Screen.clearLine();
-                string diff = toString(flagsTemp[i].originX) + " " + color;
+
                 Controller1.Screen.print(diff.c_str());
                 FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
                 FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
@@ -465,27 +501,21 @@ void usercontrol() {
     {  
         int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
         
-        if (slow == false && abs(Controller1.Axis3.value()) > 20)
+        if ( abs(Controller1.Axis3.value()) > 20)
         {
             frontLeftValue = Controller1.Axis3.value();
             backLeftValue = Controller1.Axis3.value();  
             strafing = false;
         }
            
-        if (slow == false && abs(Controller1.Axis2.value()) > 20)
+        if (abs(Controller1.Axis2.value()) > 20)
         {
             frontRightValue = Controller1.Axis2.value();
             backRightValue = frontRightValue;
             strafing = false;
         }
         
-        if (slow)
-        {
-            frontRightValue /= 2;
-            backLeftValue /= 2;
-            backRightValue /2;
-            frontLeftValue /=2;
-        }
+        
         
         
         // 100.65 -455.6
@@ -498,7 +528,7 @@ void usercontrol() {
             int v = 1;
             if(Controller1.ButtonLeft.pressing()) v = -1;
             double t = 0;
-            t = (gyroValue - angleStrafe);
+           // t = (gyroValue - angleStrafe);
             frontLeftValue = 100*v + t*2;
             backLeftValue = -frontLeftValue -t*2;
             frontRightValue = -100*v -t*2;
@@ -511,7 +541,13 @@ void usercontrol() {
             Lift.spin(directionType::rev, 100, velocityUnits::pct);
         else
             Lift.stop(brakeType::hold);
-        
+        if (slow)
+        {
+            frontRightValue /= 2;
+            backLeftValue /= 2;
+            backRightValue /2;
+            frontLeftValue /=2;
+        }        
         if(Controller1.ButtonDown.pressing())
         {
             if(!braked) 
@@ -550,7 +586,7 @@ void usercontrol() {
             if(d == 1)
             {
                 int c = -1;
-                while(c == -1) c = runVision("BLUE");
+                while(c == -1) c = runVision(side);
                 if(c == 2)
                 {
                     
@@ -589,8 +625,8 @@ void usercontrol() {
         
 
         
-        string isSlow = "Slow: " + toString(slow);
-        //Controller1.Screen.print(slow);
+        string isSlow = "Slow: " + toString(slow) + " " + "Brake: " + toString(braked);
+       // Controller1.Screen.print(isSlow.c_str());
         
         task::sleep(20);
     }
