@@ -1,0 +1,32 @@
+#include "robot-config.h"
+#include <iostream>
+#include <sstream>
+using namespace std;
+using namespace vex;
+
+string toString(double val)
+{
+    ostringstream s;
+    s<<val;
+    return s.str();
+}
+
+
+int main() {
+    int32_t value = 2;
+    task::sleep(100);   
+    Gyro.startCalibration(value);
+    
+    Brain.Screen.print("Calibrating");
+
+    while(Gyro.isCalibrating());
+    Brain.Screen.clearLine();
+    Brain.Screen.print("Calibrated");    
+    task::sleep(1000);
+    while(true)
+    {
+        Brain.Screen.clearLine();
+        Brain.Screen.print(toString(Gyro.value(analogUnits::range12bit)/10).c_str());
+        task::sleep(10);
+    }
+}
