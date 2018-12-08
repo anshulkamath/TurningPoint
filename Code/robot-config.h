@@ -20,10 +20,10 @@ vex::vision::signature GREENFLAG (1, -3475, -3251, -3362, -4955, -4645, -4800, 8
 vex::vision::signature REDFLAG (2, 8365, 8871, 8618, -713, -311, -512, 10.300000190734863, 0);
 vex::vision::signature BLUEFLAG (3, -3607, -3203, -3404, 11667, 12619, 12142, 6.900000095367432, 0);
 */vex::controller Controller1;
-vex::vision::signature GREENFLAG (1, 0, 0, 0, 0, 0, 0, 10.5, 0);
-vex::vision::signature REDFLAG (2, 8365, 8871, 8618, -713, -311, -512, 10.300000190734863, 0);
-vex::vision::signature BLUEFLAG (3, -2521, -1431, -1976, 2615, 6087, 4350, 2, 0);
-vex::vision::signature SIG_4 (4, -1393, -1009, -1201, -2859, -2521, -2690, 2.4, 0);
+vex::vision::signature GREENFLAG (1, -3937, -3497, -3718, -5269, -4851, -5060, 11, 0);
+vex::vision::signature REDFLAG (2, 7845, 8307, 8076, -923, -601, -762, 10.3, 0);
+vex::vision::signature BLUEFLAG (3, -3435, -2869, -3152, 8959, 10271, 9614, 11, 0);
+vex::vision::signature SIG_4 (4, 0, 0, 0, 0, 0, 0, 2.4000000953674316, 0);
 vex::vision::signature SIG_5 (5, 0, 0, 0, 0, 0, 0, 3, 0);
 vex::vision::signature SIG_6 (6, 0, 0, 0, 0, 0, 0, 3, 0);
 vex::vision::signature SIG_7 (7, 0, 0, 0, 0, 0, 0, 3, 0);
