@@ -55,7 +55,7 @@ double distance(double x, double y)
     double dy = (H0/y)*dist0;
     //double dgy = (H0/greenY) * dist0;
     double d = (dx+dy)/2;
-    d = cos(.3594444 * PI) * d;
+    //d = cos(.3594444 * PI) * d;
     return d;
 }
 
@@ -63,8 +63,9 @@ void forward(double inches, double speed = 70)
 {
     double rots = inches/(wheelDiameter*PI);
     FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);    
 }
 
@@ -72,8 +73,9 @@ void backward(double inches, double speed = 50)
 {
     double rots = inches/(wheelDiameter*PI);
     FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);        
 }
 
@@ -113,6 +115,120 @@ void strafeRight(double inches)
     BackLeft.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, false);
     BackRight.rotateFor(-rots, vex::rotationUnits::rev, 70, vex::velocityUnits::pct, true);
+}
+
+vector<vex::vision::object> getFlags(string color)
+{
+    vector<vex::vision::object> greenFlags, flags, flagsToReturn;
+    Vision.takeSnapshot(GREENFLAG);
+    for(int i = 0; i<Vision.objectCount; i++)
+        greenFlags.push_back(Vision.objects[i]);
+    if(color=="BLUE") {
+        Vision.takeSnapshot(BLUEFLAG);
+        for(int i = 0; i<Vision.objectCount; i++)
+            flags.push_back(Vision.objects[i]);
+    }
+    if(color == "RED")
+    {
+        Vision.takeSnapshot(REDFLAG);
+        for(int i = 0; i<Vision.objectCount; i++)
+            flags.push_back(Vision.objects[i]);
+    } 
+    
+    for(int i = 0; i<flags.size(); i++)
+    {
+        for(int s = 0; s<greenFlags.size(); s++)
+        {
+            if(abs(flags[i].centerX - flags[i].width/2 - greenFlags[s].originX) < 12
+                && abs(flags[i].originY - greenFlags[s].originY) < 10
+              )
+            {        
+                if(flags[i].height > 15 && flags[i].width > 15 && flags[i].width <= flags[i].height + 5 
+                   && abs(flags[i].width/flags[i].height - 1) < .25)
+                {
+                    flagsToReturn.push_back(flags[i]);
+                }
+            }
+        }
+    }
+    return flagsToReturn;
+}
+
+class Object
+{
+public:
+    int width, height, x, y, centerX, centerY;
+    Object(int w, int h, int x1, int y1, int centerX1, int centerY1)
+    {
+        width = w;
+        height = h;
+        x = x1;
+        y = y1;
+        centerX = centerX1;
+        centerY = centerY1;
+    }
+};
+
+vector<Object> averageFlag(vector<vector<vex::vision::object>> in)
+{
+    vector<Object> total;
+    for(int i = 0; i<in.size(); i++)
+    {
+        double width = 0, height = 0, x = 0, y = 0, centerX = 0, centerY = 0;
+        for(int s = 0; s<in[i].size(); s++)
+        {
+            width += in[i][s].width;
+            height += in[i][s].height;
+            x += in[i][s].originX;
+            y += in[i][s].originY;
+            centerX += in[i][s].centerX;
+            centerY += in[i][s].centerY;
+        }
+        int num = in[i].size();
+        width /= num;
+        height /= num;
+        x /= num;
+        y /= num;
+        centerX /= num;
+        centerY /= num;
+        total.push_bacK(Object(width, height, x, y, centerX, centerY));
+    }
+    return total;
+}
+
+int runAutoAlign(string color)
+{
+    bool done = false;
+    while(!done)
+    {
+        vector<vector<vision::object>> objs;
+        for(int i = 0; i<5; i++)
+            obs.push_back(getFlags(color));
+        vector<Object> d = averageFlag(obs);
+        Object target = d[0];
+        int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
+
+     
+
+        if(!done && !check && (flagsTemp[i].originX - 142) < -1)
+        { 
+            int v = 1;
+            frontLeftValue = -6.5*v;
+            backLeftValue = frontLeftValue;
+            frontRightValue =6.5*v;
+            backRightValue = 6.5*v;                         
+        }
+        else if(!done && !check && (flagsTemp[i].originX - 142) > 1)
+        {
+            int v = 1;
+            double t = 0;
+            frontLeftValue = 6.5*v;
+            backLeftValue = frontLeftValue;
+            frontRightValue = -6.5*v;
+            backRightValue = -6.5*v;                         
+        }                       
+        
+    }
 }
 
 int intakeCont = 0;
@@ -293,14 +409,17 @@ int runVision(string color, bool check = false)
     Vision.takeSnapshot(GREENFLAG);
     for(int i = 0; i<Vision.objectCount; i++)
         greenFlags.push_back(Vision.objects[i]);
-    
-    Vision.takeSnapshot(BLUEFLAG);
-    for(int i = 0; i<Vision.objectCount; i++)
-        blueFlags.push_back(Vision.objects[i]);
-    
-    Vision.takeSnapshot(REDFLAG);
-    for(int i = 0; i<Vision.objectCount; i++)
-        redFlags.push_back(Vision.objects[i]);
+    if(color=="BLUE") {
+        Vision.takeSnapshot(BLUEFLAG);
+        for(int i = 0; i<Vision.objectCount; i++)
+            blueFlags.push_back(Vision.objects[i]);
+    }
+    if(color == "RED")
+    {
+        Vision.takeSnapshot(REDFLAG);
+        for(int i = 0; i<Vision.objectCount; i++)
+            redFlags.push_back(Vision.objects[i]);
+    }
     
     // Finds the distance from each flag
     double distAvg = 0;
@@ -351,24 +470,24 @@ int runVision(string color, bool check = false)
                // if(check && (error + prevError)/2 < 1.5) done = true;
                 //if(!check && (error + prevError)/2 < 8) done = true;
                 prevError = error;
-                if(!done && !check && (flagsTemp[i].originX - 142) < -12)
+                if(!done && !check && (flagsTemp[i].originX - 142) < -1)
                 { 
                     int v = 1;
-                    frontLeftValue = -15*v;
+                    frontLeftValue = -6.5*v;
                     backLeftValue = frontLeftValue;
-                    frontRightValue =15*v;
-                    backRightValue = 15*v;                         
+                    frontRightValue =6.5*v;
+                    backRightValue = 6.5*v;                         
                 }
-                else if(!done && !check && (flagsTemp[i].originX - 142) > 12)
+                else if(!done && !check && (flagsTemp[i].originX - 142) > 1)
                 {
                     int v = 1;
                     double t = 0;
-                    frontLeftValue = 15*v;
+                    frontLeftValue = 6.5*v;
                     backLeftValue = frontLeftValue;
-                    frontRightValue = -15*v;
-                    backRightValue = -15*v;                         
+                    frontRightValue = -6.5*v;
+                    backRightValue = -6.5*v;                         
                 }                
-                if(!done && check && (flagsTemp[i].originX - 142) < -1)
+                /*if(!done && check && (flagsTemp[i].originX - 142) < -1)
                 { 
                     int v = 1;
                     frontLeftValue = -6.5*v;
@@ -384,7 +503,7 @@ int runVision(string color, bool check = false)
                     backLeftValue = frontLeftValue;
                     frontRightValue = -6.5*v;
                     backRightValue = -6.5*v;                         
-                }
+                }*/
 
                 Controller1.Screen.print(diff.c_str());
                 FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
