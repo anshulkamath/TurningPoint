@@ -191,7 +191,7 @@ vector<Object> averageFlag(vector<vector<vex::vision::object>> in)
         y /= num;
         centerX /= num;
         centerY /= num;
-        total.push_bacK(Object(width, height, x, y, centerX, centerY));
+        total.push_back(Object(width, height, x, y, centerX, centerY));
     }
     return total;
 }
@@ -199,18 +199,19 @@ vector<Object> averageFlag(vector<vector<vex::vision::object>> in)
 int runAutoAlign(string color)
 {
     bool done = false;
+    double lastDistance = 0;
     while(!done)
     {
         vector<vector<vision::object>> objs;
         for(int i = 0; i<5; i++)
-            obs.push_back(getFlags(color));
-        vector<Object> d = averageFlag(obs);
+            objs.push_back(getFlags(color));
+        vector<Object> d = averageFlag(objs);
         Object target = d[0];
         int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
 
-     
+        lastDistance = distance(target.width, target.height);
 
-        if(!done && !check && (flagsTemp[i].originX - 142) < -1)
+        if(!done  && (target.x - 142) < -1)
         { 
             int v = 1;
             frontLeftValue = -6.5*v;
@@ -218,7 +219,7 @@ int runAutoAlign(string color)
             frontRightValue =6.5*v;
             backRightValue = 6.5*v;                         
         }
-        else if(!done && !check && (flagsTemp[i].originX - 142) > 1)
+        else if(!done && (target.x - 142) > 1)
         {
             int v = 1;
             double t = 0;
@@ -226,9 +227,14 @@ int runAutoAlign(string color)
             backLeftValue = frontLeftValue;
             frontRightValue = -6.5*v;
             backRightValue = -6.5*v;                         
-        }                       
-        
+        }
+        if(frontLeftValue == 0) done = true;
     }
+    if(lastDistance < 39)
+        backward(40-lastDistance, 40);
+    else if(lastDistance > 41)
+        forward(lastDistance - 40, 40);
+    return 0;
 }
 
 int intakeCont = 0;
@@ -376,9 +382,51 @@ void auton2(string side)
     }
     forward(38, 100);
 }
+int taskLift()
+{
+    task::sleep(600);
+Lift.rotateFor(440, rotationUnits::deg, 100, velocityUnits::pct, false);       
+    return 0 ;
+}
+void autoFuncBack()
+{
+    Lift.rotateFor(-1100, rotationUnits::deg, 100, velocityUnits::pct, true);
+    //while(abs(Lift.rotation(rotationUnits::deg)) < 1900);
+Lift.rotateFor(-940, rotationUnits::deg, 100, velocityUnits::pct, false);  
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    backward(31);
+    
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    task::sleep(300);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    task::sleep(1000); 
+    forward(10);
+    turnRight(155);
+    forward(15, 100);
+Lift.rotateFor(300, rotationUnits::deg, 100, velocityUnits::pct, false);     
+    backward(7);
+    turnRight(130);
+    forward(30, 100);
+     //turnRight(15);
+    //forward(20, 100);
+    /*turnLeft(20);
+Lift.rotateFor(-2040, rotationUnits::deg, 100, velocityUnits::pct, false); 
+    forward(10, 100);
+    turnRight(20);
+    forward(10, 100);
+    turnRight(90);
+    forward(10, 100);
+    turnLeft(90);
+    turnRight(45);
+    forward(25, 100);
+    Lift.rotateFor(100, rotationUnits::deg, 100, velocityUnits::pct);
+    backward(15, 40);
+    turnLeft(90);*/
+}
 void autonomous( void ) {
-    autonFunc1(side);
+    //autonFunc1(side);
     //auton2(side);
+    autoFuncBack();
 }
 string toString(double val)
 {
@@ -460,7 +508,7 @@ int runVision(string color, bool check = false)
         {
             // Make sure that the flag and green flag indices are matching
             if(abs(flagsTemp[i].centerX - flagsTemp[i].width/2 - greenFlags[s].originX) < 20
-                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 20 
+                && abs(flagsTemp[i].originY - greenFlags[s].originY) < 10 
               )
             {
                 // Strafe to the flags 
@@ -470,7 +518,7 @@ int runVision(string color, bool check = false)
                // if(check && (error + prevError)/2 < 1.5) done = true;
                 //if(!check && (error + prevError)/2 < 8) done = true;
                 prevError = error;
-                if(!done && !check && (flagsTemp[i].originX - 142) < -1)
+                if(!done && !check && (flagsTemp[i].originX - 118) < -1)
                 { 
                     int v = 1;
                     frontLeftValue = -6.5*v;
@@ -478,7 +526,7 @@ int runVision(string color, bool check = false)
                     frontRightValue =6.5*v;
                     backRightValue = 6.5*v;                         
                 }
-                else if(!done && !check && (flagsTemp[i].originX - 142) > 1)
+                else if(!done && !check && (flagsTemp[i].originX - 118) > 1)
                 {
                     int v = 1;
                     double t = 0;
@@ -518,10 +566,10 @@ int runVision(string color, bool check = false)
                     // Go forward/backward to the flags
                     if(distAvg > 38)
                     {
-                        forward(distAvg - 37, 40);
+                        forward(distAvg - 37, 20);
                     }else if(distAvg < 36)
                     {
-                        backward(37 - distAvg, 40);
+                        backward(37 - distAvg, 20);
                     }
                     
                     if(check) return 0;
@@ -766,5 +814,6 @@ int main() {
     while(1) {
       vex::task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.
     }    
+    return 0;
        
 }
