@@ -18,7 +18,12 @@ double liftGearRatio = 5;
 double gyroValue = 0;
 
 string side = "RED";
-
+string toString1(double val)
+{
+    ostringstream v;
+    v << val;
+    return v.str();
+}
 void sideSelect()
 {
     int pressX = Brain.Screen.xPosition();
@@ -35,17 +40,50 @@ void sideSelect()
     
     
 }
-
+double biasX = AccelX.value(analogUnits::range12bit);
+double biasY = AccelX.value(analogUnits::range12bit);
 void pre_auton( void ) {
-    GyroS.startCalibration(3000);
-    GyroI.startCalibration(3000);    
+    GyroS.startCalibration(2);
+    GyroI.startCalibration(2);    
+
     task::sleep(3000);
+    biasX = AccelX.value(analogUnits::range12bit);
+    biasY = AccelY.value(analogUnits::range12bit);    
     gyroValue = 0;
     Brain.Screen.setPenColor(vex::color::blue);
     Brain.Screen.drawRectangle(0, 0, 100, 100, vex::color::blue);
     Brain.Screen.drawRectangle(101, 0, 100, 100, vex::color::red); 
     Brain.Screen.pressed(sideSelect);
 }
+double x = 0;
+double y = 0;
+
+double angle()
+{
+    return (GyroS.value(analogUnits::range12bit))/10;
+}
+
+int fps()
+{
+    double velocityX = 0;
+    double velocityY = 0;
+    const double fracSec = .05;
+    while(true)
+    {
+        velocityX += (AccelX.value(analogUnits::range12bit) - biasX) * fracSec;
+        velocityY += (AccelY.value(analogUnits::range12bit) - biasY) * fracSec;
+        double deltaPos = velocityX * fracSec;
+        x += cos((angle() * PI)/180) * deltaPos;
+        y += sin((angle()* PI)/180) * deltaPos;
+        deltaPos = velocityY * fracSec;
+        x += cos((angle() * PI)/180) * deltaPos;
+        y += sin((angle()* PI)/180) * deltaPos;
+
+        task::sleep(20);
+    }
+    return 0;
+}
+
 double distance(double x, double y)
 {
     double W0 = 38;
@@ -651,6 +689,7 @@ void usercontrol() {
     //task shooterTask(taskShooter);
     vex::task(taskShooter, 1);
     vex::task(taskGyro, 1);
+    task(fps, 1);
     //vex::task(visionTask, 1);
     double firstHundred = 0;
     double secondHundred = 0;
@@ -789,7 +828,10 @@ void usercontrol() {
         string toque = toString(gyroValue) + " " + toString(GyroS.value(rotationUnits::rev)) + " "
             + toString(GyroI.value(rotationUnits::rev));
         
-        
+         string val1 = "Angle " + toString1(angle()) +" X " + toString1(x)
+            + " Y " + toString1(y);
+        Controller1.Screen.clearLine();
+        Controller1.Screen.print(val1.c_str());       
 
         
         string isSlow = "Slow: " + toString(slow) + " " + "Brake: " + toString(braked);
