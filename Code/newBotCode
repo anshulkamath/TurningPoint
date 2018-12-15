@@ -1,0 +1,142 @@
+#include "robot-config.h"
+#include <string>
+#include <iostream>
+#include <vector>
+#include <math.h>
+#include <sstream>
+
+using namespace std;
+using namespace vex;
+string toString1(double val)
+{
+    ostringstream v;
+    v << val;
+    return v.str();
+}     
+bool inUse = false;
+bool inTakeInUse = false;
+int main() {
+
+    //vex::task(visionTask, 1);
+    double firstHundred = 0;
+    double secondHundred = 0;
+    double thirdHundred = 0;
+    double fourthHundred = 0;
+    double angleStrafe = 0;
+    bool strafing = false;
+    bool slow = false;
+
+    
+    bool braked = false;
+    Controller1.Screen.clearScreen();
+    //while(GyroS.isCalibrating() || GyroI.isCalibrating());
+    while(true)
+    {  
+        int frontLeftValue = 0, frontRightValue = 0, backLeftValue = 0, backRightValue = 0;
+        
+        if ( abs(Controller1.Axis3.value()) > 20)
+        {
+            frontLeftValue = Controller1.Axis3.value();
+            backLeftValue = Controller1.Axis3.value();  
+            strafing = false;
+        }
+           
+        if (abs(Controller1.Axis2.value()) > 20)
+        {
+            frontRightValue = Controller1.Axis2.value();
+            backRightValue = frontRightValue;
+            strafing = false;
+        }
+        
+        
+        
+        
+        // 100.65 -455.6
+        // 199.9  -914
+       
+       if(Controller1.ButtonRight.pressing() || Controller1.ButtonLeft.pressing())
+        {
+           // if(!strafing) angleStrafe = gyroValue; 
+            strafing = true;
+            int v = 1;
+            if(Controller1.ButtonLeft.pressing()) v = -1;
+            double t = 0;
+           // t = (gyroValue - angleStrafe);
+            frontLeftValue = 100*v + t*2;
+            backLeftValue = -frontLeftValue -t*2;
+            frontRightValue = -100*v -t*2;
+            backRightValue = 100*v + t*2;           
+        }   
+        
+       
+        if (slow)
+        {
+            frontRightValue /= 4;
+            backLeftValue /= 4;
+            backRightValue /=4;
+            frontLeftValue /=4;
+        }        
+        if(Controller1.ButtonDown.pressing())
+        {
+            if(!braked) 
+            {
+                FrontLeft.stop(brakeType::hold);
+                FrontRight.stop(brakeType::hold);
+                BackLeft.stop(brakeType::hold);
+                BackRight.stop(brakeType::hold);    
+            }
+            else
+            {
+                FrontLeft.setStopping(brakeType::coast);
+                FrontRight.setStopping(brakeType::coast);
+                BackLeft.setStopping(brakeType::coast);
+                BackRight.setStopping(brakeType::coast);                 
+            }
+            braked = !braked;
+            
+            while(Controller1.ButtonDown.pressing()){}
+        }
+        
+        if (Controller1.ButtonUp.pressing())
+        {
+            slow = !slow;
+            while(Controller1.ButtonUp.pressing()){}
+        }
+        
+        if (Controller1.ButtonY.pressing())
+            Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
+        else if(Controller1.ButtonX.pressing())
+        {
+            Shooter.rotateFor(6195, rotationUnits::deg, 100, velocityUnits::pct);
+        }else if(!inUse)
+            Shooter.stop(brakeType::hold);
+        
+
+        
+        if (Controller1.ButtonL1.pressing())
+            Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+        
+        else if(Controller1.ButtonL2.pressing())
+            Intake.spin(directionType::rev, 100, velocityUnits::pct);
+        
+        else if(!inTakeInUse)
+            Intake.stop(brakeType::hold);
+        
+       
+        FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
+        BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
+        BackLeft.spin(directionType::fwd,  backLeftValue, velocityUnits::pct);     
+        
+      
+        Controller1.Screen.clearLine();
+        //Controller1.Screen.print(val1.c_str());       
+
+        
+        string isSlow = "Slow: " + toString1(slow) + " " + "Brake: " + toString1(braked);
+        isSlow = toString1(Shooter.rotation(rotationUnits::deg));
+        Controller1.Screen.print(isSlow.c_str());
+        
+        task::sleep(20);
+    }
+}
