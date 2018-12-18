@@ -41,22 +41,30 @@ void sideSelect()
     
 }
 double biasX = AccelX.value(analogUnits::range12bit);
-double biasY = AccelX.value(analogUnits::range12bit);
+double biasY = AccelY.value(analogUnits::range12bit);
+double x = 0;
+double y = 0;
+double velocityX = 0;
+double velocityY = 0;
 void pre_auton( void ) {
     GyroS.startCalibration(2);
     GyroI.startCalibration(2);    
 
     task::sleep(3000);
+    
     biasX = AccelX.value(analogUnits::range12bit);
-    biasY = AccelY.value(analogUnits::range12bit);    
+    biasY = AccelY.value(analogUnits::range12bit); 
+    velocityX = 0;
+    velocityY = 0;
+    x = 0;
+    y = 0;
     gyroValue = 0;
     Brain.Screen.setPenColor(vex::color::blue);
     Brain.Screen.drawRectangle(0, 0, 100, 100, vex::color::blue);
     Brain.Screen.drawRectangle(101, 0, 100, 100, vex::color::red); 
     Brain.Screen.pressed(sideSelect);
 }
-double x = 0;
-double y = 0;
+
 
 double angle()
 {
@@ -65,8 +73,7 @@ double angle()
 
 int fps()
 {
-    double velocityX = 0;
-    double velocityY = 0;
+
     const double fracSec = .05;
     while(true)
     {
@@ -78,7 +85,7 @@ int fps()
         deltaPos = velocityY * fracSec;
         x += cos((angle() * PI)/180) * deltaPos;
         y += sin((angle()* PI)/180) * deltaPos;
-
+        
         task::sleep(20);
     }
     return 0;
@@ -426,25 +433,39 @@ int taskLift()
 Lift.rotateFor(440, rotationUnits::deg, 100, velocityUnits::pct, false);       
     return 0 ;
 }
-void autoFuncBack()
+void autoFuncBack(string side)
 {
     Lift.rotateFor(-1100, rotationUnits::deg, 100, velocityUnits::pct, true);
     //while(abs(Lift.rotation(rotationUnits::deg)) < 1900);
 Lift.rotateFor(-940, rotationUnits::deg, 100, velocityUnits::pct, false);  
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
     backward(31);
-    
+    backward(2, 40);
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(300);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    task::sleep(1000); 
-    forward(10);
-    turnRight(155);
-    forward(15, 100);
-Lift.rotateFor(300, rotationUnits::deg, 100, velocityUnits::pct, false);     
-    backward(7);
-    turnRight(130);
-    forward(30, 100);
+    task::sleep(750); 
+    forward(12);
+    if(side == "BLUE")
+        turnRight(149);
+    else
+        turnLeft(149);
+    forward(18, 100);
+Lift.rotateFor(600, rotationUnits::deg, 100, velocityUnits::pct, true); 
+    if(side == "BLUE")
+        turnRight(30);
+    else
+        turnLeft(30);
+    forward(13, 50);
+Lift.rotateFor(-600, rotationUnits::deg, 100, velocityUnits::pct, false);    
+    task::sleep(1800);
+Lift.rotateFor(300, rotationUnits::deg, 100, velocityUnits::pct, false);    
+    backward(21);
+    if(side == "BLUE")
+        turnRight(95);
+    else
+        turnLeft(95);
+    forward(49, 100);
      //turnRight(15);
     //forward(20, 100);
     /*turnLeft(20);
@@ -464,7 +485,7 @@ Lift.rotateFor(-2040, rotationUnits::deg, 100, velocityUnits::pct, false);
 void autonomous( void ) {
     //autonFunc1(side);
     //auton2(side);
-    autoFuncBack();
+    autoFuncBack("RED");
 }
 string toString(double val)
 {
@@ -828,8 +849,8 @@ void usercontrol() {
         string toque = toString(gyroValue) + " " + toString(GyroS.value(rotationUnits::rev)) + " "
             + toString(GyroI.value(rotationUnits::rev));
         
-         string val1 = "Angle " + toString1(angle()) +" X " + toString1(x)
-            + " Y " + toString1(y);
+         string val1 = "Angle " + toString1(angle()) +" X " + toString1((AccelX.value(analogUnits::range12bit) - biasX)/10.0)
+            + " Y " + toString1((AccelY.value(analogUnits::range12bit)-biasY)/10.0);
         Controller1.Screen.clearLine();
         Controller1.Screen.print(val1.c_str());       
 
