@@ -75,17 +75,31 @@ int fps()
 {
 
     const double fracSec = .05;
+    int lastMoveX = 0;
+    int lastMoveY = 0;
     while(true)
     {
-        velocityX += (AccelX.value(analogUnits::range12bit) - biasX) * fracSec;
-        velocityY += (AccelY.value(analogUnits::range12bit) - biasY) * fracSec;
+        if(abs(AccelX.value(analogUnits::range12bit) - biasX) > 1) {
+            velocityX += (AccelX.value(analogUnits::range12bit) - biasX) * fracSec;
+            lastMoveX = 0;
+        }
+        else if(lastMoveX > 5)
+            velocityX = 0;
+        if((AccelY.value(analogUnits::range12bit) - biasY) > 1)
+        {
+            velocityY += (AccelY.value(analogUnits::range12bit) - biasY) * fracSec;
+            lastMoveY = 0;
+        }
+        else if(lastMoveY > 5)
+            velocityY = 0;
         double deltaPos = velocityX * fracSec;
         x += cos((angle() * PI)/180) * deltaPos;
         y += sin((angle()* PI)/180) * deltaPos;
         deltaPos = velocityY * fracSec;
         x += cos((angle() * PI)/180) * deltaPos;
         y += sin((angle()* PI)/180) * deltaPos;
-        
+        lastMoveX++;
+        lastMoveY++;
         task::sleep(20);
     }
     return 0;
@@ -439,7 +453,7 @@ void autoFuncBack(string side)
     //while(abs(Lift.rotation(rotationUnits::deg)) < 1900);
 Lift.rotateFor(-940, rotationUnits::deg, 100, velocityUnits::pct, false);  
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    backward(31);
+    backward(30);
     backward(2, 40);
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(300);
@@ -449,7 +463,7 @@ Lift.rotateFor(-940, rotationUnits::deg, 100, velocityUnits::pct, false);
     if(side == "BLUE")
         turnRight(149);
     else
-        turnLeft(149);
+        turnLeft(130);
     forward(18, 100);
 Lift.rotateFor(600, rotationUnits::deg, 100, velocityUnits::pct, true); 
     if(side == "BLUE")
@@ -849,9 +863,9 @@ void usercontrol() {
         string toque = toString(gyroValue) + " " + toString(GyroS.value(rotationUnits::rev)) + " "
             + toString(GyroI.value(rotationUnits::rev));
         
-         string val1 = "Angle " + toString1(angle()) +" X " + toString1((AccelX.value(analogUnits::range12bit) - biasX)/10.0)
-            + " Y " + toString1((AccelY.value(analogUnits::range12bit)-biasY)/10.0);
-        Controller1.Screen.clearLine();
+         string val1 = /*"Angle " + toString1(angle()) +" X " + toString1(x)
+            +*/ " Y " + toString1(y);
+        Controller1.Screen.clearScreen();
         Controller1.Screen.print(val1.c_str());       
 
         
