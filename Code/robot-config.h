@@ -15,6 +15,9 @@ vex::limit Limit2(Brain.ThreeWirePort.Port[6]);
 
 vex::gyro GyroS(Brain.ThreeWirePort.F);
 vex::gyro GyroI(Brain.ThreeWirePort.E);
+
+vex::accelerometer AccelX = vex::accelerometer(Brain.ThreeWirePort.D);
+vex::accelerometer AccelY = vex::accelerometer(Brain.ThreeWirePort.A);
 /*
 vex::vision::signature GREENFLAG (1, -3475, -3251, -3362, -4955, -4645, -4800, 8, 0);
 vex::vision::signature REDFLAG (2, 8365, 8871, 8618, -713, -311, -512, 10.300000190734863, 0);
