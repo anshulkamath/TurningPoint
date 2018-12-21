@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace vex;
+double turnLimiter = .75;
 string toString1(double val)
 {
     ostringstream v;
@@ -15,9 +16,47 @@ string toString1(double val)
 }     
 bool inUse = false;
 bool inTakeInUse = false;
+bool fire = false;
+int taskShooter()
+{
+    while(true)
+    {
+        if(Controller1.ButtonX.pressing() || fire)
+        {
+            fire = false;
+            inUse = true;
+            Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
+            bool notTop = false;
+            while(!Limit1.pressing())
+            {
+                notTop = true;
+            }
+            
+            Shooter.stop();
+            task::sleep(500);
+            Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
+            
+            while(Limit1.pressing());
+            
+            Shooter.stop();
+            Shooter.rotateFor(2100,rotationUnits::deg,100,velocityUnits::pct); 
+            inUse = false;
+        }       
+        /*if(Limit2.pressing())
+        {
+            inTakeInUse = true;
+            Intake.spin(directionType::rev, 100, velocityUnits::pct);
+            task::sleep(500);
+            Intake.stop();
+            inTakeInUse = false;
+        }*/
+        
+    }
+    return 0;
+}
 int main() {
 
-    //vex::task(visionTask, 1);
+    vex::task(taskShooter, 1);
     double firstHundred = 0;
     double secondHundred = 0;
     double thirdHundred = 0;
@@ -48,25 +87,16 @@ int main() {
             strafing = false;
         }
         
-        
-        
-        
-        // 100.65 -455.6
-        // 199.9  -914
-       
-       if(Controller1.ButtonRight.pressing() || Controller1.ButtonLeft.pressing())
+        /*if(abs(Controller1.Axis3.value() - Controller1.Axis2.value()) > 50)
         {
-           // if(!strafing) angleStrafe = gyroValue; 
-            strafing = true;
-            int v = 1;
-            if(Controller1.ButtonLeft.pressing()) v = -1;
-            double t = 0;
-           // t = (gyroValue - angleStrafe);
-            frontLeftValue = 100*v + t*2;
-            backLeftValue = -frontLeftValue -t*2;
-            frontRightValue = -100*v -t*2;
-            backRightValue = 100*v + t*2;           
-        }   
+            frontLeftValue *= turnLimiter;
+            frontRightValue *= turnLimiter;
+            backRightValue *= turnLimiter;
+            backLeftValue *= turnLimiter;
+        }*/
+        
+        
+   
         
        
         if (slow)
@@ -76,7 +106,7 @@ int main() {
             backRightValue /=4;
             frontLeftValue /=4;
         }        
-        if(Controller1.ButtonDown.pressing())
+        if(Controller1.ButtonRight.pressing())
         {
             if(!braked) 
             {
@@ -97,7 +127,7 @@ int main() {
             while(Controller1.ButtonDown.pressing()){}
         }
         
-        if (Controller1.ButtonUp.pressing())
+        if (Controller1.ButtonLeft.pressing())
         {
             slow = !slow;
             while(Controller1.ButtonUp.pressing()){}
@@ -121,7 +151,13 @@ int main() {
         
         else if(!inTakeInUse)
             Intake.stop(brakeType::hold);
-        
+       if(Controller1.ButtonUp.pressing())
+       {
+           Flipper.spin(directionType::fwd, 100, velocityUnits::pct);
+       }else if(Controller1.ButtonDown.pressing())
+           Flipper.spin(directionType::rev, 100, velocityUnits::pct);
+       else
+           Flipper.stop();
        
         FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);       
