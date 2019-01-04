@@ -7,6 +7,8 @@ vex::competition    Competition;
 #include <vector>
 #include <math.h>
 #include <sstream>
+#include <cmath>
+#include <iomanip>
 
 using namespace std;
 using namespace vex;
@@ -65,10 +67,39 @@ void pre_auton( void ) {
     Brain.Screen.pressed(sideSelect);
 }
 
+vector<double> xAccelValues, yAccelValues;
 
 double angle()
 {
     return (GyroS.value(analogUnits::range12bit))/10;
+}
+
+double median(double x, double y, double z)
+{
+	if (x > y)
+    		swap(x, y);
+	if (x > z)
+    		swap(x, z);
+	if (y > z)
+    		swap(y, z);
+	return y;
+}
+
+double filteredData(vector<double> data)
+{
+	vector<double> tempData;
+	for(int i = 0; i<data.size(); i++)
+	{
+		if(i == 0)
+		{
+			tempData.push_back(data[0], data[0], data[1]);
+		}else
+		{
+			tempData.push_back(data[i-1], data[i], data[i+1]);
+		}
+	}
+	sort(tempData.begin(), tempData.end());
+	return tempData[tempData.size()/2];
 }
 
 int fps()
@@ -79,6 +110,20 @@ int fps()
     int lastMoveY = 0;
     while(true)
     {
+	xAccelValues.push_back((AccelX.value(analogUnits::range12bit) - biasX));
+	yAccelValues.push_back((AccelY.value(analogUnit::range12bit) - biasY));
+	double filteredX, filteredY;
+	if(xAccelValues.size() > 6 && yAccelValues.size() > 6)
+	{
+		xAccelValues.erase(xAccelValues.begin());
+		yAccelValues.erase(yAccelValues.begin());
+		
+		filteredX = filteredData(xAccelValues);
+		filteredY = filteredData(yAccelValues);
+		
+		continue;
+	}
+	    
         if(abs(AccelX.value(analogUnits::range12bit) - biasX) > 1) {
             velocityX += (AccelX.value(analogUnits::range12bit) - biasX) * fracSec;
             lastMoveX = 0;
@@ -93,11 +138,11 @@ int fps()
         else if(lastMoveY > 5)
             velocityY = 0;
         double deltaPos = velocityX * fracSec;
-        x += cos((angle() * PI)/180) * deltaPos;
-        y += sin((angle()* PI)/180) * deltaPos;
+        x += std::cos((angle() * PI)/180) * deltaPos;
+        y += std::sin((angle()* PI)/180) * deltaPos;
         deltaPos = velocityY * fracSec;
-        x += cos((angle() * PI)/180) * deltaPos;
-        y += sin((angle()* PI)/180) * deltaPos;
+        x += std::cos((angle() * PI)/180) * deltaPos;
+        y += std::sin((angle()* PI)/180) * deltaPos;
         lastMoveX++;
         lastMoveY++;
         task::sleep(20);
