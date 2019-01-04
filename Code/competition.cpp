@@ -9,6 +9,7 @@ vex::competition    Competition;
 #include <sstream>
 #include <cmath>
 #include <iomanip>
+#include <algorithm>
 
 using namespace std;
 using namespace vex;
@@ -92,10 +93,10 @@ double filteredData(vector<double> data)
 	{
 		if(i == 0)
 		{
-			tempData.push_back(data[0], data[0], data[1]);
+			tempData.push_back(median(data[0], data[0], data[1]));
 		}else
 		{
-			tempData.push_back(data[i-1], data[i], data[i+1]);
+			tempData.push_back(median(data[i-1], data[i], data[i+1]));
 		}
 	}
 	sort(tempData.begin(), tempData.end());
@@ -111,7 +112,7 @@ int fps()
     while(true)
     {
 	xAccelValues.push_back((AccelX.value(analogUnits::range12bit) - biasX));
-	yAccelValues.push_back((AccelY.value(analogUnit::range12bit) - biasY));
+	yAccelValues.push_back((AccelY.value(analogUnits::range12bit) - biasY));
 	double filteredX, filteredY;
 	if(xAccelValues.size() > 6 && yAccelValues.size() > 6)
 	{
@@ -124,15 +125,15 @@ int fps()
 		continue;
 	}
 	    
-        if(abs(AccelX.value(analogUnits::range12bit) - biasX) > 1) {
-            velocityX += (AccelX.value(analogUnits::range12bit) - biasX) * fracSec;
+        if(abs(filteredX) > 1) {
+            velocityX += filteredX * fracSec;
             lastMoveX = 0;
         }
         else if(lastMoveX > 5)
             velocityX = 0;
-        if((AccelY.value(analogUnits::range12bit) - biasY) > 1)
+        if(abs(filteredY)> 1)
         {
-            velocityY += (AccelY.value(analogUnits::range12bit) - biasY) * fracSec;
+            velocityY += filteredY * fracSec;
             lastMoveY = 0;
         }
         else if(lastMoveY > 5)
