@@ -33,14 +33,14 @@ int taskShooter()
             }
             
             Shooter.stop();
-            task::sleep(500);
+            /*task::sleep(500);
             Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
             
             while(Limit1.pressing());
             
             Shooter.stop();
             Shooter.rotateFor(2100,rotationUnits::deg,100,velocityUnits::pct); 
-            inUse = false;
+            inUse = false;*/
         }       
         /*if(Limit2.pressing())
         {
@@ -137,7 +137,7 @@ int main() {
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
         else if(Controller1.ButtonX.pressing())
         {
-            Shooter.rotateFor(6195, rotationUnits::deg, 100, velocityUnits::pct);
+            //Shooter.rotateFor(6195, rotationUnits::deg, 100, velocityUnits::pct);
         }else if(!inUse)
             Shooter.stop(brakeType::hold);
         
