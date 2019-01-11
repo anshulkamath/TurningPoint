@@ -49,7 +49,7 @@ void forward(double inches, double speed = 70)
     double rots = inches/(wheelDiameter*PI);
     FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    
+  
     BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);    
 }
@@ -120,10 +120,10 @@ void autonFunc1(string side)
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
-    Shooter.setStopping(brakeType::hold);
+    //Shooter.setStopping(brakeType::hold);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
     fire = true;
-    backward(36, 80);
+    backward(36, 40);
     
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(300);
@@ -132,7 +132,7 @@ void autonFunc1(string side)
     
     if(side == "RED")
     {
-        forward(43.5, 100);
+        forward(43.5, 40);
         task::sleep(600);
         backward(8);
         turnRight(100);
@@ -152,9 +152,65 @@ void autonFunc1(string side)
     task::sleep(500);
     Shooter.rotateFor(200, rotationUnits::deg, 100, velocityUnits::pct);
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    turnLeft(15);
+    if(side == "RED")
+    {
+        turnLeft(10);
+    }else
+        turnRight(15);
     task::sleep(1000);
     forward(53, 100);
+}
+void autonFunc2(string side)
+{
+    //task intakeTask = task(intakeControl);
+    task shooterTask = task(taskShooter, 1);
+    FrontLeft.setStopping(brakeType::brake);
+    FrontRight.setStopping(brakeType::brake);
+    BackLeft.setStopping(brakeType::brake);
+    BackRight.setStopping(brakeType::brake);    
+    //Shooter.setStopping(brakeType::hold);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    fire = true;
+    backward(36, 40);
+    
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    task::sleep(300);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    task::sleep(1000);    
+    
+    if(side == "RED")
+    {
+        forward(43.5, 40);
+        task::sleep(600);
+        backward(8);
+        turnRight(100);
+    }
+    else
+    {
+        forward(26.5);
+        task::sleep(300);        
+        turnLeft(90);
+    }
+    //Brain.resetTimer();
+    //while(!Limit2.pressing() || Brain.timer(timeUnits::msec) < 700);
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    task::sleep(250);
+    //while(runVision("BLUE") == -1);
+    forward(20, 40);
+    task::sleep(500);
+    Shooter.rotateFor(200, rotationUnits::deg, 100, velocityUnits::pct);
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    if(side == "RED")
+    {
+        turnRight(55.5);
+    }else
+    {
+        turnLeft(55.5);
+    }
+    Flipper.rotateFor(50, rotationUnits::deg, 100, velocityUnits::pct);
+    forward(34, 50);
+    Flipper.rotateFor(-25, rotationUnits::deg, 100, velocityUnits::pct);  
+    
 }
 
 void autonomous( void ) {
@@ -245,7 +301,7 @@ void usercontrol() {
         if (Controller1.ButtonY.pressing())
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
         else if(!inUse)
-            Shooter.stop(brakeType::hold);
+            Shooter.stop(brakeType::coast);
         
 
         
