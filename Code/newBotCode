@@ -330,7 +330,7 @@ void usercontrol() {
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
         else if(!inUse)
             Shooter.stop(brakeType::coast);
-        
+        Controller1.Screen.print("Braked: %d, Inverted: %d, Battery: %d", braked, inverted, Brain.Battery.capacity(percentUnits::pct));        
         task::sleep(20);
     }
 }
