@@ -91,36 +91,6 @@ void turnRight(double degrees)
 
 // Tasks
 
-// Shooter Variables
-bool inUse = false;
-bool inTakeInUse = false;
-bool fire = false;
-
-// Shooter Task
-int taskShooter()
-{
-    while(true)
-    {
-        if(Controller1.ButtonX.pressing() || fire)
-        {
-            fire = false;
-            inUse = true;
-            Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
-            while(Limit1.pressing());
-            bool notTop = false;
-            while(!Limit1.pressing())
-            {
-                notTop = true;
-            }
-            
-            Shooter.stop();
-            inUse = false;
-        }       
-        
-    }
-    return 0;
-}
-
 
 // Drive Variables
 double turnLimiter = .75;
@@ -154,12 +124,16 @@ int taskDrive()
         
         // Throttling Turns
         if(abs(Controller1.Axis2.value() - Controller1.Axis3.value()) > 50)
-            frontLeftValue = frontRightValue = backLeftValue = backRightValue *= turnLimiter;
-        
+        {
+            frontLeftValue = frontRightValue *= turnLimiter; 
+            backLeftValue = backRightValue *= turnLimiter; 
+        }
+
         // Inverting Drive
         if(Controller1.ButtonLeft.pressing())
         {
-            frontLeftValue = frontRightValue = backLeftValue = backRightValue *= -1;
+            frontLeftValue = frontRightValue *= -1;
+            backLeftValue = backRightValue *= -1;
             inverted = !inverted;
             while (Controller1.ButtonL1.pressing());
         }
@@ -189,11 +163,37 @@ int taskDrive()
         // Sets Motor Powers
         FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);
-        BackLeft.spin(directionType::fwd, backLeftValue, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
+        BackLeft.spin(directionType::fwd, backRightValue, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, backLeftValue, velocityUnits::pct);
         
         task::sleep(20);
     }
+    return 0;
+}
+
+// Shooter Variables
+bool inUse = false;
+bool inTakeInUse = false;
+bool fire = false;
+
+// Shooter Task
+int taskShooter()
+{
+    while(true)
+    {
+        if(Controller1.ButtonX.pressing() || fire)
+        {
+            fire = false;
+            inUse = true;
+            Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
+            while(Limit1.pressing()); // assumes that catapult starts in the up position
+            while(!Limit1.pressing());
+            
+            Shooter.stop();
+            inUse = false;
+        }
+    }
+    return 0;
 }
 
 int taskIntakes()
@@ -215,65 +215,57 @@ int taskIntakes()
         else
            Flipper.stop(brakeType::hold);   
     }
+    return 0;
 }
 
+// Front - 3 Flags 1 Cap
 void autonFunc1(string side)
 {
-    //task intakeTask = task(intakeControl);
+    // Setup for Auton
     task shooterTask = task(taskShooter, 1);
     FrontLeft.setStopping(brakeType::brake);
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
-    //Shooter.setStopping(brakeType::hold);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    fire = true;
-    backward(36, 40);
     
-    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    task::sleep(300);
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    task::sleep(1000);    
+    
+    fire = true;
+    backward(36, 40); // Back into the ball
+    
+    task::sleep(600); // Wait for ball to get into intake
+    
+    forward(43.5, 60); // Drive into wall and 0
+    task::sleep(600);
+    backward(8); // Drive backwards to aim at flags
     
     if(side == "RED")
-    {
-        forward(43.5, 40);
-        task::sleep(600);
-        backward(8);
         turnRight(100);
-    }
     else
-    {
-        forward(26.5);
-        task::sleep(300);        
-        turnLeft(90);
-    }
-    //Brain.resetTimer();
-    //while(!Limit2.pressing() || Brain.timer(timeUnits::msec) < 700);
-    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+        turnLeft(100);
+    
+    forward(20, 60); // Shoot flags
     task::sleep(250);
-    //while(runVision("BLUE") == -1);
-    forward(20, 40);
-    task::sleep(500);
     Shooter.rotateFor(200, rotationUnits::deg, 100, velocityUnits::pct);
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    
     if(side == "RED")
-    {
         turnLeft(10);
-    }else
+    else
         turnRight(15);
     task::sleep(1000);
-    forward(53, 100);
+    forward(53, 100); // Drive into bottom flags
 }
+
+// Front - 2 Flags 2 Caps
 void autonFunc2(string side)
 {
-    //task intakeTask = task(intakeControl);
     task shooterTask = task(taskShooter, 1);
     FrontLeft.setStopping(brakeType::brake);
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
-    //Shooter.setStopping(brakeType::hold);
+    
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
     fire = true;
     backward(36, 40);
@@ -323,10 +315,7 @@ void autonomous( void ) {
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
-    //turnRight(90);
     autonFunc1(side);
-    //auton2(side);
-    //autoFuncBack("RED");
 }
 
 void usercontrol() {
@@ -335,14 +324,13 @@ void usercontrol() {
     vex::task(taskDrive, 1);
     vex::task(taskIntakes, 1);
     Controller1.Screen.clearScreen();
-    //while(GyroS.isCalibrating() || GyroI.isCalibrating());
     while(true)
-    {     
+    {   
         if (Controller1.ButtonY.pressing())
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
         else if(!inUse)
             Shooter.stop(brakeType::coast);
- 
+        
         task::sleep(20);
     }
 }
