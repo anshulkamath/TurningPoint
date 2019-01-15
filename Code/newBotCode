@@ -266,46 +266,48 @@ void autonFunc2(string side)
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
     
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    // Set up catapult and back into the ball
     fire = true;
     backward(36, 40);
     
+    // Intake the ball and flip the cap
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(300);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    task::sleep(1000);    
+    task::sleep(600);    
     
+    // Forward, center on wall, backwards
+    forward(43.5, 80);
+    task::sleep(600);
+    backward(8);
+
+    // Turn towards flags
     if(side == "RED")
-    {
-        forward(43.5, 40);
-        task::sleep(600);
-        backward(8);
         turnRight(100);
-    }
     else
-    {
-        forward(26.5);
-        task::sleep(300);        
-        turnLeft(90);
-    }
-    //Brain.resetTimer();
-    //while(!Limit2.pressing() || Brain.timer(timeUnits::msec) < 700);
-    Intake.spin(directionType::rev, 100, velocityUnits::pct);
-    task::sleep(250);
-    //while(runVision("BLUE") == -1);
+        turnLeft(100);
+
+    // Forward to get into position to shoot
     forward(20, 40);
-    task::sleep(500);
+    task::sleep(250);
+    
+    // Fire
     Shooter.rotateFor(200, rotationUnits::deg, 100, velocityUnits::pct);
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    
+    // Turn towards the next cap
     if(side == "RED")
-    {
         turnRight(55.5);
-    }else
-    {
+    else
         turnLeft(55.5);
-    }
+    
+    // Rotate the flipper down to get the cap
     Flipper.rotateFor(50, rotationUnits::deg, 100, velocityUnits::pct);
+    
+    // Drive into the cap
     forward(34, 50);
+    
+    // Flip the cap
     Flipper.rotateFor(-25, rotationUnits::deg, 100, velocityUnits::pct);  
     
 }
