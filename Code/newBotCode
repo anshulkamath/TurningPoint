@@ -16,6 +16,7 @@ double wheelBaseLength = 9.5;
 // Auton Selector
 string side = "RED";
 int autonNum = 0; // 0 is close to flags, 1 is far from flags
+bool park = false;
 
 string toString1(double val)
 {
@@ -36,17 +37,34 @@ void autonSelect()
     else if(Brain.Screen.xPosition() >= 241) autonNum = 1;
 }
 
-void pre_auton( void ) {   
+void autonPark()
+{
+    if (Brain.Screen.xPosition() <= 240) park = true;
+    else if (Brain.Screen.xPosition() > 240) park = false;
+}
 
-    Brain.Screen.setPenColor(vex::color::blue);
-    Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::blue);
-    Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::red); 
-    Brain.Screen.pressed(sideSelect);
+void pre_auton( void )
+{   
+    // Brain Screen: 480 x 272
     Brain.Screen.clearScreen();
+    Brain.Screen.setPenColor(vex::color::black);
+    Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::blue);
+    Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::red);
+    Brain.Screen.pressed(sideSelect);
+    
+    Brain.Screen.clearScreen();
+    Brain.Screen.setPenColor(vex::color::red);
     Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::white);
     Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::black);
+    Brain.Screen.printAt(100, 136, "FRONT");
+    Brain.Screen.printAt(340, 136, "BACK");
     Brain.Screen.pressed(autonSelect);
+   
     Brain.Screen.clearScreen();
+    Brain.Screen.drawLine(240, 0, 240, 480);
+    Brain.Screen.printAt(100, 136, "PARK");
+    Brain.Screen.printAt(340, 136, "NO PARK");
+    Brain.Screen.pressed(autonPark);
 }
 
 // Autonomous Functions
@@ -208,6 +226,7 @@ int taskIntakes()
         else if(!inTakeInUse)
             Intake.stop(brakeType::hold);
        
+        // Controls cap flipper
         if(Controller1.ButtonUp.pressing())
            Flipper.spin(directionType::fwd, 100, velocityUnits::pct);
         else if(Controller1.ButtonDown.pressing())
@@ -235,7 +254,7 @@ void autonFunc1(string side)
     
     task::sleep(600); // Wait for ball to get into intake
     
-    forward(43.5, 60); // Drive into wall and 0
+    forward(43.5, 80); // Drive into wall and 0
     task::sleep(600);
     backward(8); // Drive backwards to aim at flags
     
@@ -260,6 +279,7 @@ void autonFunc1(string side)
 // Front - 2 Flags 2 Caps
 void autonFunc2(string side)
 {
+    // Setup
     task shooterTask = task(taskShooter, 1);
     FrontLeft.setStopping(brakeType::brake);
     FrontRight.setStopping(brakeType::brake);
@@ -312,11 +332,56 @@ void autonFunc2(string side)
     
 }
 
+// Back - Flip Caps
+void autonFunc3(string side)
+{
+    // Setup
+    task shooterTask = task(taskShooter, 1);
+    FrontLeft.setStopping(brakeType::brake);
+    FrontRight.setStopping(brakeType::brake);
+    BackLeft.setStopping(brakeType::brake);
+    BackRight.setStopping(brakeType::brake);    
+    
+    // Set up catapult and back into the ball
+    fire = true;
+    backward(36, 40);
+    
+    // Intake the ball and flip the cap
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    task::sleep(300);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    task::sleep(600);
+    Intake.stop(brakeType::coast);
+    
+    // Forward half and turn into the next cap
+    forward(6, 50);
+    
+    side == "RED" ? turnRight(35) : turnLeft(35);
+    
+    if (side == "RED")
+        turnRight(35);
+    else
+        turnLeft(35);
+    
+    // Reverse into the cap to flip it
+    Intake.spin(directionType::rev);
+    backward(15, 60);
+    
+    // Position to park
+    if (park)
+    {
+        forward(7, 50);
+        turnRight(65);
+        forward(20, 60);
+    }
+}
+
 void autonomous( void ) {
     FrontLeft.setStopping(brakeType::brake);
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
+    
     autonFunc1(side);
 }
 
@@ -325,6 +390,7 @@ void usercontrol() {
     vex::task(taskShooter, 1);
     vex::task(taskDrive, 1);
     vex::task(taskIntakes, 1);
+    
     Controller1.Screen.clearScreen();
     while(true)
     {   
@@ -332,6 +398,7 @@ void usercontrol() {
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
         else if(!inUse)
             Shooter.stop(brakeType::coast);
+        
         Controller1.Screen.print("Braked: %d, Inverted: %d, Battery: %d", braked, inverted, Brain.Battery.capacity(percentUnits::pct));        
         task::sleep(20);
     }
