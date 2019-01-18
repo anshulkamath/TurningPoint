@@ -114,16 +114,21 @@ void turnRight(double degrees)
 double turnLimiter = .75;
 bool braked = false;
 bool inverted = false;
-int frontLeftValue = 0, 
-    frontRightValue = 0, 
-    backLeftValue = 0, 
-    backRightValue = 0;
+
+int sign(double val)
+{
+    return val < 0 ? -1 : 1;
+}
 
 // Drive Task
 int taskDrive()
 {
     while (true)
     {
+        int frontLeftValue = 0, 
+            frontRightValue = 0, 
+            backLeftValue = 0, 
+            backRightValue = 0;        
         // Constant Straight Drive Control
         if (Controller1.ButtonR1.pressing())
             frontLeftValue = frontRightValue = backLeftValue = backRightValue = 40;
@@ -135,26 +140,37 @@ int taskDrive()
         {
             // Scale = x^2/100
             if (abs(Controller1.Axis2.value()) > 20)
-                frontRightValue = backRightValue = Controller1.Axis2.value() * Controller1.Axis2.value() / 100;
+            {
+                frontRightValue = sign(Controller1.Axis2.value()) * Controller1.Axis2.value() * Controller1.Axis2.value() / 100;
+                backRightValue = frontRightValue;
+            }
             if (abs(Controller1.Axis3.value()) > 20)
-                frontLeftValue = frontLeftValue = Controller1.Axis3.value() * Controller1.Axis3.value() / 100;
+            {
+                frontLeftValue  = sign(Controller1.Axis3.value()) * Controller1.Axis3.value() * Controller1.Axis3.value() / 100;
+                backLeftValue = frontLeftValue;
+            }
         }
-        
+        /*if(abs(abs(Controller1.Axis2.value()) - abs(Controller1.Axis3.value())) > 20)
+        {
+            frontLeftValue = backLeftValue = Controller1.Axis3.value();
+            frontRightValue = backRightValue = Controller1.Axis2.value();
+        }*/
         // Throttling Turns
         if(abs(Controller1.Axis2.value() - Controller1.Axis3.value()) > 50)
         {
-            frontLeftValue = frontRightValue *= turnLimiter; 
-            backLeftValue = backRightValue *= turnLimiter; 
+            frontLeftValue = backLeftValue *= turnLimiter; 
+            frontRightValue = backRightValue *= turnLimiter; 
         }
 
         // Inverting Drive
-        if(Controller1.ButtonLeft.pressing())
+        /*if(Controller1.ButtonLeft.pressing())
         {
-            frontLeftValue = frontRightValue *= -1;
-            backLeftValue = backRightValue *= -1;
+            frontLeftValue = backLeftValue *= -1;
+            backRightValue = frontRightValue *= -1;
+            
             inverted = !inverted;
             while (Controller1.ButtonL1.pressing());
-        }
+        }*/
         
         // Enables Brake Mode
         if (Controller1.ButtonDown.pressing())
@@ -181,8 +197,8 @@ int taskDrive()
         // Sets Motor Powers
         FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);
-        BackLeft.spin(directionType::fwd, backRightValue, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, backLeftValue, velocityUnits::pct);
+        BackLeft.spin(directionType::fwd, backLeftValue, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
         
         task::sleep(20);
     }
@@ -204,8 +220,9 @@ int taskShooter()
             fire = false;
             inUse = true;
             Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
-            while(Limit1.pressing()); // assumes that catapult starts in the up position
-            while(!Limit1.pressing());
+            ShooterAux.spin(directionType::fwd, 100, velocityUnits::pct);
+            while(Limit1.pressing() && inUse); // assumes that catapult starts in the up position
+            while(!Limit1.pressing() && inUse);
             
             Shooter.stop();
             inUse = false;
@@ -224,15 +241,7 @@ int taskIntakes()
         else if(Controller1.ButtonL2.pressing())
             Intake.spin(directionType::rev, 100, velocityUnits::pct);
         else if(!inTakeInUse)
-            Intake.stop(brakeType::hold);
-       
-        // Controls cap flipper
-        if(Controller1.ButtonUp.pressing())
-           Flipper.spin(directionType::fwd, 100, velocityUnits::pct);
-        else if(Controller1.ButtonDown.pressing())
-           Flipper.spin(directionType::rev, 100, velocityUnits::pct);
-        else
-           Flipper.stop(brakeType::hold);   
+            Intake.stop(brakeType::hold);   
     }
     return 0;
 }
@@ -395,9 +404,20 @@ void usercontrol() {
     while(true)
     {   
         if (Controller1.ButtonY.pressing())
+        {
             Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
+            ShooterAux.spin(directionType::fwd, 60, velocityUnits::pct);
+        }
         else if(!inUse)
+        {
             Shooter.stop(brakeType::coast);
+            ShooterAux.stop(brakeType::coast);
+        }else if(Controller1.ButtonA.pressing())
+        {
+            Shooter.stop(brakeType::coast);
+            ShooterAux.stop(brakeType::coast);  
+            inUse = false;
+        }
         
         Controller1.Screen.print("Braked: %d, Inverted: %d, Battery: %d", braked, inverted, Brain.Battery.capacity(percentUnits::pct));        
         task::sleep(20);
