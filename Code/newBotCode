@@ -14,7 +14,7 @@ double wheelDiameter = 4;
 double wheelBaseLength = 9.5;
 
 // Auton Selector
-string side = "BLUE";
+string side = "RED";
 int autonNum = 0; // 0 is close to flags, 1 is far from flags
 bool park = false;
 
@@ -67,7 +67,6 @@ void pre_auton( void )
     Brain.Screen.pressed(autonPark);
 }
 
-// Autonomous Functions
 void forward1(double inches, double speed = 70)
 {
      FrontLeft.setStopping(brakeType::coast);
@@ -179,7 +178,7 @@ void turnRight(double degrees)
 
 
 // Drive Variables
-double turnLimiter = .75;
+double turnLimiter = .6;
 bool braked = false;
 bool inverted = false;
 
@@ -277,6 +276,7 @@ int taskDrive()
 bool inUse = false;
 bool inTakeInUse = false;
 bool fire = false;
+bool catapultDown = false;
 
 // Shooter Task
 int taskShooter()
@@ -287,14 +287,23 @@ int taskShooter()
         {
             fire = false;
             inUse = true;
+            // Rotates until slip
+            Shooter.rotateFor(100, rotationUnits::raw, 100, velocityUnits::pct);
+            ShooterAux.rotateFor(100, rotationUnits::raw, 100, velocityUnits::pct);
+            
+            // Rotates back to original position
             Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
             ShooterAux.spin(directionType::fwd, 100, velocityUnits::pct);
             while(Limit1.pressing() && inUse); // assumes that catapult starts in the up position
-            while(!Limit1.pressing() && inUse);
+            catapultDown = false;
+            while(!Limit1.pressing() && inUse) {};
+            catapultDown = true;
             
             Shooter.stop();
             inUse = false;
         }
+        
+        
     }
     return 0;
 }
@@ -304,12 +313,12 @@ int taskIntakes()
     while (true)
     {
         // Controls intake
-        if (Controller1.ButtonL1.pressing())
+        if (Controller1.ButtonL1.pressing() && catapultDown)
             Intake.spin(directionType::fwd, 100, velocityUnits::pct);
         else if(Controller1.ButtonL2.pressing())
             Intake.spin(directionType::rev, 100, velocityUnits::pct);
         else if(!inTakeInUse)
-            Intake.stop(brakeType::hold);   
+            Intake.stop(brakeType::hold);
     }
     return 0;
 }
@@ -327,21 +336,22 @@ void autonFunc1(string side)
     
     
    // fire = true;
-    backward(36, 60); // Back into the ball
-    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    backward(36, 40); // Back into the ball
     
     task::sleep(600); // Wait for ball to get into intake
     
-    forward(43, 100); // Drive into wall and 0
+    forward(47, 100); // Drive into wall and 0
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(600);
-    backward(11,30); // Drive backwards to aim at flags
+    backward(8,30); // Drive backwards to aim at flags
     
-    if(side == "RED")
+    /*if(side == "RED")
         turnRight(95);
     else
-        turnLeft(95);
+        turnLeft(95);*/
+    turnRight(90);
     
-    forward(20, 30); // Shoot flags
+    forward(25, 30); // Shoot flags
     task::sleep(250);
     Shooter.rotateFor(400, rotationUnits::deg, 100, velocityUnits::pct);
    
@@ -496,15 +506,22 @@ void usercontrol() {
         {
             Shooter.stop(brakeType::coast);
             ShooterAux.stop(brakeType::coast);
-        }else if(Controller1.ButtonA.pressing())
+        }
+        else if(Controller1.ButtonA.pressing())
         {
             Shooter.stop(brakeType::coast);
             ShooterAux.stop(brakeType::coast);  
             inUse = false;
         }
         
-        Controller1.Screen.print("Braked: %d, Inverted: %d, Battery: %d", braked, inverted, Brain.Battery.capacity(percentUnits::pct));        
-        task::sleep(20);
+        Controller1.Screen.print("Braked: %d", braked);        
+        Controller1.Screen.newLine();
+        Controller1.Screen.print("Inverted: %d", inverted);        
+        Controller1.Screen.newLine();
+        int temp = Brain.Battery.capacity(percentUnits::pct);
+        Controller1.Screen.print("Battery: %d", temp);        
+
+        task::sleep(1000);
     }
 }
 
