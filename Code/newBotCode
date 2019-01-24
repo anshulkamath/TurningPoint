@@ -92,10 +92,10 @@ void ramp(int vel, int cycles, double inches, bool rampUp = true)
             targVel = vel - (vel / cycles * (i + 1));
         
         // actual control of the motors per cycle
-        FrontLeft.rotateFor(rotsPerCycle, rotationUnits::rev, 0, targVel, velocityUnits::pct, true);
-        BackLeft.rotateFor(rotsPerCycle, rotationUnits::rev, 0, targVel, velocityUnits::pct, true);
-        FrontRight.rotateFor(rotsPerCycle, rotationUnits::rev, 0, targVel, velocityUnits::pct, true);
-        BackRight.rotateFor(rotsPerCycle, rotationUnits::rev, 0 , targVel, velocityUnits::pct, true);
+        FrontLeft.rotateFor(rotsPerCycle, rotationUnits::rev, targVel, velocityUnits::pct, true);
+        BackLeft.rotateFor(rotsPerCycle, rotationUnits::rev, targVel, velocityUnits::pct, true);
+        FrontRight.rotateFor(rotsPerCycle, rotationUnits::rev, targVel, velocityUnits::pct, true);
+        BackRight.rotateFor(rotsPerCycle, rotationUnits::rev, targVel, velocityUnits::pct, true);
     }
 }
 
