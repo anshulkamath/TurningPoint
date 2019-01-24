@@ -69,42 +69,33 @@ void pre_auton( void )
 
 void ramp(int vel, int cycles, double inches, bool rampUp = true)
 {
+    FrontLeft.setStopping(brakeType::coast);
+    FrontRight.setStopping(brakeType::coast);
+    BackLeft.setStopping(brakeType::coast);
+    BackRight.setStopping(brakeType::coast); 
+    
     // rampUp assumes going to or coming from 0
     double rots = inches / (wheelDiameter * PI);
-    double initRots;
+    double rotsPerCycle = rots / cycles;
     
+    // setting rotations to negative to account for moving backwards
     if (vel < 0) rots *= -1;
-    
-    // Run motor for given rotations
-    FrontLeft.rotateFor(rots, rotationUnits::rev, 0, velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, rotationUnits::rev, 0, velocityUnits::pct, false);
-    FrontRight.rotateFor(rots, rotationUnits::rev, 0, velocityUnits::pct, false);
-    BackRight.rotateFor(rots, rotationUnits::rev, 0 ,velocityUnits::pct, false);
     
     for (int i = 0; i < cycles; i++)
     {
-        initRots = BackRight.rotation(rotationUnits::rev);
-        if (rampUp)
-        {
-            // Change the velocity every time the motor gets an incremental distance to the
-            // target rotation value
-            FrontRight.setVelocity(vel / cycles * (i + 1), velocityUnits::pct);
-            BackLeft.setVelocity(vel / cycles * (i + 1), velocityUnits::pct);
-            FrontLeft.setVelocity(vel / cycles * (i + 1), velocityUnits::pct);
-            BackRight.setVelocity(vel / cycles * (i + 1), velocityUnits::pct);
-            
-            while(BackLeft.rotation(rotationUnits::rev) - initRots < rots / cycles);
-        }
+        double targVel;
+        
+        // setting the velocity based on the iteration of the loop
+        if (rampUp) 
+            targVel = vel / cycles * (i + 1);
         else
-        {
-            double targVel = vel - (vel / cycles * i);
-            FrontRight.setVelocity(targVel, velocityUnits::pct);
-            BackLeft.setVelocity(targVel, velocityUnits::pct);
-            FrontLeft.setVelocity(targVel, velocityUnits::pct);
-            BackRight.setVelocity(targVel, velocityUnits::pct);
-            
-            while(BackLeft.rotation(rotationUnits::rev) - initRots < rots / cycles);
-        }
+            targVel = vel - (vel / cycles * (i + 1));
+        
+        // actual control of the motors per cycle
+        FrontLeft.rotateFor(rotsPerCycle, rotationUnits::rev, 0, targVel, velocityUnits::pct, true);
+        BackLeft.rotateFor(rotsPerCycle, rotationUnits::rev, 0, targVel, velocityUnits::pct, true);
+        FrontRight.rotateFor(rotsPerCycle, rotationUnits::rev, 0, targVel, velocityUnits::pct, true);
+        BackRight.rotateFor(rotsPerCycle, rotationUnits::rev, 0 , targVel, velocityUnits::pct, true);
     }
 }
 
