@@ -490,17 +490,7 @@ void autonFunc2(string side)
     if(side == "RED")
         turnRight(55.5);
     else
-        turnLeft(55.5);
-    
-    // Rotate the flipper down to get the cap
-    Flipper.rotateFor(50, rotationUnits::deg, 100, velocityUnits::pct);
-    
-    // Drive into the cap
-    forward(34, 50);
-    
-    // Flip the cap
-    Flipper.rotateFor(-25, rotationUnits::deg, 100, velocityUnits::pct);  
-    
+        turnLeft(55.5);   
 }
 
 // Back - Flip Caps
