@@ -75,27 +75,38 @@ void ramp(int vel, int cycles, double inches, bool rampUp = true)
     BackRight.setStopping(brakeType::coast); 
     
     // rampUp assumes going to or coming from 0
-    double rots = inches / (wheelDiameter * PI);
+    double rots = inches / (wheelDiameter * PI); // converting inches to revolutions
     double rotsPerCycle = rots / cycles;
+    double targVel, initRots;
     
     // setting rotations to negative to account for moving backwards
     if (vel < 0) rots *= -1;
     
     for (int i = 0; i < cycles; i++)
     {
-        double targVel;
+        // encoder value in revolutions at the beginning of each iteration
+        initRots = FrontRight.rotation(rotationUnits::rev);
         
         // setting the velocity based on the iteration of the loop
-        if (rampUp) 
+        if (rampUp)
             targVel = vel / cycles * (i + 1);
         else
             targVel = vel - (vel / cycles * (i + 1));
         
-        // actual control of the motors per cycle
-        FrontLeft.rotateFor(rotsPerCycle, rotationUnits::rev, targVel, velocityUnits::pct, true);
-        BackLeft.rotateFor(rotsPerCycle, rotationUnits::rev, targVel, velocityUnits::pct, true);
-        FrontRight.rotateFor(rotsPerCycle, rotationUnits::rev, targVel, velocityUnits::pct, true);
-        BackRight.rotateFor(rotsPerCycle, rotationUnits::rev, targVel, velocityUnits::pct, true);
+        // spins motors at a velocity for a number of revolutions
+        BackLeft.spin(directionType::fwd, targVel, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, targVel, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, targVel, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, targVel, velocityUnits::pct);
+        while (FrontRight.rotation(rotationUnits::rev) - initRots < rotsPerCycle);
+    }
+    
+    if (!rampUp)
+    {
+        FrontLeft.stop(brakeType::brake);
+        FrontRight.stop(brakeType::brake);
+        BackLeft.stop(brakeType::brake);
+        BackRight.stop(brakeType::brake);
     }
 }
 
