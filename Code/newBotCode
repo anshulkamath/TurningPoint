@@ -14,7 +14,7 @@ double wheelDiameter = 4;
 double wheelBaseLength = 9.5;
 
 // Auton Selector
-string side = "RED";
+string side = "BLUE";
 int autonNum = 0; // 0 is close to flags, 1 is far from flags
 bool park = false;
 
@@ -51,7 +51,7 @@ void pre_auton( void )
     Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::blue);
     Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::red);
     Brain.Screen.pressed(sideSelect);
-    
+
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(vex::color::red);
     Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::white);
@@ -59,7 +59,7 @@ void pre_auton( void )
     Brain.Screen.printAt(100, 136, "FRONT");
     Brain.Screen.printAt(340, 136, "BACK");
     Brain.Screen.pressed(autonSelect);
-   
+
     Brain.Screen.clearScreen();
     Brain.Screen.drawLine(240, 0, 240, 480);
     Brain.Screen.printAt(100, 136, "PARK");
@@ -73,26 +73,26 @@ void ramp(int vel, int cycles, double inches, bool rampUp = true)
     FrontRight.setStopping(brakeType::coast);
     BackLeft.setStopping(brakeType::coast);
     BackRight.setStopping(brakeType::coast); 
-    
+
     // rampUp assumes going to or coming from 0
     double rots = inches / (wheelDiameter * PI); // converting inches to revolutions
     double rotsPerCycle = rots / cycles;
     double targVel, initRots;
-    
+
     // setting rotations to negative to account for moving backwards
     if (vel < 0) rots *= -1;
-    
+
     for (int i = 0; i < cycles; i++)
     {
         // encoder value in revolutions at the beginning of each iteration
         initRots = FrontRight.rotation(rotationUnits::rev);
-        
+
         // setting the velocity based on the iteration of the loop
         if (rampUp)
             targVel = vel / cycles * (i + 1);
         else
             targVel = vel - (vel / cycles * (i + 1));
-        
+
         // spins motors at a velocity for a number of revolutions
         BackLeft.spin(directionType::fwd, targVel, velocityUnits::pct);
         BackRight.spin(directionType::fwd, targVel, velocityUnits::pct);
@@ -100,7 +100,7 @@ void ramp(int vel, int cycles, double inches, bool rampUp = true)
         FrontRight.spin(directionType::fwd, targVel, velocityUnits::pct);
         while (FrontRight.rotation(rotationUnits::rev) - initRots < rotsPerCycle);
     }
-    
+
     if (!rampUp)
     {
         FrontLeft.stop(brakeType::brake);
@@ -112,10 +112,10 @@ void ramp(int vel, int cycles, double inches, bool rampUp = true)
 
 void forward1(double inches, double speed = 70)
 {
-     FrontLeft.setStopping(brakeType::coast);
-        FrontRight.setStopping(brakeType::coast);
-        BackLeft.setStopping(brakeType::coast);
-        BackRight.setStopping(brakeType::coast);         
+    FrontLeft.setStopping(brakeType::coast);
+    FrontRight.setStopping(brakeType::coast);
+    BackLeft.setStopping(brakeType::coast);
+    BackRight.setStopping(brakeType::coast);         
     double rots = inches/(wheelDiameter*PI);
     double start = FrontLeft.rotation(rotationUnits::rev);
     /*FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, false);
@@ -130,20 +130,20 @@ void forward1(double inches, double speed = 70)
         FrontRight.spin(directionType::fwd, speeddy*speed, velocityUnits::pct);
         BackLeft.spin(directionType::fwd, speeddy*speed, velocityUnits::pct);
         BackRight.spin(directionType::fwd, speeddy*speed, velocityUnits::pct);
-        
+
     }
-        FrontLeft.stop(brakeType::coast);
-        FrontRight.stop(brakeType::coast);
-        BackLeft.stop(brakeType::coast);
-        BackRight.stop(brakeType::coast);
+    FrontLeft.stop(brakeType::coast);
+    FrontRight.stop(brakeType::coast);
+    BackLeft.stop(brakeType::coast);
+    BackRight.stop(brakeType::coast);
 }
 
 void backward1(double inches, double speed = 70)
 {
-     FrontLeft.setStopping(brakeType::coast);
-        FrontRight.setStopping(brakeType::coast);
-        BackLeft.setStopping(brakeType::coast);
-        BackRight.setStopping(brakeType::coast);         
+    FrontLeft.setStopping(brakeType::coast);
+    FrontRight.setStopping(brakeType::coast);
+    BackLeft.setStopping(brakeType::coast);
+    BackRight.setStopping(brakeType::coast);         
     double rots = inches/(wheelDiameter*PI);
     double start = FrontLeft.rotation(rotationUnits::rev);
     /*FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, false);
@@ -159,88 +159,54 @@ void backward1(double inches, double speed = 70)
         BackLeft.spin(directionType::rev, speeddy*speed, velocityUnits::pct);
         BackRight.spin(directionType::rev, speeddy*speed, velocityUnits::pct);
         FrontLeft.spin(directionType::rev, speeddy*speed, velocityUnits::pct);        
-        
+
     }
-        FrontLeft.stop(brakeType::coast);
-        FrontRight.stop(brakeType::coast);
-        BackLeft.stop(brakeType::coast);
-        BackRight.stop(brakeType::coast);
+    FrontLeft.stop(brakeType::coast);
+    FrontRight.stop(brakeType::coast);
+    BackLeft.stop(brakeType::coast);
+    BackRight.stop(brakeType::coast);
 }
 void forward(double inches, double speed = 70)
 {
-     FrontLeft.setStopping(brakeType::coast);
-        FrontRight.setStopping(brakeType::coast);
-        BackLeft.setStopping(brakeType::coast);
-        BackRight.setStopping(brakeType::coast);         
+    FrontLeft.setStopping(brakeType::brake);
+    FrontRight.setStopping(brakeType::brake);
+    BackLeft.setStopping(brakeType::brake);
+    BackRight.setStopping(brakeType::brake);        
     double rots = inches/(wheelDiameter*PI);
     double rampConst = (double)(200) / 360;
-    if (rots < rampConst*2.5)
-        rampConst = 0;
-    FrontLeft.rotateFor(rampConst, vex::rotationUnits::rev, speed / 2, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rampConst, vex::rotationUnits::rev, speed / 2, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rampConst, vex::rotationUnits::rev, speed / 2, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rampConst, vex::rotationUnits::rev, speed / 2, vex::velocityUnits::pct, true);
-    
+
+    rampConst = 0;
+
+
     FrontLeft.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackLeft.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackRight.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
-        FrontLeft.setStopping(brakeType::coast);
-        FrontRight.setStopping(brakeType::coast);
-        BackLeft.setStopping(brakeType::coast);
-        BackRight.setStopping(brakeType::coast);   
-   FrontLeft.rotateFor(rampConst*1.5, vex::rotationUnits::rev, speed / 2, vex::velocityUnits::pct, false);
-   FrontRight.rotateFor(rampConst*1.5, vex::rotationUnits::rev, speed / 2, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rampConst*1.5, vex::rotationUnits::rev, speed / 2, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rampConst*1.5, vex::rotationUnits::rev, speed / 2, vex::velocityUnits::pct, true);
+
 }
 
 void backward(double inches, double speed = 50)
 {
-    
-        FrontLeft.setStopping(brakeType::coast);
-        FrontRight.setStopping(brakeType::coast);
-        BackLeft.setStopping(brakeType::coast);
-        BackRight.setStopping(brakeType::coast);      
+
+    FrontLeft.setStopping(brakeType::brake);
+    FrontRight.setStopping(brakeType::brake);
+    BackLeft.setStopping(brakeType::brake);
+    BackRight.setStopping(brakeType::brake);      
     double rots = inches/(wheelDiameter*PI);
     double rampConst = (double)(300) / 360;
-    if (rots < rampConst*3)
-        rampConst = 0;
-    FrontLeft.resetRotation();
-    FrontLeft.startRotateFor(-rampConst, vex::rotationUnits::rev, 8, vex::velocityUnits::pct);
-    FrontRight.startRotateFor(-rampConst, vex::rotationUnits::rev, 8, vex::velocityUnits::pct);
-    BackLeft.startRotateFor(-rampConst, vex::rotationUnits::rev, 8, vex::velocityUnits::pct);
-    BackRight.startRotateFor(-rampConst, vex::rotationUnits::rev, 8, vex::velocityUnits::pct);    
-    while(FrontLeft.isSpinning())
-    {
-       FrontLeft.setVelocity(fabs(FrontLeft.rotation(rotationUnits::rev)/rampConst) * speed, velocityUnits::pct);
-       FrontRight.setVelocity(fabs(FrontLeft.rotation(rotationUnits::rev)/rampConst) * speed, velocityUnits::pct);
-       BackLeft.setVelocity(fabs(FrontLeft.rotation(rotationUnits::rev)/rampConst) * speed, velocityUnits::pct);
-       BackRight.setVelocity(fabs(FrontLeft.rotation(rotationUnits::rev)/rampConst) * speed, velocityUnits::pct);        
-    }
-    FrontLeft.startRotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct);
-    FrontRight.startRotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct);
-    BackLeft.startRotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct);
-    BackRight.startRotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct);
-    while(FrontLeft.isSpinning());
-    FrontRight.resetRotation();
-    FrontLeft.startRotateFor(-rampConst*4, vex::rotationUnits::rev, speed, vex::velocityUnits::pct);
-    FrontRight.startRotateFor(-rampConst*4, vex::rotationUnits::rev, speed, vex::velocityUnits::pct);
-    BackLeft.startRotateFor(-rampConst*4, vex::rotationUnits::rev, speed, vex::velocityUnits::pct);
-    BackRight.startRotateFor(-rampConst*4, vex::rotationUnits::rev, speed, vex::velocityUnits::pct);
-    while(FrontRight.isSpinning())
-    {
-       FrontLeft.setVelocity((1-fabs(FrontRight.rotation(rotationUnits::rev)/(rampConst*4))) * speed, velocityUnits::pct);
-       FrontRight.setVelocity((1-fabs(FrontRight.rotation(rotationUnits::rev)/(rampConst*4))) * speed, velocityUnits::pct);
-       BackLeft.setVelocity((1-fabs(FrontRight.rotation(rotationUnits::rev)/(rampConst*4))) * speed, velocityUnits::pct);
-       BackRight.setVelocity((1-fabs(FrontRight.rotation(rotationUnits::rev)/(rampConst*4))) * speed, velocityUnits::pct);        
-    }    
+
+    rampConst = 0;
+
+    FrontLeft.rotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+
 }
 
 void turnLeft(double degrees)
 {
-    double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86;
-    
+    double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86;  
     FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
     BackLeft.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
@@ -250,7 +216,7 @@ void turnLeft(double degrees)
 void turnRight(double degrees)
 {
     double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86;
-    
+
     FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
     BackLeft.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
@@ -276,15 +242,15 @@ int taskDrive()
     while (true)
     {
         int frontLeftValue = 0, 
-            frontRightValue = 0, 
-            backLeftValue = 0, 
-            backRightValue = 0;        
+        frontRightValue = 0, 
+        backLeftValue = 0, 
+        backRightValue = 0;        
         // Constant Straight Drive Control
         if (Controller1.ButtonR1.pressing())
             frontLeftValue = frontRightValue = backLeftValue = backRightValue = 40;
         else if (Controller1.ButtonR2.pressing())
             frontLeftValue = frontRightValue = backLeftValue = backRightValue = -40;       
-        
+
         // Throttled Tank Drive Controls
         else
         {
@@ -317,11 +283,11 @@ int taskDrive()
         {
             frontLeftValue = backLeftValue *= -1;
             backRightValue = frontRightValue *= -1;
-            
+
             inverted = !inverted;
             while (Controller1.ButtonL1.pressing());
         }*/
-        
+
         // Enables Brake Mode
         if (Controller1.ButtonDown.pressing())
         {
@@ -340,16 +306,16 @@ int taskDrive()
                 BackRight.setStopping(brakeType::coast);                 
             }
             braked = !braked;
-            
+
             while (Controller1.ButtonDown.pressing());
         }
-        
+
         // Sets Motor Powers
         FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);
         BackLeft.spin(directionType::fwd, backLeftValue, velocityUnits::pct);
         BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
-        
+
         task::sleep(20);
     }
     return 0;
@@ -366,6 +332,7 @@ int taskShooter()
 {
     while(true)
     {
+        /*
         if(Controller1.ButtonX.pressing() || fire)
         {
             fire = false;
@@ -373,7 +340,7 @@ int taskShooter()
             // Rotates until slip
             Shooter.rotateFor(100, rotationUnits::raw, 100, velocityUnits::pct);
             ShooterAux.rotateFor(100, rotationUnits::raw, 100, velocityUnits::pct);
-            
+
             // Rotates back to original position
             Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
             ShooterAux.spin(directionType::fwd, 100, velocityUnits::pct);
@@ -381,12 +348,36 @@ int taskShooter()
             catapultDown = false;
             while(!Limit1.pressing() && inUse) {};
             catapultDown = true;
-            
+
             Shooter.stop();
+            ShooterAux.stop();
             inUse = false;
         }
-        
-        
+        */
+        if (Controller1.ButtonX.pressing() || fire)
+        {
+            fire = false;
+            inUse = true;
+            // Rotates until slip
+            Shooter.rotateFor(3.025, rotationUnits::rev, 100, velocityUnits::pct, false);
+            ShooterAux.rotateFor(3.025, rotationUnits::rev, 100, velocityUnits::pct, true);
+            inUse = false;
+        }
+        else if (Controller1.ButtonY.pressing())
+        {
+            Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
+            ShooterAux.spin(directionType::fwd, 60, velocityUnits::pct);
+            while(Controller1.ButtonY.pressing());
+            Shooter.stop(brakeType::coast);
+            ShooterAux.stop(brakeType::coast);
+        }
+        else
+        {
+            Shooter.stop(brakeType::coast);
+            ShooterAux.stop(brakeType::coast);
+        }
+
+        task::sleep(50);
     }
     return 0;
 }
@@ -396,7 +387,7 @@ int taskIntakes()
     while (true)
     {
         // Controls intake
-        if (Controller1.ButtonL1.pressing() && catapultDown)
+        if (Controller1.ButtonL1.pressing())
             Intake.spin(directionType::fwd, 100, velocityUnits::pct);
         else if(Controller1.ButtonL2.pressing())
             Intake.spin(directionType::rev, 100, velocityUnits::pct);
@@ -416,35 +407,35 @@ void autonFunc1(string side)
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    
-    
-   // fire = true;
-    backward(36, 40); // Back into the ball
-    
+
+    backward(36, 30); // Back into the ball
+
     task::sleep(600); // Wait for ball to get into intake
-    
-    forward(47, 100); // Drive into wall and 0
+
+    forward(40, 40); // Drive into wall and 0
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(600);
-    backward(8,30); // Drive backwards to aim at flags
-    
-    /*if(side == "RED")
+    //backward(8,30); // Drive backwards to aim at flags
+
+    if(side == "RED")
         turnRight(95);
     else
-        turnLeft(95);*/
-    turnRight(90);
-    
-    forward(25, 30); // Shoot flags
+        turnLeft(95);
+
+    forward(22, 30); // Shoot flags
     task::sleep(250);
-    Shooter.rotateFor(400, rotationUnits::deg, 100, velocityUnits::pct);
-   
-    
+
+    //Shooter.rotateFor(400, rotationUnits::deg, 100, velocityUnits::pct);
+    //ShooterAux.rotateFor(400, rotationUnits::deg, 100, velocityUnits::pct);
+
+    fire = true;
+    task::sleep(500);
     if(side == "RED")
-        turnLeft(20);
+        turnLeft(5);
     else
-        turnRight(15);
-    task::sleep(1000);
-    forward(53, 100); // Drive into bottom flags
+        turnRight(5);
+
+    forward(53, 30); // Drive into bottom flags
 }
 
 // Front - 2 Flags 2 Caps
@@ -456,17 +447,17 @@ void autonFunc2(string side)
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
-    
+
     // Set up catapult and back into the ball
     fire = true;
     backward(36, 40);
-    
+
     // Intake the ball and flip the cap
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(300);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
     task::sleep(600);    
-    
+
     // Forward, center on wall, backwards
     forward(43.5, 80);
     task::sleep(600);
@@ -481,63 +472,59 @@ void autonFunc2(string side)
     // Forward to get into position to shoot
     forward(20, 40);
     task::sleep(250);
-    
+
     // Fire
     Shooter.rotateFor(200, rotationUnits::deg, 100, velocityUnits::pct);
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    
+
     // Turn towards the next cap
     if(side == "RED")
         turnRight(55.5);
     else
-        turnLeft(55.5);   
+        turnLeft(55.5);
+
+    // Drive into the cap
+    forward(34, 50);
 }
 
 // Back - Flip Caps
 void autonFunc3(string side)
 {
-    // Setup
+    // Setup for Auton
     task shooterTask = task(taskShooter, 1);
     FrontLeft.setStopping(brakeType::brake);
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
     
-    // Set up catapult and back into the ball
-    fire = true;
-    backward(36, 40);
-    
-    // Intake the ball and flip the cap
-    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    task::sleep(300);
+    // Start intake and get ball under cap
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    task::sleep(600);
-    Intake.stop(brakeType::coast);
-    
-    // Forward half and turn into the next cap
-    forward(6, 50);
-    
-    side == "RED" ? turnRight(35) : turnLeft(35);
-    
-    if (side == "RED")
-        turnRight(35);
-    else
-        turnLeft(35);
-    
+    backward(36, 30); // Back into the ball
+    task::sleep(600); // Wait for ball to get into intake
+    Intake.stop();    // Stop the intake
+
+    // Forward and turn to the next cap
+    forward(6, 30);
+    side == "RED" ? turnRight(70) : turnLeft(70);
+
     // Reverse into the cap to flip it
-    Intake.spin(directionType::rev);
-    backward(15, 60);
-    
-    // Position to park
-    if (park)
-    {
-        forward(7, 50);
-        turnRight(65);
-        forward(20, 60);
-    }
+    Intake.spin(directionType::rev, 50, velocityUnits::pct);
+    backward(20, 35);
+
+    // Park
+    forward(13, 40);
+    side == "RED" ? turnRight(25) : turnLeft(25);
+    forward(40, 60); // Drive onto the platform
 }
 void autonFunc4(string side)
 {  
+    ramp(60, 5, 36);
+    task::sleep(1000);
+    FrontLeft.stop();
+    FrontRight.stop();
+    BackLeft.stop();
+    BackRight.stop();
+    /*
     backward(36, 40);    
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(300);
@@ -547,17 +534,15 @@ void autonFunc4(string side)
     forward(10, 40);
     turnLeft(90);
     forward(30, 100);
-    
+    */
+
 }
 void autonomous( void ) {
-    FrontLeft.setStopping(brakeType::coast);
-    FrontRight.setStopping(brakeType::coast);
-    BackLeft.setStopping(brakeType::coast);
-    BackRight.setStopping(brakeType::coast);    
-    backward(20, 100);
-    task::sleep(1000);
-    forward(20, 100);
-    //autonFunc1(side);
+    FrontLeft.setStopping(brakeType::brake);
+    FrontRight.setStopping(brakeType::brake);
+    BackLeft.setStopping(brakeType::brake);
+    BackRight.setStopping(brakeType::brake);    
+    autonFunc3(side);
     //autonFunc4(side);
 }
 
@@ -566,30 +551,20 @@ void usercontrol() {
     vex::task(taskShooter, 1);
     vex::task(taskDrive, 1);
     vex::task(taskIntakes, 1);
-     FrontLeft.setStopping(brakeType::coast);
+    FrontLeft.setStopping(brakeType::coast);
     FrontRight.setStopping(brakeType::coast);
     BackLeft.setStopping(brakeType::coast);
     BackRight.setStopping(brakeType::coast);   
     Controller1.Screen.clearScreen();
     while(true)
-    {   
-        if (Controller1.ButtonY.pressing())
-        {
-            Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
-            ShooterAux.spin(directionType::fwd, 60, velocityUnits::pct);
-        }
-        else if(!inUse)
-        {
-            Shooter.stop(brakeType::coast);
-            ShooterAux.stop(brakeType::coast);
-        }
-        else if(Controller1.ButtonA.pressing())
+    {
+        if(Controller1.ButtonA.pressing())
         {
             Shooter.stop(brakeType::coast);
             ShooterAux.stop(brakeType::coast);  
             inUse = false;
         }
-        
+
         Controller1.Screen.print("Braked: %d", braked);        
         Controller1.Screen.newLine();
         Controller1.Screen.print("Inverted: %d", inverted);        
@@ -597,23 +572,23 @@ void usercontrol() {
         int temp = Brain.Battery.capacity(percentUnits::pct);
         Controller1.Screen.print("Battery: %d", temp);        
 
-        task::sleep(1000);
+        task::sleep(20);
     }
 }
 
 int main() {
-    
+
     //Run the pre-autonomous function. 
     pre_auton();
-    
+
     //Set up callbacks for autonomous and driver control periods.
     Competition.autonomous( autonomous );
     Competition.drivercontrol( usercontrol );
 
     //Prevent main from exiting with an infinite loop.                        
     while(1) {
-      vex::task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.
+        vex::task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.
     }    
     return 0;
-       
+
 }
