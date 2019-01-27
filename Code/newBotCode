@@ -113,20 +113,58 @@ void ramp(int vel, int cycles, double inches, bool rampUp = true)
     }
 }
 
-int ramp1(double vel, int cycles, int timeSlice)
+int rampUp(double deltaV, int cycles, int timeSlice)
 {
     double currVel = FrontRight.velocity(velocityUnits::pct);
     FrontRight.resetRotation();
+    
     for (int i = 0; i < cycles; i++)
     {
-        BackLeft.spin(directionType::fwd, currVel + (vel/cycles), velocityUnits::pct);
-        BackRight.spin(directionType::fwd, currVel + (vel/cycles), velocityUnits::pct);
-        FrontLeft.spin(directionType::fwd, currVel + (vel/cycles), velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, currVel + (vel/cycles), velocityUnits::pct);
+        BackLeft.spin(directionType::fwd, currVel + (deltaV/cycles), velocityUnits::pct);
+        BackRight.spin(directionType::fwd, currVel + (deltaV/cycles), velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, currVel + (deltaV/cycles), velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, currVel + (deltaV/cycles), velocityUnits::pct);
         
         task::sleep(timeSlice);
     }
+    
     return FrontRight.rotation(rotationUnits::rev);
+}
+
+void rampDown(int rots, int cycles, int vel = 0)
+{
+    int currVel;
+    FrontRight.resetRotation();
+    for(int i = 0; i < cycles; i++)
+    {
+        currVel = FrontRight.velocity(velocityUnits::pct);
+        
+        BackLeft.spin(directionType::fwd, currVel - (vel/cycles), velocityUnits::pct);
+        BackRight.spin(directionType::fwd, currVel - (vel/cycles), velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, currVel - (vel/cycles), velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, currVel - (vel/cycles), velocityUnits::pct);
+        
+        while(FrontRight.rotation(rotationUnits::rev) < rots/cycles);
+        FrontRight.resetRotation();
+    }
+    BackLeft.stop(brakeType::brake);
+    BackRight.stop(brakeType::brake);
+    FrontLeft.stop(brakeType::brake);
+    FrontRight.stop(brakeType::brake);
+}
+
+void forwardRamp(double inches, double speed = 60, int rampCycles = 10,  int timeSlice = 10)
+{
+    int rots = inches / wheelDiameter * PI;
+    int initRots = rampUp(60, rampCycles, timeSlice);
+    int rampDownConst = 100;
+    
+    FrontLeft.rotateFor(rots - initRots - rampDownConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots - initRots - rampDownConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots - initRots - rampDownConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots - initRots - rampDownConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+    
+    rampDown(rampDownConst, 2);
 }
 
 void forward1(double inches, double speed = 70)
