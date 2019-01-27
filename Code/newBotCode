@@ -14,9 +14,9 @@ double wheelDiameter = 4;
 double wheelBaseLength = 9.5;
 
 // Auton Selector
-string side = "BLUE";
-int autonNum = 0; // 0 is close to flags, 1 is far from flags
-bool park = false;
+string side = "RED";
+int autonNum = 1; // 0 is close to flags, 1 is far from flags
+bool park = true;
 
 string toString1(double val)
 {
@@ -25,22 +25,39 @@ string toString1(double val)
     return v.str();
 }     
 
-void sideSelect()
+void autonPark()
 {
-    if(Brain.Screen.xPosition() <= 240) side = "BLUE";
-    else if(Brain.Screen.xPosition() >= 241) side = "RED";
+    if (Brain.Screen.xPosition() <= 240) park = true;
+    else if (Brain.Screen.xPosition() > 240) park = false;
+    
+    Brain.Screen.clearScreen();
+    Brain.Screen.print("Side: %s, AutonNum: %d, Park: %d", side.c_str(), autonNum, park);
 }
 
 void autonSelect()
 {
     if(Brain.Screen.xPosition() <= 240) autonNum = 0;
     else if(Brain.Screen.xPosition() >= 241) autonNum = 1;
+    
+    Brain.Screen.clearScreen();
+    Brain.Screen.drawLine(240, 0, 240, 480);
+    Brain.Screen.printAt(100, 136, "PARK");
+    Brain.Screen.printAt(340, 136, "NO PARK");
+    Brain.Screen.pressed(autonPark);
 }
 
-void autonPark()
+void sideSelect()
 {
-    if (Brain.Screen.xPosition() <= 240) park = true;
-    else if (Brain.Screen.xPosition() > 240) park = false;
+    if(Brain.Screen.xPosition() <= 240) side = "BLUE";
+    else if(Brain.Screen.xPosition() >= 241) side = "RED";
+    
+    Brain.Screen.clearScreen();
+    Brain.Screen.setPenColor(vex::color::red);
+    Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::white);
+    Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::black);
+    Brain.Screen.printAt(100, 136, "FRONT");
+    Brain.Screen.printAt(340, 136, "BACK");
+    Brain.Screen.pressed(autonSelect);
 }
 
 void pre_auton( void )
@@ -51,20 +68,6 @@ void pre_auton( void )
     Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::blue);
     Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::red);
     Brain.Screen.pressed(sideSelect);
-
-    Brain.Screen.clearScreen();
-    Brain.Screen.setPenColor(vex::color::red);
-    Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::white);
-    Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::black);
-    Brain.Screen.printAt(100, 136, "FRONT");
-    Brain.Screen.printAt(340, 136, "BACK");
-    Brain.Screen.pressed(autonSelect);
-
-    Brain.Screen.clearScreen();
-    Brain.Screen.drawLine(240, 0, 240, 480);
-    Brain.Screen.printAt(100, 136, "PARK");
-    Brain.Screen.printAt(340, 136, "NO PARK");
-    Brain.Screen.pressed(autonPark);
 }
 
 void ramp(int vel, int cycles, double inches, bool rampUp = true)
@@ -108,6 +111,22 @@ void ramp(int vel, int cycles, double inches, bool rampUp = true)
         BackLeft.stop(brakeType::brake);
         BackRight.stop(brakeType::brake);
     }
+}
+
+int ramp1(double vel, int cycles, int timeSlice)
+{
+    double currVel = FrontRight.velocity(velocityUnits::pct);
+    FrontRight.resetRotation();
+    for (int i = 0; i < cycles; i++)
+    {
+        BackLeft.spin(directionType::fwd, currVel + (vel/cycles), velocityUnits::pct);
+        BackRight.spin(directionType::fwd, currVel + (vel/cycles), velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, currVel + (vel/cycles), velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, currVel + (vel/cycles), velocityUnits::pct);
+        
+        task::sleep(timeSlice);
+    }
+    return FrontRight.rotation(rotationUnits::rev);
 }
 
 void forward1(double inches, double speed = 70)
@@ -285,7 +304,7 @@ int taskDrive()
             backRightValue = frontRightValue *= -1;
 
             inverted = !inverted;
-            while (Controller1.ButtonL1.pressing());
+            while (Controller1.ButtonLeft.pressing());
         }*/
 
         // Enables Brake Mode
@@ -326,6 +345,8 @@ bool inUse = false;
 bool inTakeInUse = false;
 bool fire = false;
 bool catapultDown = false;
+double errorB = 0.1;
+double errorX = 0.0185;
 
 // Shooter Task
 int taskShooter()
@@ -354,14 +375,30 @@ int taskShooter()
             inUse = false;
         }
         */
+        
+        
         if (Controller1.ButtonX.pressing() || fire)
         {
             fire = false;
             inUse = true;
             // Rotates until slip
-            Shooter.rotateFor(3.025, rotationUnits::rev, 100, velocityUnits::pct, false);
-            ShooterAux.rotateFor(3.025, rotationUnits::rev, 100, velocityUnits::pct, true);
+            Shooter.setStopping(brakeType::brake);
+            ShooterAux.setStopping(brakeType::brake);
+            Shooter.rotateFor(3 + errorX, rotationUnits::rev, 100, velocityUnits::pct, false);
+            ShooterAux.rotateFor(3 + errorX, rotationUnits::rev, 100, velocityUnits::pct, true);
+            task::sleep(10);
+            Shooter.setStopping(brakeType::coast);
+            ShooterAux.setStopping(brakeType::coast);
             inUse = false;
+        }else if(Controller1.ButtonB.pressing())
+        {
+            Shooter.setStopping(brakeType::brake);
+            ShooterAux.setStopping(brakeType::brake);
+            Shooter.rotateFor(3 - 0.04, rotationUnits::rev, 100, velocityUnits::pct, false);
+            ShooterAux.rotateFor(3 - 0.04, rotationUnits::rev, 100, velocityUnits::pct, true);
+            task::sleep(10);
+            Shooter.setStopping(brakeType::coast);
+            ShooterAux.setStopping(brakeType::coast);            
         }
         else if (Controller1.ButtonY.pressing())
         {
@@ -376,6 +413,7 @@ int taskShooter()
             Shooter.stop(brakeType::coast);
             ShooterAux.stop(brakeType::coast);
         }
+
 
         task::sleep(50);
     }
@@ -412,7 +450,7 @@ void autonFunc1(string side)
 
     task::sleep(600); // Wait for ball to get into intake
 
-    forward(40, 40); // Drive into wall and 0
+    forward(36, 40); // Drive forward
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(600);
     //backward(8,30); // Drive backwards to aim at flags
@@ -422,11 +460,8 @@ void autonFunc1(string side)
     else
         turnLeft(95);
 
-    forward(22, 30); // Shoot flags
+    forward(20, 30); // Shoot flags
     task::sleep(250);
-
-    //Shooter.rotateFor(400, rotationUnits::deg, 100, velocityUnits::pct);
-    //ShooterAux.rotateFor(400, rotationUnits::deg, 100, velocityUnits::pct);
 
     fire = true;
     task::sleep(500);
@@ -435,7 +470,9 @@ void autonFunc1(string side)
     else
         turnRight(5);
 
-    forward(53, 30); // Drive into bottom flags
+    forward(30, 60); // Drive into bottom flags
+    task::sleep(200);
+    backward(30, 60);
 }
 
 // Front - 2 Flags 2 Caps
@@ -508,13 +545,17 @@ void autonFunc3(string side)
     side == "RED" ? turnRight(70) : turnLeft(70);
 
     // Reverse into the cap to flip it
-    Intake.spin(directionType::rev, 50, velocityUnits::pct);
-    backward(20, 35);
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    backward(25, 35);
+    Intake.stop(brakeType::hold);
 
     // Park
-    forward(13, 40);
-    side == "RED" ? turnRight(25) : turnLeft(25);
-    forward(40, 60); // Drive onto the platform
+    forward(19, 40);
+    if(park)
+    {
+        side == "RED" ? turnRight(30) : turnLeft(30);
+        forward(50, 60); // Drive onto the platform
+    }
 }
 void autonFunc4(string side)
 {  
@@ -541,9 +582,12 @@ void autonomous( void ) {
     FrontLeft.setStopping(brakeType::brake);
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
-    BackRight.setStopping(brakeType::brake);    
-    autonFunc3(side);
-    //autonFunc4(side);
+    BackRight.setStopping(brakeType::brake);
+    
+    
+    if (autonNum == 0) autonFunc1(side);
+    else autonFunc3(side);
+    
 }
 
 void usercontrol() {
@@ -572,7 +616,7 @@ void usercontrol() {
         int temp = Brain.Battery.capacity(percentUnits::pct);
         Controller1.Screen.print("Battery: %d", temp);        
 
-        task::sleep(20);
+        task::sleep(5000);
     }
 }
 
