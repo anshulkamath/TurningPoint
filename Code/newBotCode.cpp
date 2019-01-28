@@ -493,25 +493,33 @@ void autonFunc3(string side)
         forward(50, 60); // Drive onto the platform
     }
 }
-void autonFunc4(string side)
-{  
-    FrontLeft.stop();
-    FrontRight.stop();
-    BackLeft.stop();
-    BackRight.stop();
-    /*
-    backward(36, 40);    
-    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    task::sleep(300);
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    task::sleep(1000);
-    Intake.stop(brakeType::coast);  
-    forward(10, 40);
-    turnLeft(90);
-    forward(30, 100);
-    */
 
+void autonSkills()
+{
+    task shooterTask = task(taskShooter, 1);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);    
+    backward(36, 30); // Back into the ball
+
+    task::sleep(600);    
+    Intake.spin(directionType::fwd, -100, velocityUnits::pct);
+    backward(10, 30);
+    
+    forward(16, 30);
+    turnRight(70);
+
+    // Reverse into the cap to flip it
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    backward(25, 35);
+    Intake.stop(brakeType::hold);  
+    forward(25, 35);
+    turnLeft(70);
+    forward(36, 35);
+    // turn
+    turnRight(90);
+    
+    
 }
+
 void autonomous( void ) {
     drive(36, -70);
 }
