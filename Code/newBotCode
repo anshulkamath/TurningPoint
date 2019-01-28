@@ -27,18 +27,20 @@ string toString1(double val)
 
 void autonPark()
 {
+    while(Brain.Screen.pressing());
     if (Brain.Screen.xPosition() <= 240) park = true;
     else if (Brain.Screen.xPosition() > 240) park = false;
-    
+
     Brain.Screen.clearScreen();
     Brain.Screen.print("Side: %s, AutonNum: %d, Park: %d", side.c_str(), autonNum, park);
 }
 
 void autonSelect()
 {
+    while(Brain.Screen.pressing());
     if(Brain.Screen.xPosition() <= 240) autonNum = 0;
     else if(Brain.Screen.xPosition() >= 241) autonNum = 1;
-    
+
     Brain.Screen.clearScreen();
     Brain.Screen.drawLine(240, 0, 240, 480);
     Brain.Screen.printAt(100, 136, "PARK");
@@ -48,9 +50,10 @@ void autonSelect()
 
 void sideSelect()
 {
+    while(Brain.Screen.pressing());
     if(Brain.Screen.xPosition() <= 240) side = "BLUE";
     else if(Brain.Screen.xPosition() >= 241) side = "RED";
-    
+
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(vex::color::red);
     Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::white);
@@ -70,159 +73,85 @@ void pre_auton( void )
     Brain.Screen.pressed(sideSelect);
 }
 
-void ramp(int vel, int cycles, double inches, bool rampUp = true)
-{
-    FrontLeft.setStopping(brakeType::coast);
-    FrontRight.setStopping(brakeType::coast);
-    BackLeft.setStopping(brakeType::coast);
-    BackRight.setStopping(brakeType::coast); 
-
-    // rampUp assumes going to or coming from 0
-    double rots = inches / (wheelDiameter * PI); // converting inches to revolutions
-    double rotsPerCycle = rots / cycles;
-    double targVel, initRots;
-
-    // setting rotations to negative to account for moving backwards
-    if (vel < 0) rots *= -1;
-
-    for (int i = 0; i < cycles; i++)
-    {
-        // encoder value in revolutions at the beginning of each iteration
-        initRots = FrontRight.rotation(rotationUnits::rev);
-
-        // setting the velocity based on the iteration of the loop
-        if (rampUp)
-            targVel = vel / cycles * (i + 1);
-        else
-            targVel = vel - (vel / cycles * (i + 1));
-
-        // spins motors at a velocity for a number of revolutions
-        BackLeft.spin(directionType::fwd, targVel, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, targVel, velocityUnits::pct);
-        FrontLeft.spin(directionType::fwd, targVel, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, targVel, velocityUnits::pct);
-        while (FrontRight.rotation(rotationUnits::rev) - initRots < rotsPerCycle);
-    }
-
-    if (!rampUp)
-    {
-        FrontLeft.stop(brakeType::brake);
-        FrontRight.stop(brakeType::brake);
-        BackLeft.stop(brakeType::brake);
-        BackRight.stop(brakeType::brake);
-    }
-}
-
-int rampUp(double deltaV, int cycles, int timeSlice)
+double rampUp(double deltaV, int cycles, int timeSlice)
 {
     double currVel = FrontRight.velocity(velocityUnits::pct);
     FrontRight.resetRotation();
-    
+
     for (int i = 0; i < cycles; i++)
     {
-        BackLeft.spin(directionType::fwd, currVel + (deltaV/cycles), velocityUnits::pct);
-        BackRight.spin(directionType::fwd, currVel + (deltaV/cycles), velocityUnits::pct);
-        FrontLeft.spin(directionType::fwd, currVel + (deltaV/cycles), velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, currVel + (deltaV/cycles), velocityUnits::pct);
-        
+        currVel += deltaV/cycles;
+        BackLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, currVel, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);
+
         task::sleep(timeSlice);
     }
-    
+
     return FrontRight.rotation(rotationUnits::rev);
 }
 
-void rampDown(int rots, int cycles, int vel = 0)
+void rampDown(double rots, double deltaVel, int cycles)
 {
-    int currVel;
+    double currVel = FrontRight.velocity(velocityUnits::pct);
     FrontRight.resetRotation();
+
     for(int i = 0; i < cycles; i++)
     {
-        currVel = FrontRight.velocity(velocityUnits::pct);
-        
-        BackLeft.spin(directionType::fwd, currVel - (vel/cycles), velocityUnits::pct);
-        BackRight.spin(directionType::fwd, currVel - (vel/cycles), velocityUnits::pct);
-        FrontLeft.spin(directionType::fwd, currVel - (vel/cycles), velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, currVel - (vel/cycles), velocityUnits::pct);
-        
-        while(FrontRight.rotation(rotationUnits::rev) < rots/cycles);
+        currVel -= (deltaVel/cycles);
+
+        BackLeft.spin(directionType::fwd, currVel , velocityUnits::pct);
+        BackRight.spin(directionType::fwd, currVel, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);
+
+        while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots/cycles));
         FrontRight.resetRotation();
     }
-    BackLeft.stop(brakeType::brake);
-    BackRight.stop(brakeType::brake);
-    FrontLeft.stop(brakeType::brake);
-    FrontRight.stop(brakeType::brake);
-}
-
-void forwardRamp(double inches, double speed = 60, int rampCycles = 10,  int timeSlice = 10)
-{
-    int rots = inches / wheelDiameter * PI;
-    int initRots = rampUp(60, rampCycles, timeSlice);
-    int rampDownConst = 100;
-    
-    FrontLeft.rotateFor(rots - initRots - rampDownConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rots - initRots - rampDownConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots - initRots - rampDownConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rots - initRots - rampDownConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
-    
-    rampDown(rampDownConst, 2);
-}
-
-void forward1(double inches, double speed = 70)
-{
-    FrontLeft.setStopping(brakeType::coast);
-    FrontRight.setStopping(brakeType::coast);
-    BackLeft.setStopping(brakeType::coast);
-    BackRight.setStopping(brakeType::coast);         
-    double rots = inches/(wheelDiameter*PI);
-    double start = FrontLeft.rotation(rotationUnits::rev);
-    /*FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, true);*/
-    while(FrontLeft.rotation(rotationUnits::rev) - start < rots)
-    {
-        double frac = (FrontLeft.rotation(rotationUnits::rev) - start)/(start + rots);
-        double speeddy = 1- 16*(pow(frac-.5, 2));
-        FrontLeft.spin(directionType::fwd, speeddy*speed, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, speeddy*speed, velocityUnits::pct);
-        BackLeft.spin(directionType::fwd, speeddy*speed, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, speeddy*speed, velocityUnits::pct);
-
-    }
-    FrontLeft.stop(brakeType::coast);
-    FrontRight.stop(brakeType::coast);
     BackLeft.stop(brakeType::coast);
     BackRight.stop(brakeType::coast);
-}
-
-void backward1(double inches, double speed = 70)
-{
-    FrontLeft.setStopping(brakeType::coast);
-    FrontRight.setStopping(brakeType::coast);
-    BackLeft.setStopping(brakeType::coast);
-    BackRight.setStopping(brakeType::coast);         
-    double rots = inches/(wheelDiameter*PI);
-    double start = FrontLeft.rotation(rotationUnits::rev);
-    /*FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed/8, vex::velocityUnits::pct, true);*/
-    while(FrontLeft.rotation(rotationUnits::rev) - start > -rots)
-    {
-        double frac = (FrontLeft.rotation(rotationUnits::rev) - start)/(start - rots);
-        double speeddy = 1- 16*(pow(frac-.5, 2));
-
-        FrontRight.spin(directionType::rev, speeddy*speed, velocityUnits::pct);
-        BackLeft.spin(directionType::rev, speeddy*speed, velocityUnits::pct);
-        BackRight.spin(directionType::rev, speeddy*speed, velocityUnits::pct);
-        FrontLeft.spin(directionType::rev, speeddy*speed, velocityUnits::pct);        
-
-    }
     FrontLeft.stop(brakeType::coast);
     FrontRight.stop(brakeType::coast);
-    BackLeft.stop(brakeType::coast);
-    BackRight.stop(brakeType::coast);
 }
+
+void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice = 50)
+{
+    double rots = inches / (wheelDiameter * PI);
+    if (abs(speed) > 50)
+    {
+        double initRots = rampUp(speed, rampCycles, timeSlice);
+        int rampDownConst = initRots * 2;
+
+        // Making an all-encompassing drive function that can move forwards and backwards
+        if (speed < 0) 
+        {
+            rots *= -1;
+            initRots *= -1;
+            rampDownConst *= -1;
+        }
+
+        // Drive at speed until time to ramp down
+        while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots - initRots - rampDownConst));
+
+        // Ramp down
+        rampDown(rampDownConst, speed, rampCycles);
+    }
+    else
+    {
+        FrontLeft.setStopping(brakeType::brake);
+        FrontRight.setStopping(brakeType::brake);
+        BackLeft.setStopping(brakeType::brake);
+        BackRight.setStopping(brakeType::brake);   
+        
+        BackLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct);
+        BackRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct);
+        FrontLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct);
+        FrontRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct);
+    }
+
+}
+
 void forward(double inches, double speed = 70)
 {
     FrontLeft.setStopping(brakeType::brake);
@@ -282,7 +211,6 @@ void turnRight(double degrees)
 
 // Tasks
 
-
 // Drive Variables
 double turnLimiter = .6;
 bool braked = false;
@@ -304,25 +232,26 @@ int taskDrive()
         backRightValue = 0;        
         // Constant Straight Drive Control
         if (Controller1.ButtonR1.pressing())
-            frontLeftValue = frontRightValue = backLeftValue = backRightValue = 40;
+            frontLeftValue = frontRightValue = backLeftValue = backRightValue = 50;
         else if (Controller1.ButtonR2.pressing())
-            frontLeftValue = frontRightValue = backLeftValue = backRightValue = -40;       
+            frontLeftValue = frontRightValue = backLeftValue = backRightValue = -50;       
 
-        // Throttled Tank Drive Controls
+        // Tank Drive Controls
         else
         {
             // Scale = x^2/100
             if (abs(Controller1.Axis2.value()) > 20)
             {
-                frontRightValue = Controller1.Axis2.value() / 1;
+                frontRightValue = Controller1.Axis2.value();
                 backRightValue = frontRightValue;
             }
             if (abs(Controller1.Axis3.value()) > 20)
             {
-                frontLeftValue  = Controller1.Axis3.value() / 1;
+                frontLeftValue  = Controller1.Axis3.value();
                 backLeftValue = frontLeftValue;
             }
         }
+        
         if(abs(abs(Controller1.Axis2.value()) - abs(Controller1.Axis3.value())) > 20)
         {
             frontLeftValue = backLeftValue = Controller1.Axis3.value();
@@ -335,16 +264,6 @@ int taskDrive()
             frontRightValue = backRightValue *= turnLimiter; 
         }
 
-        // Inverting Drive
-        /*if(Controller1.ButtonLeft.pressing())
-        {
-            frontLeftValue = backLeftValue *= -1;
-            backRightValue = frontRightValue *= -1;
-
-            inverted = !inverted;
-            while (Controller1.ButtonLeft.pressing());
-        }*/
-
         // Enables Brake Mode
         if (Controller1.ButtonDown.pressing())
         {
@@ -353,16 +272,19 @@ int taskDrive()
                 FrontLeft.setStopping(brakeType::hold);
                 FrontRight.setStopping(brakeType::hold);
                 BackLeft.setStopping(brakeType::hold);
-                BackRight.setStopping(brakeType::hold);    
+                BackRight.setStopping(brakeType::hold);
+                
+                braked = true;
             }
             else
             {
                 FrontLeft.setStopping(brakeType::coast);
                 FrontRight.setStopping(brakeType::coast);
                 BackLeft.setStopping(brakeType::coast);
-                BackRight.setStopping(brakeType::coast);                 
+                BackRight.setStopping(brakeType::coast);
+                
+                braked = false;
             }
-            braked = !braked;
 
             while (Controller1.ButtonDown.pressing());
         }
@@ -391,30 +313,6 @@ int taskShooter()
 {
     while(true)
     {
-        /*
-        if(Controller1.ButtonX.pressing() || fire)
-        {
-            fire = false;
-            inUse = true;
-            // Rotates until slip
-            Shooter.rotateFor(100, rotationUnits::raw, 100, velocityUnits::pct);
-            ShooterAux.rotateFor(100, rotationUnits::raw, 100, velocityUnits::pct);
-
-            // Rotates back to original position
-            Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
-            ShooterAux.spin(directionType::fwd, 100, velocityUnits::pct);
-            while(Limit1.pressing() && inUse); // assumes that catapult starts in the up position
-            catapultDown = false;
-            while(!Limit1.pressing() && inUse) {};
-            catapultDown = true;
-
-            Shooter.stop();
-            ShooterAux.stop();
-            inUse = false;
-        }
-        */
-        
-        
         if (Controller1.ButtonX.pressing() || fire)
         {
             fire = false;
@@ -428,7 +326,8 @@ int taskShooter()
             Shooter.setStopping(brakeType::coast);
             ShooterAux.setStopping(brakeType::coast);
             inUse = false;
-        }else if(Controller1.ButtonB.pressing())
+        }
+        else if(Controller1.ButtonB.pressing())
         {
             Shooter.setStopping(brakeType::brake);
             ShooterAux.setStopping(brakeType::brake);
@@ -451,7 +350,6 @@ int taskShooter()
             Shooter.stop(brakeType::coast);
             ShooterAux.stop(brakeType::coast);
         }
-
 
         task::sleep(50);
     }
@@ -571,7 +469,7 @@ void autonFunc3(string side)
     FrontRight.setStopping(brakeType::brake);
     BackLeft.setStopping(brakeType::brake);
     BackRight.setStopping(brakeType::brake);    
-    
+
     // Start intake and get ball under cap
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
     backward(36, 30); // Back into the ball
@@ -617,15 +515,7 @@ void autonFunc4(string side)
 
 }
 void autonomous( void ) {
-    FrontLeft.setStopping(brakeType::brake);
-    FrontRight.setStopping(brakeType::brake);
-    BackLeft.setStopping(brakeType::brake);
-    BackRight.setStopping(brakeType::brake);
-    
-    
-    if (autonNum == 0) autonFunc1(side);
-    else autonFunc3(side);
-    
+    drive(36, -70);
 }
 
 void usercontrol() {
@@ -633,11 +523,13 @@ void usercontrol() {
     vex::task(taskShooter, 1);
     vex::task(taskDrive, 1);
     vex::task(taskIntakes, 1);
+    
     FrontLeft.setStopping(brakeType::coast);
     FrontRight.setStopping(brakeType::coast);
     BackLeft.setStopping(brakeType::coast);
     BackRight.setStopping(brakeType::coast);   
     Controller1.Screen.clearScreen();
+    
     while(true)
     {
         if(Controller1.ButtonA.pressing())
