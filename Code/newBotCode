@@ -495,8 +495,6 @@ void autonFunc3(string side)
 }
 void autonFunc4(string side)
 {  
-    ramp(60, 5, 36);
-    task::sleep(1000);
     FrontLeft.stop();
     FrontRight.stop();
     BackLeft.stop();
