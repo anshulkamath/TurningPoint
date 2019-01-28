@@ -502,7 +502,7 @@ void autonSkills()
 
     task::sleep(600);    
     Intake.spin(directionType::fwd, -100, velocityUnits::pct);
-    backward(10, 30);
+    backward(10, 30); // 1 point
     
     forward(16, 30);
     turnRight(70);
@@ -510,13 +510,45 @@ void autonSkills()
     // Reverse into the cap to flip it
     Intake.spin(directionType::rev, 100, velocityUnits::pct);
     backward(25, 35);
-    Intake.stop(brakeType::hold);  
+    Intake.stop(brakeType::hold);  // 2 points
     forward(25, 35);
     turnLeft(70);
     forward(36, 35);
     // turn
     turnRight(90);
+    forward(50, 35);
+    // Ready to fire
+    fire = true; // 6 points
+    task::sleep(600);
+    forward(30, 60); // Drive into bottom flags
+    task::sleep(200); // 7 points
+    backward(35, 60); 
+    // Go for the middle caps
+    turnLeft(90);
     
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);    
+    backward(36, 30); // Back into the ball
+
+    task::sleep(600);    
+    Intake.spin(directionType::fwd, -100, velocityUnits::pct);
+    backward(10, 30); // 8 points
+    forward(10, 30);
+    // Prepare to shoot another flag
+    turnRight(90);
+    forward(25, 30);
+    task::sleep(500);
+    fire = true; // 10 points
+    task::sleep(600);
+    forward(25, 30); // Drive into bottom flags
+    task::sleep(200); // 11 points
+    backward(35, 30);  
+    // Prepare to park
+    turnLeft(90);
+    forward(15, 30);
+    turnLeft(90);
+    forward(50, 70); 
+    turnLeft(90); // lower platform
+    forward(50, 70); // Upper platform 17 points
     
 }
 
