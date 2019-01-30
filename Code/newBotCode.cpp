@@ -457,6 +457,55 @@ void autonFunc1Ramp(string side)
     drive(55, 100);
 }
 
+void autonFunc1_GoRamp(string side)
+{
+    // Setup for Auton
+    task shooterTask = task(taskShooter, 1);
+    FrontLeft.setStopping(brakeType::hold);
+    FrontRight.setStopping(brakeType::hold);
+    BackLeft.setStopping(brakeType::hold);
+    BackRight.setStopping(brakeType::hold);    
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+
+    drive(24, -75); // Back into the ball
+
+    task::sleep(600); // Wait for ball to get into intake
+
+    drive(48, 75); // Drive forward
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    task::sleep(600);
+
+    if(side == "RED")
+        turnRight(95);
+    else
+        turnLeft(95);
+
+    drive(20, 40); // Shoot flags
+    task::sleep(250);
+
+    fire = true;
+    task::sleep(500);
+    if(side == "RED")
+        turnLeft(10);
+    else
+        turnRight(10);
+
+    drive(30, 75); // Drive into bottom flags
+    task::sleep(200);
+    drive(30, -75);
+    
+    if (side == "RED")
+        turnLeft(120);
+    else
+        turnRight(120);
+    
+    Intake.spin(directionType::fwd, -100, velocityUnits::pct);    
+    drive(-10, 100);
+    task::sleep(300);
+    drive(-20, 60);
+    
+}
+
 // Front - 3 Flags 1 Cap
 void autonFunc1(string side)
 {
