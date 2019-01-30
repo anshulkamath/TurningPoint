@@ -194,6 +194,24 @@ void forward(double inches, double speed = 70)
 
 }
 
+void forward(double inches, double speed, int time)
+{
+    FrontLeft.setStopping(brakeType::brake);
+    FrontRight.setStopping(brakeType::brake);
+    BackLeft.setStopping(brakeType::brake);
+    BackRight.setStopping(brakeType::brake);        
+    double rots = inches/(wheelDiameter*PI);
+
+
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+        
+    Brain.resetTimer();
+    while(Brain.timer(timeUnits::msec) < time && FrontRight.isSpinning());    
+}
+
 void backward(double inches, double speed = 50)
 {
 
