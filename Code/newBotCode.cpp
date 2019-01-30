@@ -167,10 +167,10 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
         BackLeft.setStopping(brakeType::brake);
         BackRight.setStopping(brakeType::brake);   
         
-        BackLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct);
-        BackRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct);
-        FrontLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct);
-        FrontRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct);
+        BackLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);
+        BackRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);
+        FrontLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);
+        FrontRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, true);
     }
 
 }
@@ -417,7 +417,7 @@ void autonFunc1Ramp(string side)
     else
         turnLeft(95);
 
-    forward(20, 40); // Shoot flags
+    drive(20, 40); // Shoot flags
     task::sleep(250);
 
     fire = true;
