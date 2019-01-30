@@ -602,22 +602,7 @@ void autonSkills()
     turnLeft(67);
     //forward(37.5, 35);
     
-    {
-        FrontLeft.setStopping(brakeType::brake);
-        FrontRight.setStopping(brakeType::brake);
-        BackLeft.setStopping(brakeType::brake);
-        BackRight.setStopping(brakeType::brake);        
-        double rots = 40/(wheelDiameter*PI);
-
-
-        FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
-        FrontRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
-        BackLeft.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
-        BackRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
-        
-        Brain.resetTimer();
-        while(Brain.timer(timeUnits::msec) < 7000 && FrontRight.isSpinning());
-    }
+    forward(40, 35, 7000);
     
     task::sleep(500);
     // turn
@@ -632,22 +617,8 @@ void autonSkills()
     task::sleep(600);
     turnLeft(7);
     //forward(40, 60); // Drive into bottom flags
-    {
-        FrontLeft.setStopping(brakeType::brake);
-        FrontRight.setStopping(brakeType::brake);
-        BackLeft.setStopping(brakeType::brake);
-        BackRight.setStopping(brakeType::brake);        
-        double rots = 40/(wheelDiameter*PI);
-
-
-        FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 60, vex::velocityUnits::pct, false);
-        FrontRight.rotateFor(rots, vex::rotationUnits::rev, 60, vex::velocityUnits::pct, false);
-        BackLeft.rotateFor(rots, vex::rotationUnits::rev, 60, vex::velocityUnits::pct, false);
-        BackRight.rotateFor(rots, vex::rotationUnits::rev, 60, vex::velocityUnits::pct, false);
-        
-        Brain.resetTimer();
-        while(Brain.timer(timeUnits::msec) < 5000 && FrontRight.isSpinning());
-    }
+    forward(40, 60, 5000);
+    
     task::sleep(200); // 7 points
     backward(35, 60); 
     /*
