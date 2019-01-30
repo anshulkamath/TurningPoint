@@ -95,24 +95,28 @@ double rampUp(double deltaV, int cycles, int timeSlice)
 void rampDown(double rots, double deltaVel, int cycles)
 {
     double currVel = FrontRight.velocity(velocityUnits::pct);
-    FrontRight.resetRotation();
 
     for(int i = 0; i < cycles; i++)
     {
         currVel -= (deltaVel/cycles);
+        
+        //if (currVel < 10) currVel = 0;
 
         BackLeft.spin(directionType::fwd, currVel , velocityUnits::pct);
         BackRight.spin(directionType::fwd, currVel, velocityUnits::pct);
         FrontLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);
-
-        while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots/cycles));
+        
         FrontRight.resetRotation();
+        while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots/cycles)){
+            task::sleep(100);
+        }
     }
-    BackLeft.stop(brakeType::coast);
-    BackRight.stop(brakeType::coast);
-    FrontLeft.stop(brakeType::coast);
-    FrontRight.stop(brakeType::coast);
+
+    BackLeft.stop(brakeType::brake);
+    BackRight.stop(brakeType::brake);
+    FrontLeft.stop(brakeType::brake);
+    FrontRight.stop(brakeType::brake);
 }
 
 void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice = 50)
@@ -121,8 +125,9 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
     if (abs(speed) > 50)
     {
         double initRots = rampUp(speed, rampCycles, timeSlice);
-        int rampDownConst = initRots * 2;
+        double rampDownConst = initRots * 1.95;
 
+        
         // Making an all-encompassing drive function that can move forwards and backwards
         if (speed < 0) 
         {
@@ -130,12 +135,30 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
             initRots *= -1;
             rampDownConst *= -1;
         }
-
+           
+        
+        FrontRight.resetRotation();
         // Drive at speed until time to ramp down
-        while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots - initRots - rampDownConst));
-
+        Controller1.Screen.clearScreen();
+        while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots - initRots - rampDownConst))
+        {
+            task::sleep(50);
+        }
+        
+        
+        /*BackLeft.stop(brakeType::brake);
+        BackRight.stop(brakeType::brake);
+        FrontLeft.stop(brakeType::brake);
+        FrontRight.stop(brakeType::brake);*/
+        
+        
         // Ramp down
-        rampDown(rampDownConst, speed, rampCycles);
+        //rampDown(rampDownConst, speed, 20);
+        rampUp(-speed, rampCycles, timeSlice);
+        BackLeft.stop(brakeType::brake);
+        BackRight.stop(brakeType::brake);
+        FrontLeft.stop(brakeType::brake);
+        FrontRight.stop(brakeType::brake); 
     }
     else
     {
@@ -371,6 +394,51 @@ int taskIntakes()
     return 0;
 }
 
+void autonFunc1Ramp(string side)
+{
+    // Setup for Auton
+    task shooterTask = task(taskShooter, 1);
+    FrontLeft.setStopping(brakeType::hold);
+    FrontRight.setStopping(brakeType::hold);
+    BackLeft.setStopping(brakeType::hold);
+    BackRight.setStopping(brakeType::hold);    
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+
+    drive(24, -75); // Back into the ball
+
+    task::sleep(600); // Wait for ball to get into intake
+
+    drive(48, 75); // Drive forward
+    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
+    task::sleep(600);
+
+    if(side == "RED")
+        turnRight(95);
+    else
+        turnLeft(95);
+
+    forward(20, 40); // Shoot flags
+    task::sleep(250);
+
+    fire = true;
+    task::sleep(500);
+    if(side == "RED")
+        turnLeft(10);
+    else
+        turnRight(10);
+
+    drive(30, 75); // Drive into bottom flags
+    task::sleep(200);
+    drive(65, -75);
+    
+    if (side == "RED")
+        turnRight(100);
+    else
+        turnLeft(100);
+    
+    drive(55, 100);
+}
+
 // Front - 3 Flags 1 Cap
 void autonFunc1(string side)
 {
@@ -402,11 +470,11 @@ void autonFunc1(string side)
     fire = true;
     task::sleep(500);
     if(side == "RED")
-        turnLeft(5);
+        turnLeft(10);
     else
-        turnRight(5);
+        turnRight(10);
 
-    forward(30, 60); // Drive into bottom flags
+    drive(40, 75); // Drive into bottom flags
     task::sleep(200);
     backward(30, 60);
 }
@@ -499,30 +567,72 @@ void autonSkills()
     task shooterTask = task(taskShooter, 1);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);    
     backward(36, 30); // Back into the ball
-
-    task::sleep(600);    
-    Intake.spin(directionType::fwd, -100, velocityUnits::pct);
-    backward(10, 30); // 1 point
+    task::sleep(500);
+    forward(4, 30);
+    task::sleep(700);
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    backward(16, 30); // 1 point
     
-    forward(16, 30);
+    forward(19, 30);
     turnRight(70);
 
     // Reverse into the cap to flip it
     Intake.spin(directionType::rev, 100, velocityUnits::pct);
-    backward(25, 35);
+    backward(19, 30);
     Intake.stop(brakeType::hold);  // 2 points
-    forward(25, 35);
-    turnLeft(70);
-    forward(36, 35);
+    forward(22, 35);
+    turnLeft(67);
+    //forward(37.5, 35);
+    
+    {
+        FrontLeft.setStopping(brakeType::brake);
+        FrontRight.setStopping(brakeType::brake);
+        BackLeft.setStopping(brakeType::brake);
+        BackRight.setStopping(brakeType::brake);        
+        double rots = 40/(wheelDiameter*PI);
+
+
+        FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+        FrontRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+        BackLeft.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+        BackRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+        
+        Brain.resetTimer();
+        while(Brain.timer(timeUnits::msec) < 7000 && FrontRight.isSpinning());
+    }
+    
+    task::sleep(500);
     // turn
-    turnRight(90);
-    forward(50, 35);
+    backward(12, 40);
+    turnRight(93);
+    
+    
+    forward(69, 35);
+    task::sleep(150);
     // Ready to fire
     fire = true; // 6 points
     task::sleep(600);
-    forward(30, 60); // Drive into bottom flags
+    turnLeft(7);
+    //forward(40, 60); // Drive into bottom flags
+    {
+        FrontLeft.setStopping(brakeType::brake);
+        FrontRight.setStopping(brakeType::brake);
+        BackLeft.setStopping(brakeType::brake);
+        BackRight.setStopping(brakeType::brake);        
+        double rots = 40/(wheelDiameter*PI);
+
+
+        FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 60, vex::velocityUnits::pct, false);
+        FrontRight.rotateFor(rots, vex::rotationUnits::rev, 60, vex::velocityUnits::pct, false);
+        BackLeft.rotateFor(rots, vex::rotationUnits::rev, 60, vex::velocityUnits::pct, false);
+        BackRight.rotateFor(rots, vex::rotationUnits::rev, 60, vex::velocityUnits::pct, false);
+        
+        Brain.resetTimer();
+        while(Brain.timer(timeUnits::msec) < 5000 && FrontRight.isSpinning());
+    }
     task::sleep(200); // 7 points
     backward(35, 60); 
+    /*
     // Go for the middle caps
     turnLeft(90);
     
@@ -549,11 +659,12 @@ void autonSkills()
     forward(50, 70); 
     turnLeft(90); // lower platform
     forward(50, 70); // Upper platform 17 points
-    
+    */
 }
 
 void autonomous( void ) {
-    drive(36, -70);
+    //autonSkills();
+    autonFunc1Ramp("RED");
 }
 
 void usercontrol() {
