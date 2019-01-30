@@ -185,8 +185,7 @@ void forward(double inches, double speed = 70)
     double rampConst = (double)(200) / 360;
 
     rampConst = 0;
-
-
+    
     FrontLeft.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackLeft.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
@@ -541,10 +540,12 @@ void autonFunc1(string side)
     else
         turnRight(10);
 
-    drive(40, 75); // Drive into bottom flags
+    forward(20, 40); // Drive into bottom flags
     task::sleep(200);
     backward(30, 60);
 }
+
+
 
 // Front - 2 Flags 2 Caps
 void autonFunc2(string side)
