@@ -125,7 +125,7 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
     if (abs(speed) > 50)
     {
         double initRots = rampUp(speed, rampCycles, timeSlice);
-        double rampDownConst = initRots * 1.95;
+        double rampDownConst = 1;//initRots * 1.95;
 
         
         // Making an all-encompassing drive function that can move forwards and backwards
@@ -145,6 +145,14 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
             task::sleep(50);
         }
         
+        double speed = FrontRight.velocity(velocityUnits::pct);
+        double time = 0;
+        while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots - initRots))
+        {
+            task::sleep(50);
+            time += 50;
+            speed = ((double)100)/time;
+        }
         
         /*BackLeft.stop(brakeType::brake);
         BackRight.stop(brakeType::brake);
@@ -154,7 +162,7 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
         
         // Ramp down
         //rampDown(rampDownConst, speed, 20);
-        rampUp(-speed, rampCycles, timeSlice);
+        //rampUp(-speed, rampCycles, timeSlice);
         BackLeft.stop(brakeType::brake);
         BackRight.stop(brakeType::brake);
         FrontLeft.stop(brakeType::brake);
