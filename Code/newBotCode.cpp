@@ -25,6 +25,8 @@ string toString1(double val)
     return v.str();
 }     
 
+
+
 void autonPark()
 {
     while(Brain.Screen.pressing());
@@ -98,34 +100,6 @@ double rampUp(double deltaV, int cycles, int timeSlice)
     return FrontRight.rotation(rotationUnits::rev);
 }
 
-void rampDown(double rots, double deltaVel, int cycles)
-{
-    double currVel = FrontRight.velocity(velocityUnits::pct);
-
-    for(int i = 0; i < cycles; i++)
-    {
-        currVel -= (deltaVel/cycles);
-        
-        //if (currVel < 10) currVel = 0;
-
-        BackLeft.spin(directionType::fwd, currVel , velocityUnits::pct);
-        BackRight.spin(directionType::fwd, currVel, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);        
-        FrontLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
-
-        
-        FrontRight.resetRotation();
-        while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots/cycles)){
-            task::sleep(100);
-        }
-    }
-
-    BackLeft.stop(brakeType::brake);
-    BackRight.stop(brakeType::brake);
-    FrontRight.stop(brakeType::brake);    
-    FrontLeft.stop(brakeType::brake);
-
-}
 
 void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice = 50)
 {
@@ -176,8 +150,9 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
         
         BackLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);
         BackRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);
-        FrontLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);
-        FrontRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, true);
+        FrontRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);        
+        FrontLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, true);
+
     }
 
 }
@@ -193,10 +168,11 @@ void forward(double inches, double speed = 70)
 
     rampConst = 0;
     
-    FrontLeft.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rots - 2.5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+
 
 }
 
@@ -230,10 +206,11 @@ void backward(double inches, double speed = 50)
 
     rampConst = 0;
 
-    FrontLeft.rotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(-rots + 5*rampConst, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+
 
     
 }
