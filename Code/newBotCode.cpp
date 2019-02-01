@@ -25,7 +25,13 @@ string toString1(double val)
     return v.str();
 }     
 
-
+void setBrakeMode(vex::brakeType brake)
+{
+    FrontLeft.setStopping(brake);
+    FrontRight.setStopping(brake);
+    BackLeft.setStopping(brake);
+    BackRight.setStopping(brake);
+}
 
 void autonPark()
 {
