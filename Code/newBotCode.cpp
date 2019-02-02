@@ -23,7 +23,11 @@ string toString1(double val)
     ostringstream v;
     v << val;
     return v.str();
-}     
+}
+void sleep(int time)
+{
+    task::sleep(time);
+}
 
 void setBrakeMode(vex::brakeType brake)
 {
@@ -164,7 +168,7 @@ void forward(double inches, double speed = 70)
 {
     setBrakeMode(vex::brakeType::brake);
     double rampConst = (double)(200) / 360;
-
+    double rots = inches/(wheelDiameter*PI);
     rampConst = 0;
     
     FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
@@ -291,7 +295,7 @@ int taskDrive()
                 backLeftValue = frontLeftValue;
             }
         }
-        
+
         if(abs(abs(Controller1.Axis2.value()) - abs(Controller1.Axis3.value())) > 20)
         {
             frontLeftValue = backLeftValue = Controller1.Axis3.value();
@@ -635,56 +639,47 @@ void autonSkillsRamp()
     task shooterTask = task(taskShooter, 1);
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);    
     drive(28, -60); // Back into the ball
-    task::sleep(500);
-    drive(4, 30);
-    task::sleep(700);
+    sleep(700);
+    forward(4, 30);
+    sleep(300);
     Intake.spin(directionType::rev, 100, velocityUnits::pct);
-    drive(19, -30); // 1 point
+    drive(14, -30); // 1 point
     
-    drive(43, 60);
-    task::sleep(100);
-    turnRight(35);
-
-    // Reverse into the cap to flip it
-    Intake.spin(directionType::rev, 100, velocityUnits::pct);
-    drive(33, -40);
-    Intake.stop(brakeType::hold);  // 2 points
-    drive(45, 40);
-    turnLeft(35);
-    task::sleep(500);
-    //forward(37.5, 35);
-    
-    forward(40, 35, 1000);
+    drive(50, 80);
+    sleep(300);
+    turnRight(10);
+    sleep(300);
+    forward(15, 35, 1000);
     
     task::sleep(500);
     // turn
     drive(10, -40);
-    turnRight(92);
+    turnRight(90);
+    sleep(400);
+    forward(70, 40);
     
     // Center on field
-    drive(66, 75);
     task::sleep(500);
-    turnLeft(92);
+    turnLeft(90);
     task::sleep(100);
-    forward(12, 40, 1000);
+    forward(18, 40, 1000);
     task::sleep(100);
-    drive(10, -40);
+    drive(11, -40);
     task::sleep(100);
-    turnRight(92);
+    turnRight(90);
+    task::sleep(200);
     
     // Ready to fire
     fire = true; // 6 points
     task::sleep(600);
-    turnLeft(10);
-    drive(15, 40);
-    turnRight(10);
+    turnLeft(20);
+    drive(10, 40);
+    turnRight(20);
     //forward(40, 60); // Drive into bottom flags
-    forward(30, 60, 1000);
+    forward(20, 60, 1000);
     
     task::sleep(200); // 7 points
-    turnRight(10);
-    task::sleep(200);
-    drive(24, -60); 
+    backward(25, 40.0); 
     
     // Go for the middle caps
     turnLeft(90);
@@ -694,18 +689,18 @@ void autonSkillsRamp()
     Intake.spin(directionType::rev, 100, velocityUnits::pct);  
     drive(30, -40);
     task::sleep(500);
-    Intake.stop(brakeType::hold);
+    Intake.stop(brakeType::coast);
     drive(25, 40);
     task::sleep(200);
     turnLeft(90);
     task::sleep(200);
-    drive(50, 75);
+    drive(47, 75);
     task::sleep(500);
     turnLeft(90);
     task::sleep(200);
-    backward(12, 40, 3000);
+    backward(20, 750, 30);
     task::sleep(200);
-    drive(100, 100);
+    drive(100, 75);
     
     /*
     // Second Cap
@@ -743,6 +738,87 @@ void autonSkillsRamp()
     turnLeft(90); // lower platform
     forward(50, 70); // Upper platform 17 points
     */
+}
+
+void oldSkills()
+{
+    task shooterTask = task(taskShooter, 1);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);    
+    drive(28, -60); // Back into the ball
+    task::sleep(500);
+    drive(4, 30);
+    task::sleep(700);
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    drive(19, -30); // 1 point
+    
+    drive(43, 60);
+    sleep(100);
+    forward(26, 40, 1000);
+    task::sleep(300);
+    backward(21, 30.0);
+    sleep(500);
+    turnRight(35);
+
+    // Reverse into the cap to flip it
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    drive(32, -40);
+    Intake.stop(brakeType::hold);  // 2 points
+    drive(46, 40);
+    turnLeft(35);
+    task::sleep(500);
+    //forward(37.5, 35);
+    
+    forward(40, 35, 1000);
+    
+    task::sleep(500);
+    // turn
+    drive(10, -40);
+    turnRight(90);
+    
+    // Center on field
+    drive(65, 75);
+    task::sleep(500);
+    turnLeft(90);
+    task::sleep(100);
+    forward(18, 40, 1000);
+    task::sleep(100);
+    drive(10, -40);
+    task::sleep(100);
+    turnRight(90);
+    task::sleep(200);
+    
+    // Ready to fire
+    fire = true; // 6 points
+    task::sleep(600);
+    turnLeft(20);
+    drive(15, 40);
+    turnRight(20);
+    //forward(40, 60); // Drive into bottom flags
+    forward(20, 60, 1000);
+    
+    task::sleep(200); // 7 points
+    backward(23, 40.0); 
+    
+    // Go for the middle caps
+    turnLeft(90);
+    task::sleep(400);
+    forward(12, 40, 3000);
+    task::sleep(400);
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);  
+    drive(30, -40);
+    task::sleep(500);
+    Intake.stop(brakeType::coast);
+    drive(25, 40);
+    task::sleep(200);
+    turnLeft(90);
+    task::sleep(200);
+    drive(47, 75);
+    task::sleep(500);
+    turnLeft(90);
+    task::sleep(200);
+    backward(12, 1000, 20);
+    task::sleep(200);
+    forward(125, 100);
 }
 
 void autonSkills()
@@ -818,7 +894,6 @@ void autonSkills()
 void autonomous( void ) {
     autonSkillsRamp();
     //autonFunc1Ramp("RED");
-
 }
 
 void usercontrol() {
@@ -832,9 +907,9 @@ void usercontrol() {
     BackLeft.setStopping(brakeType::coast);
     BackRight.setStopping(brakeType::coast);   
     Controller1.Screen.clearScreen();
-    
+    FrontRight.resetRotation();
     while(true)
-    {
+    {   
         if(Controller1.ButtonA.pressing())
         {
             Shooter.stop(brakeType::coast);
