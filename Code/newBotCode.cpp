@@ -110,6 +110,32 @@ double rampUp(double deltaV, int cycles, int timeSlice)
     return FrontRight.rotation(rotationUnits::rev);
 }
 
+double rampUp(double deltaV, int cycles, int timeSlice, double rots)
+{
+    double currVel = FrontRight.velocity(velocityUnits::pct);
+    FrontRight.resetRotation();
+
+    for (int i = 0; i < cycles; i++)
+    {
+        currVel += deltaV/cycles;
+        BackLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, currVel, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);        
+        FrontLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
+
+
+        task::sleep(timeSlice);
+    }
+    if((FrontRight.rotation(rotationUnits::rev) - rots) < -.06)
+    {
+        forward(abs(FrontRight.rotation(rotationUnits::rev) - rots), 35);
+    }else if((FrontRight.rotation(rotationUnits::rev) - rots) > .06)
+    {
+        backward(FrontRight.rotation(rotationUnits::rev) - rots, 35)
+    }
+    return FrontRight.rotation(rotationUnits::rev);
+}
+
 
 void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice = 50)
 {
@@ -144,7 +170,7 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
         
         // Ramp down
         //rampDown(rampDownConst, speed, 20);
-        rampUp(-speed, rampCycles, timeSlice);
+        rampUp(-speed, rampCycles, timeSlice, rampDownConst);
         BackLeft.stop(brakeType::brake);
         BackRight.stop(brakeType::brake);
         FrontRight.stop(brakeType::brake);        
