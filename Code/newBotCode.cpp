@@ -85,6 +85,67 @@ void pre_auton( void )
     Brain.Screen.pressed(sideSelect);
 }
 
+void forward(double inches, double speed = 70)
+{
+    setBrakeMode(vex::brakeType::brake);
+    double rampConst = (double)(200) / 360;
+    double rots = inches/(wheelDiameter*PI);
+    rampConst = 0;
+    
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+
+
+}
+
+void forward(double inches, double speed, int time)
+{
+    setBrakeMode(vex::brakeType::brake);   
+    double rots = inches/(wheelDiameter*PI);
+
+
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+        
+    Brain.resetTimer();
+    while(Brain.timer(timeUnits::msec) < time && FrontRight.isSpinning() && BackRight.isSpinning());    
+}
+
+void backward(double inches, double speed = 50)
+{
+    setBrakeMode(vex::brakeType::brake);     
+    double rots = inches/(wheelDiameter*PI);
+    double rampConst = (double)(300) / 360;
+
+    rampConst = 0;
+
+    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+}
+
+void backward(double inches, int time, double speed = 50)
+{
+    setBrakeMode(vex::brakeType::brake);     
+    double rots = inches/(wheelDiameter*PI);
+    double rampConst = (double)(300) / 360;
+
+    rampConst = 0;
+
+    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+
+    Brain.resetTimer();
+    while(Brain.timer(timeUnits::msec) < time && FrontRight.isSpinning() && BackRight.isSpinning());
+}
+
 double rampCost(double s, double deltaV, int cycles, int timeSlice)
 {
     return cycles*timeSlice *(deltaV/2 + s);
@@ -127,12 +188,10 @@ double rampUp(double deltaV, int cycles, int timeSlice, double rots)
         task::sleep(timeSlice);
     }
     if((FrontRight.rotation(rotationUnits::rev) - rots) < -.06)
-    {
         forward(abs(FrontRight.rotation(rotationUnits::rev) - rots), 35);
-    }else if((FrontRight.rotation(rotationUnits::rev) - rots) > .06)
-    {
-        backward(FrontRight.rotation(rotationUnits::rev) - rots, 35)
-    }
+    else if((FrontRight.rotation(rotationUnits::rev) - rots) > .06)
+        backward(FrontRight.rotation(rotationUnits::rev) - rots, 35);
+    
     return FrontRight.rotation(rotationUnits::rev);
 }
 
@@ -188,70 +247,6 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
 
     }
 
-}
-
-void forward(double inches, double speed = 70)
-{
-    setBrakeMode(vex::brakeType::brake);
-    double rampConst = (double)(200) / 360;
-    double rots = inches/(wheelDiameter*PI);
-    rampConst = 0;
-    
-    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
-
-
-}
-
-void forward(double inches, double speed, int time)
-{
-    setBrakeMode(vex::brakeType::brake);   
-    double rots = inches/(wheelDiameter*PI);
-
-
-    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-        
-    Brain.resetTimer();
-    while(Brain.timer(timeUnits::msec) < time && FrontRight.isSpinning() && BackRight.isSpinning());    
-}
-
-void backward(double inches, double speed = 50)
-{
-    setBrakeMode(vex::brakeType::brake);     
-    double rots = inches/(wheelDiameter*PI);
-    double rampConst = (double)(300) / 360;
-
-    rampConst = 0;
-
-    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
-    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
-
-
-    
-}
-
-void backward(double inches, int time, double speed = 50)
-{
-    setBrakeMode(vex::brakeType::brake);     
-    double rots = inches/(wheelDiameter*PI);
-    double rampConst = (double)(300) / 360;
-
-    rampConst = 0;
-
-    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
-
-    Brain.resetTimer();
-    while(Brain.timer(timeUnits::msec) < time && FrontRight.isSpinning() && BackRight.isSpinning());
 }
 
 void turnLeft(double degrees)
