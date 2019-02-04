@@ -195,6 +195,24 @@ double rampUp(double deltaV, int cycles, int timeSlice, double rots)
     return FrontRight.rotation(rotationUnits::rev);
 }
 
+double rampDown(double targetCost, double speed)
+{
+    FrontRight.resetRotation();
+    while(abs(FrontRight.rotation(rotationUnits::rev) - targetCost) < abs(targetCost))
+    {
+        task::sleep(50);
+        double tempSpeed = speed * abs(1-(abs(FrontRight.rotation(rotationUnits::rev) - targetCost)/abs(targetCost)));
+        BackLeft.spin(directionType::fwd, tempSpeed, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, tempSpeed, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, tempSpeed, velocityUnits::pct);        
+        FrontLeft.spin(directionType::fwd, tempSpeed, velocityUnits::pct);        
+    }
+    if((FrontRight.rotation(rotationUnits::rev) - rots) < -.06)
+        forward(abs(FrontRight.rotation(rotationUnits::rev) - rots), 35);
+    else if((FrontRight.rotation(rotationUnits::rev) - rots) > .06)
+        backward(FrontRight.rotation(rotationUnits::rev) - rots, 35);
+    return FrontRight.rotation(rotationUnits::rev);    
+}
 
 void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice = 50)
 {
