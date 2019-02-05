@@ -194,7 +194,10 @@ double rampUp(double deltaV, int cycles, int timeSlice, double rots)
     
     return FrontRight.rotation(rotationUnits::rev);
 }
-
+double rampDownCost(double speed)
+{
+    return speed/56;
+}
 double rampDown(double targetCost, double speed)
 {
     FrontRight.resetRotation();
@@ -208,9 +211,9 @@ double rampDown(double targetCost, double speed)
         FrontLeft.spin(directionType::fwd, tempSpeed, velocityUnits::pct);        
     }
     if((FrontRight.rotation(rotationUnits::rev) - rots) < -.06)
-        forward(abs(FrontRight.rotation(rotationUnits::rev) - rots), 35);
+        forward(abs(FrontRight.rotation(rotationUnits::rev) - rots), 15);
     else if((FrontRight.rotation(rotationUnits::rev) - rots) > .06)
-        backward(FrontRight.rotation(rotationUnits::rev) - rots, 35);
+        backward(FrontRight.rotation(rotationUnits::rev) - rots, 15);
     return FrontRight.rotation(rotationUnits::rev);    
 }
 
