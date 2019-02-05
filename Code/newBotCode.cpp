@@ -196,15 +196,15 @@ double rampUp(double deltaV, int cycles, int timeSlice, double rots)
 }
 double rampDownCost(double speed)
 {
-    return speed/56;
+    return speed/50;
 }
-double rampDown(double targetCost, double speed)
+double rampDown(double rots, double speed)
 {
     FrontRight.resetRotation();
-    while(abs(FrontRight.rotation(rotationUnits::rev) - targetCost) < abs(targetCost))
+    while(abs(FrontRight.rotation(rotationUnits::rev) - rots) < 0)
     {
         task::sleep(50);
-        double tempSpeed = speed * abs(1-(abs(FrontRight.rotation(rotationUnits::rev) - targetCost)/abs(targetCost)));
+        double tempSpeed = speed * abs(1-(abs(FrontRight.rotation(rotationUnits::rev))/abs(rots)));
         BackLeft.spin(directionType::fwd, tempSpeed, velocityUnits::pct);
         BackRight.spin(directionType::fwd, tempSpeed, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, tempSpeed, velocityUnits::pct);        
@@ -221,8 +221,9 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
 {
     double rots = inches / (wheelDiameter * PI);
     double initRots = rampUp(speed, rampCycles, timeSlice);
-    double rampDownConst = rampCost(speed, -speed, rampCycles, timeSlice/1000);//initRots * 1.95;
-    
+    //double rampDownConst = rampCost(speed, -speed, rampCycles, timeSlice/1000);//initRots * 1.95;
+    double rampDownConst = abs(rampDownCost(speed));
+        
     // Making an all-encompassing drive function that can move forwards and backwards
     if (speed < 0) 
     {
@@ -249,8 +250,8 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
         
         
         // Ramp down
-        //rampDown(rampDownConst, speed, 20);
-        rampUp(-speed, rampCycles, timeSlice, rampDownConst);
+        rampDown(rampDownCost(speed), speed);
+        //rampUp(-speed, rampCycles, timeSlice, rampDownConst);
         BackLeft.stop(brakeType::brake);
         BackRight.stop(brakeType::brake);
         FrontRight.stop(brakeType::brake);        
@@ -392,7 +393,7 @@ bool inTakeInUse = false;
 bool fire = false;
 bool catapultDown = false;
 double errorB = 0.1;
-double errorX = 0.0185;
+double errorX = 0.0275;
 
 // Shooter Task
 int taskShooter()
@@ -467,11 +468,11 @@ void autonFunc1Ramp(string side)
     BackRight.setStopping(brakeType::hold);    
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
 
-    drive(24, -75); // Back into the ball
+    drive(36, -75); // Back into the ball
 
     task::sleep(600); // Wait for ball to get into intake
 
-    drive(48, 75); // Drive forward
+    drive(36, 75); // Drive forward
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(600);
 
@@ -480,7 +481,7 @@ void autonFunc1Ramp(string side)
     else
         turnLeft(95);
 
-    drive(20, 40); // Shoot flags
+    drive(24, 40); // Shoot flags
     task::sleep(250);
 
     fire = true;
@@ -490,9 +491,9 @@ void autonFunc1Ramp(string side)
     else
         turnRight(10);
 
-    drive(30, 75); // Drive into bottom flags
+    drive(28, 75); // Drive into bottom flags
     task::sleep(200);
-    drive(65, -75);
+    drive(78, -75);
     
     if (side == "RED")
         turnRight(100);
@@ -934,8 +935,9 @@ void autonSkills()
 }
 
 void autonomous( void ) {
-    autonSkillsRamp();
-    //autonFunc1Ramp("RED");
+    //autonSkillsRamp();
+    autonFunc1Ramp("BLUE");
+    //drive(96, -100);
 }
 
 void usercontrol() {
