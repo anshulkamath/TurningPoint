@@ -96,8 +96,22 @@ void forward(double inches, double speed = 70)
     FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
     BackLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+}
 
+void setDrive(double vel)
+{
+    BackLeft.spin(directionType::fwd, vel, velocityUnits::pct);
+    BackRight.spin(directionType::fwd, vel, velocityUnits::pct);
+    FrontRight.spin(directionType::fwd, vel, velocityUnits::pct);        
+    FrontLeft.spin(directionType::fwd, vel, velocityUnits::pct);
+}
 
+void setDrive(double rightVel, double leftVel)
+{
+    BackLeft.spin(directionType::fwd, leftVel, velocityUnits::pct);
+    BackRight.spin(directionType::fwd, rightVel, velocityUnits::pct);
+    FrontRight.spin(directionType::fwd, rightVel, velocityUnits::pct);        
+    FrontLeft.spin(directionType::fwd, leftVel, velocityUnits::pct);
 }
 
 void forward(double inches, double speed, int time)
@@ -187,8 +201,10 @@ double rampUp(double deltaV, int cycles, int timeSlice, double rots)
 
         task::sleep(timeSlice);
     }
+    
     if((FrontRight.rotation(rotationUnits::rev) - rots) < -.06)
         forward(abs(FrontRight.rotation(rotationUnits::rev) - rots), 35);
+    
     else if((FrontRight.rotation(rotationUnits::rev) - rots) > .06)
         backward(FrontRight.rotation(rotationUnits::rev) - rots, 35);
     
@@ -198,6 +214,13 @@ double rampDownCost(double speed)
 {
     return speed/150;
 }
+
+double rampDownTemp(double rots, double speed)
+{
+    FrontRight.resetRotation();
+    
+}
+
 double rampDown(double rots, double speed)
 {
     FrontRight.resetRotation();
@@ -211,11 +234,13 @@ double rampDown(double rots, double speed)
         FrontLeft.spin(directionType::fwd, tempSpeed, velocityUnits::pct);    
         task::sleep(200);
     }
+    
     if((FrontRight.rotation(rotationUnits::rev) - rots) < -.06)
         forward(abs(FrontRight.rotation(rotationUnits::rev) - rots), 15);
     else if((FrontRight.rotation(rotationUnits::rev) - rots) > .06)
         backward(FrontRight.rotation(rotationUnits::rev) - rots, 15);
-    return FrontRight.rotation(rotationUnits::rev);    
+    
+    return FrontRight.rotation(rotationUnits::rev);
 }
 
 void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice = 50)
