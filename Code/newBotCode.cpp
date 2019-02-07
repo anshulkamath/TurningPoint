@@ -234,7 +234,8 @@ void rampDown(double inches, int speed, int cycles = 4)
     {
         double newSpeed = speed * (cycles - i) / cycles;
         setDrive(newSpeed);
-        while (FrontRight.rotation(rotationUnits::rev) < rots * (newSpeed/sum));            
+        while (FrontRight.rotation(rotationUnits::rev) < rots * (newSpeed/sum))
+            sleep(50);
     }
     setDrive(0);
 }
