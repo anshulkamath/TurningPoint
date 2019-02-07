@@ -340,6 +340,7 @@ void turnRight(double degrees)
 double turnLimiter = .6;
 bool braked = false;
 bool inverted = false;
+bool isDriving = false;
 
 int sign(double val)
 {
@@ -389,18 +390,16 @@ int taskDrive()
             frontRightValue = backRightValue *= turnLimiter; 
         }
         
-        /*
         if (Controller1.ButtonRight.pressing())
         {
-            backLeftValue = frontLeftValue = 40;
+            backLeftValue = frontLeftValue = 30;
             frontRightValue = backRightValue = -30;
         }
         else if (Controller1.ButtonLeft.pressing())
         {
             backLeftValue = frontLeftValue = -30;
-            frontRightValue = backRightValue = 40;
+            frontRightValue = backRightValue = 30;
         }
-        */
 
         // Enables Brake Mode
         if (Controller1.ButtonDown.pressing())
@@ -416,17 +415,18 @@ int taskDrive()
             }
             else
             {
-                FrontLeft.setStopping(brakeType::coast);
-                FrontRight.setStopping(brakeType::coast);
-                BackLeft.setStopping(brakeType::coast);
-                BackRight.setStopping(brakeType::coast);
-                
+                setBrakeMode(brakeType::coast);
                 braked = false;
             }
 
             while (Controller1.ButtonDown.pressing());
         }
 
+        if (frontLeftValue == 0 && backLeftValue == 0 && frontRightValue == 0 && backRightValue == 0)
+            isDriving = false;
+        else
+            isDriving = true;
+        
         // Sets Motor Powers
         FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);
@@ -515,6 +515,21 @@ int taskIntakes()
             Descore.stop(brakeType::hold);*/
     }
     return 0;
+}
+
+int taskScreen()
+{
+    while (true)
+    {
+        Controller1.Screen.print("Braked: %d", braked);        
+        Controller1.Screen.newLine();
+        Controller1.Screen.print("Inverted: %d", inverted);        
+        Controller1.Screen.newLine();
+        int temp = Brain.Battery.capacity(percentUnits::pct);
+        Controller1.Screen.print("Battery: %d", temp);      
+        
+        sleep(5000);
+    }
 }
 
 void autonFunc1Ramp(string side)
@@ -1000,33 +1015,42 @@ void autonomous( void ) {
     //autonSkillsRamp();
     //autonFunc1Ramp("BLUE");
     //drive(48, 100);
+    
     double rotations = 1.8;
+    
     rampUp(100, 10, 50);
+    sleep(1000);
     FrontRight.resetRotation();
+    
     setDrive(75);
-    while (FrontRight.rotation(rotationUnits::rev) < rotations * 0.57);
+    while (FrontRight.rotation(rotationUnits::rev) < rotations * 0.57)
+        sleep(50);
+    
     setDrive(50);
-    while (FrontRight.rotation(rotationUnits::rev) < rotations * 0.286);
+    while (FrontRight.rotation(rotationUnits::rev) < rotations * 0.286)
+        sleep(50);
+    
     setDrive(25);
-    while (FrontRight.rotation(rotationUnits::rev) < rotations * 0.143);
+    while (FrontRight.rotation(rotationUnits::rev) < rotations * 0.143)
+        sleep(50);
+    
     setDrive(0);
     //rampDown(1.8, 100, 4);
     
     //oldSkills();
 }
 
-void usercontrol() {
-
+void usercontrol() 
+{
     vex::task(taskShooter, 1);
     vex::task(taskDrive, 1);
     vex::task(taskIntakes, 1);
+    vex::task(taskScreen, 2);
     
-    FrontLeft.setStopping(brakeType::coast);
-    FrontRight.setStopping(brakeType::coast);
-    BackLeft.setStopping(brakeType::coast);
-    BackRight.setStopping(brakeType::coast);   
+    setBrakeMode(brakeType::coast); 
     Controller1.Screen.clearScreen();
     FrontRight.resetRotation();
+    
     while(true)
     {   
         if(Controller1.ButtonA.pressing())
@@ -1034,16 +1058,15 @@ void usercontrol() {
             Shooter.stop(brakeType::coast);
             ShooterAux.stop(brakeType::coast);  
             inUse = false;
+            setBrakeMode(brakeType::coast);
         }
+        
+        if (!inUse || isDriving)
+            setBrakeMode(brakeType::coast);
+        else if (inUse && !isDriving)
+            setBrakeMode(brakeType::hold);  
 
-        Controller1.Screen.print("Braked: %d", braked);        
-        Controller1.Screen.newLine();
-        Controller1.Screen.print("Inverted: %d", inverted);        
-        Controller1.Screen.newLine();
-        int temp = Brain.Battery.capacity(percentUnits::pct);
-        Controller1.Screen.print("Battery: %d", temp);        
-
-        task::sleep(5000);
+        task::sleep(100);
     }
 }
 
