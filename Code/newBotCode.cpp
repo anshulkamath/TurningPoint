@@ -150,7 +150,19 @@ void backward(double inches, double speed = 50)
     BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
     BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
 }
+void backward1(double inches, double speed = 50)
+{
+    setBrakeMode(vex::brakeType::brake);     
+    double rots = inches/(wheelDiameter*PI);
+    double rampConst = (double)(300) / 360;
 
+    rampConst = 0;
+
+    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);    
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
+}
 void backward(double inches, int time, double speed = 50)
 {
     setBrakeMode(vex::brakeType::brake);     
@@ -445,11 +457,13 @@ bool inTakeInUse = false;
 bool fire = false;
 bool catapultDown = false;
 double errorB = 0.1;
-double errorX = 0.03;
+double errorX = 0.0276;
 
 // Shooter Task
 int taskShooter()
 {
+    Shooter.resetRotation();
+    double count = 0;
     while(true)
     {
         if (Controller1.ButtonX.pressing() || fire)
@@ -457,13 +471,14 @@ int taskShooter()
             fire = false;
             inUse = true;
             // Rotates until slip
-            Shooter.setStopping(brakeType::brake);
-            ShooterAux.setStopping(brakeType::brake);
-            Shooter.rotateFor(3 + errorX, rotationUnits::rev, 100, velocityUnits::pct, false);
-            ShooterAux.rotateFor(3 + errorX, rotationUnits::rev, 100, velocityUnits::pct, true);
-            task::sleep(40);
-            Shooter.setStopping(brakeType::coast);
-            ShooterAux.setStopping(brakeType::coast);
+            Shooter.setStopping(brakeType::hold);
+            ShooterAux.setStopping(brakeType::hold);
+            //count += 3 + errorX;
+            Shooter.rotateFor(3+errorX, rotationUnits::rev, 100, velocityUnits::pct, false);
+            ShooterAux.rotateFor(3+errorX, rotationUnits::rev, 100, velocityUnits::pct, true);
+            //task::sleep(40);
+            //Shooter.setStopping(brakeType::coast);
+            //ShooterAux.setStopping(brakeType::coast);
             inUse = false;
         }
         else if(Controller1.ButtonB.pressing())
@@ -752,6 +767,46 @@ void autonFunc3(string side)
     }
 }
 
+void autonFunc4(string side)
+{
+task shooterTask = task(taskShooter, 1);    
+    fire = true;
+    sleep(400);
+    //forward(2, 40);
+    side == "BLUE" ? turnRight(120) : turnLeft(120);
+    Controller1.rumble("-.-.-");
+    forward(5, 40, 800);
+    // Setup for Auton
+    
+    FrontLeft.setStopping(brakeType::brake);
+    FrontRight.setStopping(brakeType::brake);
+    BackLeft.setStopping(brakeType::brake);
+    BackRight.setStopping(brakeType::brake);    
+
+    // Start intake and get ball under cap
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    backward1(42.0, 40.0); // Back into the ball
+    task::sleep(600); // Wait for ball to get into intake
+    Intake.stop();    // Stop the intake
+
+    // Forward and turn to the next cap
+    forward(12, 30);
+    side == "RED" ? turnRight(50) : turnLeft(50);
+
+    // Reverse into the cap to flip it
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    backward1(30, 35);
+    Intake.stop(brakeType::hold);
+
+    // Park
+    forward(16, 40);
+    if(park)
+    {
+        side == "RED" ? turnRight(40) : turnLeft(40);
+        forward(43, 40); // Drive onto the platform
+    }
+}
+
 void autonSkillsRamp()
 {
     task shooterTask = task(taskShooter, 1);
@@ -897,7 +952,7 @@ void oldSkills()
     turnRight(90);
     
     // Center on field
-    drive(71.5, 40);
+    drive(71, 40);
     task::sleep(500);
     turnLeft(90);
     task::sleep(100);
@@ -910,12 +965,12 @@ void oldSkills()
     
     // Ready to fire
     fire = true; // 6 points
-    task::sleep(600);
-    turnLeft(18);
-    drive(15, 40);
-    turnRight(18);
+    task::sleep(1800);
+    turnLeft(16.5);
+    drive(14, 40);
+    turnRight(16.5);
     //forward(40, 60); // Drive into bottom flags
-    forward(20, 60, 1000);
+    forward(15, 60, 1000);
     
     task::sleep(200); // 7 points
     backward(26, 40.0); 
@@ -939,7 +994,7 @@ void oldSkills()
     task::sleep(200);
     backward(12, 1000, 20);
     task::sleep(200);
-    forward(70, 50);
+    forward(72, 50);
 }
 
 void autonSkills()
@@ -1016,7 +1071,7 @@ void autonomous( void ) {
     //autonSkillsRamp();
     //autonFunc1Ramp("BLUE");
     //drive(48, 100);
-    
+    /*
     double rotations = 1.8;
     
     rampUp(100, 10, 50);
@@ -1036,14 +1091,14 @@ void autonomous( void ) {
         sleep(50);
     
     setDrive(0);
-    //rampDown(1.8, 100, 4);
-    
+    //rampDown(1.8, 100, 4);*/
+    autonFunc4("BLUE");
     //oldSkills();
 }
 
 void usercontrol() 
 {
-    vex::task(taskShooter, 1);
+    vex::task shooter = vex::task(taskShooter, 1);
     vex::task(taskDrive, 1);
     vex::task(taskIntakes, 1);
     vex::task(taskScreen, 2);
@@ -1056,16 +1111,16 @@ void usercontrol()
     {   
         if(Controller1.ButtonA.pressing())
         {
+            shooter.stop();
             Shooter.stop(brakeType::coast);
-            ShooterAux.stop(brakeType::coast);  
-            inUse = false;
-            setBrakeMode(brakeType::coast);
+            ShooterAux.stop(brakeType::coast);
+            shooter = vex::task(taskShooter, 1);
         }
         
-        if (!inUse || isDriving)
+        /*if (!inUse || isDriving)
             setBrakeMode(brakeType::coast);
         else if (inUse && !isDriving)
-            setBrakeMode(brakeType::hold);  
+            setBrakeMode(brakeType::hold);  */
 
         task::sleep(100);
     }
