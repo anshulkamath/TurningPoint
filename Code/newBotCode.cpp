@@ -83,6 +83,12 @@ void pre_auton( void )
     Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::blue);
     Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::red);
     Brain.Screen.pressed(sideSelect);
+    
+    Brain.Screen.print("Side: %s", side.c_str());
+    Brain.Screen.newLine();
+    Brain.Screen.print("Auton Num: %d", autonNum);
+    Brain.Screen.newLine();
+    Brain.Screen.print("Park: %d", park);
 }
 
 void forward(double inches, double speed = 70)
@@ -263,10 +269,7 @@ void bangBangGo(double speed, double rots)
     while(abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots));
     
     setBrakeMode(brakeType::brake);
-    BackRight.stop();
-    BackLeft.stop();        
-    FrontLeft.stop();
-    FrontRight.stop();
+    setDrive(0);
 }
 
 void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice = 50)
@@ -453,20 +456,23 @@ int taskDrive()
 
 // Shooter Variables
 bool inUse = false;
+bool manual = false;
 bool inTakeInUse = false;
 bool fire = false;
 bool catapultDown = false;
 double errorB = 0.1;
-double errorX = 0.0276;
+double errorX = 0.024;
 
 // Shooter Task
 int taskShooter()
 {
+    Shooter.setStopping(brakeType::coast);
+    ShooterAux.setStopping(brakeType::coast);
     Shooter.resetRotation();
     double count = 0;
     while(true)
     {
-        if (Controller1.ButtonX.pressing() || fire)
+        if (manual && (Controller1.ButtonX.pressing() || fire))
         {
             fire = false;
             inUse = true;
@@ -481,7 +487,7 @@ int taskShooter()
             //ShooterAux.setStopping(brakeType::coast);
             inUse = false;
         }
-        else if(Controller1.ButtonB.pressing())
+        else if(manual && Controller1.ButtonB.pressing())
         {
             Shooter.setStopping(brakeType::brake);
             ShooterAux.setStopping(brakeType::brake);
@@ -490,6 +496,23 @@ int taskShooter()
             task::sleep(10);
             Shooter.setStopping(brakeType::coast);
             ShooterAux.setStopping(brakeType::coast);            
+        }
+        else if (!manual && (Controller1.ButtonX.pressing() || fire))
+        {
+            fire = false;
+            inUse = true;
+            Shooter.spin(directionType::fwd, 100, velocityUnits::pct);
+            ShooterAux.spin(directionType::fwd, 100, velocityUnits::pct);
+            
+            while (!sBumper.pressing()) // Initial slip
+                sleep(50);
+            while (sBumper.pressing())
+                sleep(50);
+            while (!sBumper.pressing()) // Reset to slip
+                sleep(50);
+            
+            Shooter.stop();
+            ShooterAux.stop();
         }
         else if (Controller1.ButtonY.pressing())
         {
@@ -515,11 +538,11 @@ int taskIntakes()
     while (true)
     {
         // Controls intake
-        if (Controller1.ButtonL1.pressing())
+        if (Controller1.ButtonL1.pressing() && !inUse)
             Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-        else if(Controller1.ButtonL2.pressing())
+        else if(Controller1.ButtonL2.pressing() && !inUse)
             Intake.spin(directionType::rev, 100, velocityUnits::pct);
-        else if(!inTakeInUse)
+        else
             Intake.stop(brakeType::hold);
         
         /*
@@ -529,6 +552,7 @@ int taskIntakes()
             Descore.spin(directionType::rev, 50, velocityUnits::pct);
         else
             Descore.stop(brakeType::hold);*/
+        sleep(50);
     }
     return 0;
 }
@@ -653,7 +677,7 @@ void autonFunc1(string side)
     BackRight.setStopping(brakeType::brake);    
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
 
-    backward(36, 30); // Back into the ball
+    backward(36, 30.0); // Back into the ball
 
     task::sleep(600); // Wait for ball to get into intake
 
@@ -677,11 +701,10 @@ void autonFunc1(string side)
     else
         turnRight(10);
 
-    forward(20, 40); // Drive into bottom flags
+    forward(25, 40); // Drive into bottom flags
     task::sleep(200);
-    backward(30, 60);
+    backward(30, 60.0);
 }
-
 
 
 // Front - 2 Flags 2 Caps
@@ -769,13 +792,13 @@ void autonFunc3(string side)
 
 void autonFunc4(string side)
 {
-task shooterTask = task(taskShooter, 1);    
+    task shooterTask = task(taskShooter, 1);    
     fire = true;
     sleep(400);
     //forward(2, 40);
     side == "BLUE" ? turnRight(120) : turnLeft(120);
     Controller1.rumble("-.-.-");
-    forward(5, 40, 800);
+    forward(10, 40, 800);
     // Setup for Auton
     
     FrontLeft.setStopping(brakeType::brake);
@@ -1092,8 +1115,16 @@ void autonomous( void ) {
     
     setDrive(0);
     //rampDown(1.8, 100, 4);*/
-    autonFunc4("BLUE");
+    //autonFunc4("BLUE");
     //oldSkills();
+    
+    
+    /*if (autonNum == 0)
+        autonFunc1(side);
+    else if (autonNum == 1)
+        autonFunc4(side);*/
+    autonFunc4("BLUE");
+    
 }
 
 void usercontrol() 
@@ -1111,10 +1142,12 @@ void usercontrol()
     {   
         if(Controller1.ButtonA.pressing())
         {
-            shooter.stop();
+            shooter.suspend(); // previously shooter.stop();
             Shooter.stop(brakeType::coast);
             ShooterAux.stop(brakeType::coast);
-            shooter = vex::task(taskShooter, 1);
+            while (Controller1.ButtonA.pressing())
+                sleep(50);
+            shooter.resume();  // previously vex::task shooter = vex::task(taskShooter, 1);
         }
         
         /*if (!inUse || isDriving)
@@ -1122,7 +1155,7 @@ void usercontrol()
         else if (inUse && !isDriving)
             setBrakeMode(brakeType::hold);  */
 
-        task::sleep(100);
+        sleep(100);
     }
 }
 
