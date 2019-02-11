@@ -11,6 +11,11 @@ using namespace vex;
 int wheelDiameter = 4;
 double PI = M_PI;
 
+int sgn(double val)
+{
+    return val > 0 ? 1 : -1;
+}
+
 double rampUp(double deltaV, int cycles, int timeSlice)
 {
     double currVel = FrontRight.velocity(velocityUnits::pct);
@@ -24,25 +29,25 @@ double rampUp(double deltaV, int cycles, int timeSlice)
         FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);        
         FrontLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
 
-
         task::sleep(timeSlice);
     }
 
     return FrontRight.rotation(rotationUnits::rev);
 }
 
-void drive(double inches, double speed, int cycles = 7, int timeSlice = 50)
+void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
 {
     double rots = inches / (wheelDiameter * PI);
     rots -= rampUp(speed, cycles, timeSlice);
-    
-    double P = 0, kp = 0;
-    double I = 0, ki = 0;
-    double D = 0, kd = 0;
-    double error = 0, lError = 0;
-    double iThresh = 3 / (wheelDiameter*PI);
-    
     FrontRight.resetRotation();
+    
+    double P = 0, kp = 770;
+    double I = 0, ki = 3;
+    double D = 0, kd = 5170;
+    double error = 0, lError = 0;
+    double iThresh = .45;
+    double motorPower = 0, lMotorPower = 0;
+    
     while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots))
     {
         error = rots - FrontRight.rotation(rotationUnits::rev);
@@ -54,13 +59,18 @@ void drive(double inches, double speed, int cycles = 7, int timeSlice = 50)
         else
             I = 0;
         
-        double motorPower = P + I - D;
+        motorPower = P + I + D;
+        
+        if (abs(motorPower) > abs(speed))
+            motorPower = speed;
         
         BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
         BackRight.spin(directionType::fwd, motorPower, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, motorPower, velocityUnits::pct);        
         FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
-        task::sleep(50);
+        
+        task::sleep(50);        
+        lError = error;
     }
     
     BackLeft.stop(brakeType::brake);
@@ -69,6 +79,22 @@ void drive(double inches, double speed, int cycles = 7, int timeSlice = 50)
     FrontLeft.stop(brakeType::brake);
 }
 
-int main() {
+void turn(double degrees)
+{
+    double P = 0, kp = 0;
+    double I = 0, ki = 0;
+    double D = 0, kd = 0;
+    double error = 0, lError = 0;
+    double iThresh = 1 / (wheelDiameter*PI);
+    double motorPower = 0, lMotorPower = 0;
+    
+    while(gyroscope.value(analogUnits::range12bit))
+    {
+        
+    }
+    
+}
 
+int main() {
+    drive(36, 100);
 }
