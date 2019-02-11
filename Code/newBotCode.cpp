@@ -14,7 +14,7 @@ double wheelDiameter = 4;
 double wheelBaseLength = 9.5;
 
 // Auton Selector
-string side = "RED";
+string side = "BLUE";
 int autonNum = 1; // 0 is close to flags, 1 is far from flags
 bool park = true;
 
@@ -39,19 +39,24 @@ void setBrakeMode(vex::brakeType brake)
 
 void autonPark()
 {
-    while(Brain.Screen.pressing());
-    if (Brain.Screen.xPosition() <= 240) park = true;
-    else if (Brain.Screen.xPosition() > 240) park = false;
+    if (Brain.Screen.xPosition() >= 240) park = true;
+    else if (Brain.Screen.xPosition() < 240) park = false;
 
+    string autonSide = "Side: " + side;
+    string autonNummy = "Auton Num: " + toString1(autonNum);
+    string parkStr = "Park: " + toString1(park);
     Brain.Screen.clearScreen();
-    Brain.Screen.print("Side: %s, AutonNum: %d, Park: %d", side.c_str(), autonNum, park);
+    Brain.Screen.printAt(1, 20, autonSide.c_str());
+    //Brain.Screen.newLine();
+    Brain.Screen.printAt(1, 40, autonNummy.c_str());
+    //Brain.Screen.newLine();
+    Brain.Screen.printAt(1, 60, parkStr.c_str());
 }
 
 void autonSelect()
 {
-    while(Brain.Screen.pressing());
-    if(Brain.Screen.xPosition() <= 240) autonNum = 0;
-    else if(Brain.Screen.xPosition() >= 241) autonNum = 1;
+    if(Brain.Screen.xPosition() >= 241) autonNum = 0;
+    else if(Brain.Screen.xPosition() <= 240) autonNum = 1;
 
     Brain.Screen.clearScreen();
     Brain.Screen.drawLine(240, 0, 240, 480);
@@ -62,9 +67,8 @@ void autonSelect()
 
 void sideSelect()
 {
-    while(Brain.Screen.pressing());
-    if(Brain.Screen.xPosition() <= 240) side = "BLUE";
-    else if(Brain.Screen.xPosition() >= 241) side = "RED";
+    if(Brain.Screen.xPosition() >= 241) side = "BLUE";
+    else if(Brain.Screen.xPosition() <= 240) side = "RED";
 
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(vex::color::red);
@@ -72,23 +76,40 @@ void sideSelect()
     Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::black);
     Brain.Screen.printAt(100, 136, "FRONT");
     Brain.Screen.printAt(340, 136, "BACK");
+    Brain.Screen.render();
     Brain.Screen.pressed(autonSelect);
 }
 
 void pre_auton( void )
 {   
     // Brain Screen: 480 x 272
+    /*while(1==1)
+    {
+        int xPos = Brain.Screen.xPosition();
+        int yPos = Brain.Screen.yPosition();
+
+        // remove any old text from the screen to prevent unexpected results
+        Brain.Screen.clearScreen()
+
+        // display the current touch position
+        Brain.Screen.printAt(1, 20, "current pos x: %04d, y: %04d", xPos, yPos);
+
+        // display if the screen is pressed of not
+        if (Brain.Screen.pressing()) {
+            Brain.Screen.printAt(1, 40, "Screen pressed");
+        } else {
+            Brain.Screen.printAt(1, 40, "Screen released");
+        }
+
+        //Sleep the task for a short amount of time to prevent wasted resources.
+        task::sleep(100);
+    }*/
+    
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(vex::color::black);
     Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::blue);
     Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::red);
     Brain.Screen.pressed(sideSelect);
-    
-    Brain.Screen.print("Side: %s", side.c_str());
-    Brain.Screen.newLine();
-    Brain.Screen.print("Auton Num: %d", autonNum);
-    Brain.Screen.newLine();
-    Brain.Screen.print("Park: %d", park);
 }
 
 void forward(double inches, double speed = 70)
@@ -456,12 +477,12 @@ int taskDrive()
 
 // Shooter Variables
 bool inUse = false;
-bool manual = false;
+bool manual = true;
 bool inTakeInUse = false;
 bool fire = false;
 bool catapultDown = false;
 double errorB = 0.1;
-double errorX = 0.024;
+double errorX = 0.02;
 
 // Shooter Task
 int taskShooter()
@@ -482,7 +503,7 @@ int taskShooter()
             //count += 3 + errorX;
             Shooter.rotateFor(3+errorX, rotationUnits::rev, 100, velocityUnits::pct, false);
             ShooterAux.rotateFor(3+errorX, rotationUnits::rev, 100, velocityUnits::pct, true);
-            //task::sleep(40);
+            task::sleep(80);
             //Shooter.setStopping(brakeType::coast);
             //ShooterAux.setStopping(brakeType::coast);
             inUse = false;
@@ -677,19 +698,19 @@ void autonFunc1(string side)
     BackRight.setStopping(brakeType::brake);    
     Intake.spin(directionType::fwd, 100, velocityUnits::pct);
 
-    backward(36, 30.0); // Back into the ball
+    backward1(36, 30.0); // Back into the ball
 
     task::sleep(600); // Wait for ball to get into intake
 
-    forward(36, 40); // Drive forward
+    forward(41, 40); // Drive forward
     Intake.spin(directionType::fwd, 0, velocityUnits::pct);
     task::sleep(600);
     //backward(8,30); // Drive backwards to aim at flags
 
     if(side == "RED")
-        turnRight(95);
+        turnRight(90);
     else
-        turnLeft(95);
+        turnLeft(90);
 
     forward(20, 30); // Shoot flags
     task::sleep(250);
@@ -703,7 +724,7 @@ void autonFunc1(string side)
 
     forward(25, 40); // Drive into bottom flags
     task::sleep(200);
-    backward(30, 60.0);
+    backward1(30, 60.0);
 }
 
 
@@ -952,34 +973,32 @@ void oldSkills()
     turnRight(5); 
     drive(10, 40);
     turnLeft(5);
-    forward(26, 70, 1000);
-    task::sleep(300);
-    //backward(21, 30.0);
-    sleep(500);
-    //turnRight(35);
+    forward(15, 40, 2000);
+    sleep(300);
+    // Added
+    /*backward(21, 30.0);
+    turnRight(35);
 
     // Reverse into the cap to flip it
-    //Intake.spin(directionType::rev, 100, velocityUnits::pct);
-    //drive(32, -40);
-    //Intake.stop(brakeType::hold);  // 2 points
-    //drive(46, 40);
-    //turnLeft(35);
-    task::sleep(500);
-    //forward(37.5, 35);
-
-    forward(40, 35, 1000);
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    drive(32, -40);
+    Intake.stop(brakeType::hold);  // 2 points
+    drive(46, 40);
+    turnLeft(35);
+    forward(37.5, 35);*/
+    // Added
     
-    task::sleep(500);
+    sleep(500);
     // turn
     drive(10, -40);
     turnRight(90);
     
     // Center on field
-    drive(71, 40);
+    drive(68, 40);
     task::sleep(500);
     turnLeft(90);
     task::sleep(100);
-    forward(18, 40, 1000);
+    forward(19.5, 40, 1000);
     task::sleep(100);
     drive(10, -40);
     task::sleep(100);
@@ -996,28 +1015,62 @@ void oldSkills()
     forward(15, 60, 1000);
     
     task::sleep(200); // 7 points
-    backward(26, 40.0); 
-    
+    backward(22, 40.0); 
+   
     // Go for the middle caps
     turnLeft(90);
-    task::sleep(400);
-    forward(12, 60, 3000);
-    task::sleep(400);
+    sleep(400);
+    forward(12, 40, 3000);
+    sleep(400);
     Intake.spin(directionType::rev, 100, velocityUnits::pct);  
     drive(30, -40);
-    task::sleep(500);
-    Intake.stop(brakeType::coast);
+    sleep(500);
+    Intake.stop(brakeType::hold);
     drive(25, 40);
-    task::sleep(200);
+    sleep(200);
     turnLeft(90);
-    task::sleep(200);
-    drive(47, 40);
+    sleep(200);
+    drive(21, 40);// 47
+    
+    // Added
+    turnRight(90);
+    forward(12, 40, 3000);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct);    
+    drive(48, -40); // Back into the ball
     task::sleep(500);
+    drive(4, 30);
+    task::sleep(700);
+    Intake.spin(directionType::rev, 100, velocityUnits::pct);
+    drive(19, -30); // 1 point
+    sleep(100);
+    drive(11, 30);
+    sleep(100);
+    turnRight(100);
+    Intake.stop(brakeType::hold);
+    //backward(10, 1000, 40);
+    drive(26, 40);
+    sleep(500);
+    fire = true;
+    sleep(500);
+    drive(24, -30);
+    //backward(10, 1000, 40);
     turnLeft(90);
-    task::sleep(200);
-    backward(12, 1000, 20);
-    task::sleep(200);
-    forward(72, 50);
+    drive(33, 40);
+    //drive(47, 40);
+    sleep(100);
+    forward(15, 40, 2000);
+    sleep(300);
+    backward(12, 40);
+
+    sleep(500);
+    turnLeft(90);
+    drive(16, 40);
+    // Added   
+    turnLeft(90);
+    sleep(200);
+    backward(12, 1000, 40);
+    sleep(200);
+    forward(92.5, 50);
 }
 
 void autonSkills()
@@ -1119,11 +1172,13 @@ void autonomous( void ) {
     //oldSkills();
     
     
-    /*if (autonNum == 0)
+    if (autonNum == 0)
         autonFunc1(side);
     else if (autonNum == 1)
-        autonFunc4(side);*/
-    autonFunc4("BLUE");
+        autonFunc4(side);
+    //autonFunc1(side);   
+    //oldSkills();
+    //autonFunc4("BLUE");
     
 }
 
