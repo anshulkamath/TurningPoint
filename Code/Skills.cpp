@@ -69,7 +69,7 @@ void turnTo(double degrees, double speed = 40)
 {
     double P = 0, kp = .8;
     double error = 100, motorPower = 0;
-    while(abs(getAngle()) <= degrees && abs(error) > .2)
+    while(abs(getAngle()) - abs(degrees) >= .1 && abs(error) > .2)
     {
         error = degrees - getAngle();
         P = error * kp;
