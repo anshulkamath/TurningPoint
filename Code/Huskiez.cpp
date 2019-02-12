@@ -68,6 +68,26 @@ double getAngle()
     return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20;
 }
 
+// 1 is forward, 0 is stop, -1 is backward
+void runIntake(int num)
+{
+    switch(num)
+    {
+        case -1:
+            Intake.spin(directionType::rev, 100, velocityUnits::pct);
+            break;
+        case 0:
+            Intake.stop(brakeType::coast);
+            break;
+        case 1:
+            Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+            break;
+        default:
+            Intake.stop(brakeType::coast);
+            break;
+    }
+}
+
 int sign(double val)
 {
     return val < 0 ? -1 : 1;
@@ -219,7 +239,6 @@ double rampUp(double deltaV, int cycles, int timeSlice)
 
 void turnLeft(double degrees)
 {
-
     setBrakeMode(vex::brakeType::hold);
     double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86 * 92.5/90;
     FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
@@ -314,7 +333,7 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
 }
 
 
-void turnTo(double degrees, double speed)
+void turnTo(double degrees, double speed = 40)
 {
     double P = 0, kp = .8;
     double error = 100, motorPower = 0;
@@ -535,103 +554,10 @@ int taskScreen()
         sleep(5000);
     }
 }
+// Autonomous Programs
 
-void autonFunc1Ramp(string side)
-{
-    // Setup for Auton
-    task shooterTask = task(taskShooter, 1);
-    FrontLeft.setStopping(brakeType::hold);
-    FrontRight.setStopping(brakeType::hold);
-    BackLeft.setStopping(brakeType::hold);
-    BackRight.setStopping(brakeType::hold);
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-
-    drive(36, -75); // Back into the ball
-
-    task::sleep(600); // Wait for ball to get into intake
-
-    drive(36, 75); // Drive forward
-    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    task::sleep(600);
-
-    if(side == "RED")
-        turnRight(95);
-    else
-        turnLeft(95);
-
-    drive(24, 40); // Shoot flags
-    task::sleep(250);
-
-    fire = true;
-    task::sleep(500);
-    if(side == "RED")
-        turnLeft(10);
-    else
-        turnRight(10);
-
-    drive(28, 75); // Drive into bottom flags
-    task::sleep(200);
-    drive(78, -75);
-
-    if (side == "RED")
-        turnRight(100);
-    else
-        turnLeft(100);
-
-    drive(55, 100);
-}
-
-void autonFunc1_GoRamp(string side)
-{
-    // Setup for Auton
-    task shooterTask = task(taskShooter, 1);
-    FrontLeft.setStopping(brakeType::hold);
-    FrontRight.setStopping(brakeType::hold);
-    BackLeft.setStopping(brakeType::hold);
-    BackRight.setStopping(brakeType::hold);
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-
-    drive(24, -75); // Back into the ball
-
-    task::sleep(600); // Wait for ball to get into intake
-
-    drive(48, 75); // Drive forward
-    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    task::sleep(600);
-
-    if(side == "RED")
-        turnRight(95);
-    else
-        turnLeft(95);
-
-    drive(20, 40); // Shoot flags
-    task::sleep(250);
-
-    fire = true;
-    task::sleep(500);
-    if(side == "RED")
-        turnLeft(10);
-    else
-        turnRight(10);
-
-    drive(30, 75); // Drive into bottom flags
-    task::sleep(200);
-    drive(30, -75);
-
-    if (side == "RED")
-        turnLeft(120);
-    else
-        turnRight(120);
-
-    Intake.spin(directionType::fwd, -100, velocityUnits::pct);
-    drive(-10, 100);
-    task::sleep(300);
-    drive(-20, 60);
-
-}
-
-// Front - 3 Flags 1 Cap
-void autonFunc1(string side)
+// Old 1 - Front - 3 Flags 1 Cap
+void oldFunc1(string side)
 {
     // Setup for Auton
     task shooterTask = task(taskShooter, 1);
@@ -670,91 +596,47 @@ void autonFunc1(string side)
     backward1(30, 60.0);
 }
 
-
-// Front - 2 Flags 2 Caps
-void autonFunc2(string side)
+// 1 - Shoot 3 flags, flip cap, flip bottom flag
+void autonFunc1(string side)
 {
-    // Setup
     task shooterTask = task(taskShooter, 1);
-    FrontLeft.setStopping(brakeType::brake);
-    FrontRight.setStopping(brakeType::brake);
-    BackLeft.setStopping(brakeType::brake);
-    BackRight.setStopping(brakeType::brake);
-
-    // Set up catapult and back into the ball
-    fire = true;
-    backward(36, 40);
-
-    // Intake the ball and flip the cap
-    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-    task::sleep(300);
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    task::sleep(600);
-
-    // Forward, center on wall, backwards
-    forward(43.5, 80);
-    task::sleep(600);
-    backward(8);
-
-    // Turn towards flags
-    if(side == "RED")
-        turnRight(100);
-    else
-        turnLeft(100);
-
-    // Forward to get into position to shoot
-    forward(20, 40);
-    task::sleep(250);
-
-    // Fire
-    Shooter.rotateFor(200, rotationUnits::deg, 100, velocityUnits::pct);
-    Intake.spin(directionType::fwd, 0, velocityUnits::pct);
-
-    // Turn towards the next cap
-    if(side == "RED")
-        turnRight(55.5);
-    else
-        turnLeft(55.5);
-
-    // Drive into the cap
-    forward(34, 50);
-}
-
-// Back - Flip Caps
-void autonFunc3(string side)
-{
-    // Setup for Auton
-    task shooterTask = task(taskShooter, 1);
-    FrontLeft.setStopping(brakeType::brake);
-    FrontRight.setStopping(brakeType::brake);
-    BackLeft.setStopping(brakeType::brake);
-    BackRight.setStopping(brakeType::brake);
-
-    // Start intake and get ball under cap
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-    backward(36, 30); // Back into the ball
-    task::sleep(600); // Wait for ball to get into intake
-    Intake.stop();    // Stop the intake
-
-    // Forward and turn to the next cap
-    forward(6, 30);
-    side == "RED" ? turnRight(70) : turnLeft(70);
-
-    // Reverse into the cap to flip it
-    Intake.spin(directionType::rev, 100, velocityUnits::pct);
-    backward(25, 35);
-    Intake.stop(brakeType::hold);
-
-    // Park
-    forward(19, 40);
-    if(park)
+    
+    runIntake(1);
+    drive(-36, -100); // Drive backwards and get ball
+    runIntake(0);
+    drive(39, 100); // Drive to shooting position
+    side == "RED" ? turnTo(90) : turnTo(-90); // Turn to face flags
+    drive(20, 60); // Drive up to flag
+    fire = true; // Fire
+    sleep(400); // Wait for fire
+    turnTo(0); // Turn to wall
+    drive(3, 30); // Move out of alignment with pole
+    side == "RED" ? turnTo(90) : turnTo(-90); // Turn back to flags
+    drive(32, 100); // Hit the flags
+    drive(-28, -100); // Come back in line with second cap
+    turnTo(0); // Turn in line with second cap
+    runIntake(-1); // Run intake backwards to flip cap
+    drive(-24, -50); // Run backwards to flip the cap
+    runIntake(0); // Stop the intake
+    
+    if (park)
     {
-        side == "RED" ? turnRight(30) : turnLeft(30);
-        forward(50, 60); // Drive onto the platform
+        drive(-9, -40); // Drive in line with the platform
+        side == "RED" ? turnTo(-90) : turnTo(90); // Turn to face flags
+        drive(36, 100); // Drive up to platform
+        drive(30, 40); // Drive onto the platform
+    }
+    else
+    {
+        drive(-26, -75); // Drive backwards in line with bottom flag
+        turnTo(90); // Turn to bottom flag
+        drive(33, 100); // Drive forward to turn bottom flag
+        drive(-33, -100); // Drive backwards to reset
     }
 }
 
-void autonFunc4(string side)
+// 2 - Shoot middle, flip back two caps, park
+void autonFunc2(string side)
 {
     task shooterTask = task(taskShooter, 1);
     fire = true;
@@ -797,9 +679,9 @@ void autonFunc4(string side)
 void autonomous( void )
 {
     if (autonNum == 0)
-        autonFunc1(side);
+        oldFunc1(side);
     else if (autonNum == 1)
-        autonFunc4(side);
+        autonFunc2(side);
 }
 
 void usercontrol()
