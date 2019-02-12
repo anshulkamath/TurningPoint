@@ -16,6 +16,12 @@ int sgn(double val)
     return val > 0 ? 1 : -1;
 }
 
+double getAngle()
+{
+    return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/2;
+}
+    
+
 double rampUp(double deltaV, int cycles, int timeSlice)
 {
     double currVel = FrontRight.velocity(velocityUnits::pct);
@@ -41,16 +47,16 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     rots -= rampUp(speed, cycles, timeSlice);
     FrontRight.resetRotation();
     
-    double P = 0, kp = 770;
-    double I = 0, ki = 3;
-    double D = 0, kd = 5170;
+    double P = 0, kp = 90;
+    double I = 0, ki = .8;
+    double D = 0, kd = 190;
     double error = 0, lError = 0;
-    double iThresh = .45;
+    double iThresh = .5;
     double motorPower = 0, lMotorPower = 0;
     
     while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots))
     {
-        error = rots - FrontRight.rotation(rotationUnits::rev);
+        error = rots - (FrontRight.rotation(rotationUnits::rev));
         P = error * kp;
         D = (error - lError) * kd;
         
@@ -59,18 +65,21 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
         else
             I = 0;
         
-        motorPower = P + I + D;
-        
+        motorPower = abs(P) + abs(I) - abs(D);
+
         if (abs(motorPower) > abs(speed))
-            motorPower = speed;
-        
+            motorPower = abs(speed);
+        if(speed < 0)
+        {
+            motorPower *= -1;
+        }
         BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
         BackRight.spin(directionType::fwd, motorPower, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, motorPower, velocityUnits::pct);        
         FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
-        
+        lError = error;        
         task::sleep(50);        
-        lError = error;
+
     }
     
     BackLeft.stop(brakeType::brake);
@@ -82,19 +91,21 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
 void turn(double degrees)
 {
     double P = 0, kp = 0;
-    double I = 0, ki = 0;
-    double D = 0, kd = 0;
-    double error = 0, lError = 0;
-    double iThresh = 1 / (wheelDiameter*PI);
-    double motorPower = 0, lMotorPower = 0;
     
-    while(gyroscope.value(analogUnits::range12bit))
+    while(getAngle() < degrees)
     {
         
     }
     
 }
 
+void printGyro()
+{
+    
+}
 int main() {
-    drive(36, 100);
+    
+    //drive(48, 60);
+    task::sleep(1000);
+    drive(-36, -60);
 }
