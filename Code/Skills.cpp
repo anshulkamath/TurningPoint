@@ -78,6 +78,7 @@ void turnTo(double degrees, double speed = 40)
         
         if(abs(motorPower) > abs(speed))
             motorPower = speed;
+        
         if(error < 0)
             motorPower *= -1;
         
@@ -141,7 +142,7 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     int theoreticalTime = abs(rots / (speed * 2) / 60);
     
     // PID Loop
-    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) || Brain.timer(timeUnits::msec) < theoreticalTime + 1000)
+    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 1000)
     {
         // Setting PID Variables 
         error = rots - (FrontRight.rotation(rotationUnits::rev));
@@ -227,12 +228,35 @@ int taskShooter()
 }
 
 // Auton for skills auton
+// Precondition - Robot is in line with the cap
+// Postcondition - Robot flips cap and retrieves ball
+void flipCap(bool isRed, double capDist, bool intakeBall)
+{
+    isRed ? turnTo(0) : turnTo(180); // Added: turn to the wall
+    intakeBall ? runIntake(1) : runIntake(-1); // Turn  intake depending on ball
+    capDist > 20 ? drive(capDist - 5, -100) : 0; // Drive backwards if robot is too far from the cap
+    
+    intakeBall ? drive(-5, -40) : drive(-11, -40); // Flip forward corner cap (7 points) at lower power
+    runIntake(0); // Stop the intake from running
+    drive(3, 30); // Drive away from flipped cap
+    
+    if (intakeBall)
+    {
+        runIntake(-1); // Run intake in reverse to flip cap
+        drive(-20, -40); // Flip cap (8 points)
+        drive(16, 75); // Drive away from flipped cap        
+    }
+    
+}
+
+// Pre-condition - Robot is in position to shoot
+// Postcondition - Robot is back to original starting place (or not)
 void skillShot(bool isRed, bool retreat = true)
 {
     fire = true; // Fire at middle column of flags (10 [or 12] points)
     sleep(1000);
     
-    isRed == true ? turnTo(0) : turnTo(180); // Turn to 180º
+    isRed ? turnTo(0) : turnTo(180); // Turn to 180º
     
     sleep(100);
     drive(3, 30); // Move out of alignment with the pole
@@ -249,8 +273,9 @@ void skillShot(bool isRed, bool retreat = true)
         drive(-40, -75); // Back up to line up with corner cap 
         sleep (200); // Sleep here so we do not have to in the autuonmous function
     }
-
 }
+
+
 
 // Miscellaneous Auton
 void miscAuton(){
