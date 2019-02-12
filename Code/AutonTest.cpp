@@ -75,20 +75,33 @@ double rampUp(double deltaV, int cycles, int timeSlice)
 
 void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
 {
+    // Converting inches to motor rotaitons
     double rots = inches / (wheelDiameter * PI);
-    rots -= rampUp(speed, cycles, timeSlice);
-    FrontRight.resetRotation();
+    rots -= rampUp(speed, cycles, timeSlice); // Subtracting ramping distance from total
     
+    // PID Variables
     double P = 0, kp = 75;
     double I = 0, ki = .95;
     double D = 0, kd = 230;
     double error = 0, lError = 0;
     double iThresh = .5;
     double motorPower = 0, lMotorPower = 0;
-    double leftAdjustPwr = 0;
+    
+    // Gyro Stabilization variables
+    double leftAdjustPwr = 0, stblConst = 2;
     double init = getAngle();
-    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots))
+    
+    // Reset rotations before PID loop
+    FrontRight.resetRotation();
+    
+    // Reset Brain Timer Before PID Loop
+    Brain.resetTimer();
+    int theoreticalTime = abs(rots / (speed * 2) / 60);
+    
+    // PID Loop
+    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 1000)
     {
+        // Setting PID Variables 
         error = rots - (FrontRight.rotation(rotationUnits::rev));
         P = error * kp;
         D = (error - lError) * kd;
@@ -98,28 +111,37 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
         else
             I = 0;
         
-        motorPower = abs(P) + abs(I) - abs(D);
+        motorPower = abs(P) + abs(I) - abs(D); // Manually setting motor power
 
-        if (abs(motorPower) > abs(speed))
+        if (abs(motorPower) > abs(speed)) // Limiting motor power to top speed
             motorPower = abs(speed);
-        if(speed < 0)
-        {
+        
+        if(speed < 0) // In case of going backwards
             motorPower *= -1;
-        }
-        leftAdjustPwr = getAngle() - init;
-        BackLeft.spin(directionType::fwd, motorPower - 2*leftAdjustPwr, velocityUnits::pct);
+        
+        leftAdjustPwr = stblConst * (getAngle() - init); // Tracking difference in gyro value
+        
+        // Setting motor powers
+        BackLeft.spin(directionType::fwd, motorPower - leftAdjustPwr, velocityUnits::pct);
         BackRight.spin(directionType::fwd, motorPower, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, motorPower, velocityUnits::pct);        
-        FrontLeft.spin(directionType::fwd, motorPower - 2*leftAdjustPwr, velocityUnits::pct);
-        lError = error;        
-        task::sleep(50);        
-
+        FrontLeft.spin(directionType::fwd, motorPower - leftAdjustPwr, velocityUnits::pct);
+             
+        task::sleep(50);
+        lError = error;
     }
     
+    // Stopping motors after loop ends
     BackLeft.stop(brakeType::brake);
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
+    
+    // Sleep here so we do not have to in the autonomous function
+    if (abs(inches) >= 16)
+        sleep(250);
+    else
+        sleep(100);
 }
 
 
@@ -127,19 +149,22 @@ void turnTo(double degrees, double speed)
 {
     double P = 0, kp = .8;
     double error = 100, motorPower = 0;
-    while(abs(getAngle()) <= degrees && abs(error) > .2)
+    while(abs(abs(degrees) - abs(getAngle())) >= .1 || abs(error) > .2)
     {
         error = degrees - getAngle();
         P = error * kp;
         motorPower = P;
+        
         if(abs(motorPower) > abs(speed))
             motorPower = speed;
-        if(error < 0)
+        if(error < 0 && motorPower > 0)
             motorPower *= -1;
+        
         BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
         BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);        
         FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+        
         task::sleep(50);
     }
     BackLeft.stop(brakeType::brake);
@@ -150,7 +175,11 @@ void turnTo(double degrees, double speed)
 
 void printGyro()
 {
-    
+    while(true)
+    {
+        Controller1.Screen.clearScreen();
+        Controller1.Screen.print("Gyro: %d", getAngle());
+    }
 }
 int main() {
     gyroscope.startCalibration();
