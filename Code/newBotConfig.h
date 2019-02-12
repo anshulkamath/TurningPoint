@@ -1,4 +1,3 @@
-// Essentials
 vex::brain Brain;
 vex::controller Controller1 = vex::controller();
 vex::competition Competition = vex::competition();
@@ -17,3 +16,5 @@ vex::motor ShooterAux = vex::motor(vex::PORT5, vex::gearSetting::ratio36_1, fals
 
 // Sensors
 vex::bumper Limit1 = vex::bumper(Brain.ThreeWirePort.A);
+vex::gyro gyroscope = vex::gyro(Brain.ThreeWirePort.H);
+vex::gyro invertedGyro = vex::gyro(Brain.ThreeWirePort.B);
