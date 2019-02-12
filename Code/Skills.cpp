@@ -73,21 +73,26 @@ void turnTo(double degrees, double speed = 40)
     {
         error = degrees - getAngle();
         P = error * kp;
+        
         motorPower = P;
+        
         if(abs(motorPower) > abs(speed))
             motorPower = speed;
         if(error < 0)
             motorPower *= -1;
+        
         BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
         BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);        
         FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
-        task::sleep(50);
+        sleep(50);
     }
     BackLeft.stop(brakeType::brake);
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
-    FrontLeft.stop(brakeType::brake);    
+    FrontLeft.stop(brakeType::brake);
+    
+    sleep(150); // Sleep here so we do not have to in the autonomous function
 }
 
 // Drive functions
@@ -173,6 +178,12 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
+    
+    // Sleep here so we do not have to in the autonomous function
+    if (abs(inches) >= 16)
+        sleep(250);
+    else
+        sleep(100);
 }
 
 // Catapult Task
@@ -234,7 +245,11 @@ void skillShot(bool isRed, bool retreat = true)
     
     sleep(200);
     if (retreat)
+    {
         drive(-40, -75); // Back up to line up with corner cap 
+        sleep (200); // Sleep here so we do not have to in the autuonmous function
+    }
+
 }
 
 // Miscellaneous Auton
@@ -265,6 +280,8 @@ void miscAuton(){
 
 // Skills Code Layout:
 /*
+    22 POINT AUTON
+
     1 - Grab ball from back cap and flip the cap
       - (MAYBE) Flip second back cap
     2 - Drive to the near flags
@@ -292,142 +309,83 @@ void autonomous( void )
     // Turn on intake
     task shooterTask = task(taskShooter, 1);
     
-    // PART 1
+    // PART 1 - 1 POINT
     runIntake(1); // Run intake fwd
-    drive(-36, -100); // Back into the ball
-    sleep(500);
-    
-    drive(4, 30);  // Forward to get adjust cap
-    sleep(300);
+    drive(-36, -100); // Collect the ball    
+    drive(4, 30);  // Forward to get away from cap
     runIntake(-1); // Run intake backwards to flip cap
     drive(-16, -30); // Flip Cap (1 point)
-    
-    sleep(100);
     runIntake(0); // Stop running the intake
     drive(50, 100); // Drive back to starting position
-    sleep(100);
-    
     turnTo(90); // Turn To 90º
     
-    // PART 2
+    // PART 2 - 6 POINTS
     drive(62, 100); // Drive to shooting position
-    sleep(500);
+    skillShot(true); // Fire at flags (6 points)
     
-    skillShot(true);
-   
-    sleep(200);
+    // PART 3 - 7 POINTS
     runIntake(-1); // Run intake in reverse to flip cap
-    drive(-20, -40); // Flip forward corner cap (8 points)
-    
-    sleep(500);
+    drive(-20, -40); // Flip forward corner cap (7 points)
     runIntake(0); // Stop the intake from running
     drive(3, 30); // Drive away from flipped cap
     
-    // PART 4
-    sleep(100);
+    // PART 4 - 8 POINTS
     turnTo(-90); // Turn to get next ball
-    
-    sleep(100);
     drive(24, 75); // Drive forward in line with the next ball
-    
-    sleep(100);
     turnTo(0); // Turn to face ball
     runIntake(1); // Run intake to take in ball
-    
-    sleep (100);
     drive(-24, -75); // Collect next ball
-    runIntake(0);
-    
-    sleep(100);
+    runIntake(0); // Stop intake after ball is collected
     drive(3, 30); // Drive away from flipped cap
-    
-    sleep (200);
     runIntake(-1); // Run intake in reverse to flip cap
     drive(-20, -40); // Flip cap (8 points)
-    
-    sleep(100);
     drive(16, 75); // Drive away from flipped cap
-    
-    sleep(100);
     turnTo(-90); // Turn to flags backwards to pick up balls
     runIntake(1); // Start intake in case of any balls
-    
-    sleep(100);
     drive(-14, -75); // Line up with flags backwards
     
-    // PART 5
-    sleep(100);
+    // PART 5 - 11 POINTS
     turnTo(90); // Turn to flags
     runIntake(0); // Turn off intake
-    
-    // Ready to fire
-    skillShot(true);
-    
-    sleep(100);
+    skillShot(true); // Fire at flags (11 points)
     turnTo(0); // Turn to 0º
     
-    sleep(100);
+    // PART 6 - 12 POINTS
     drive(-48, -100); // Drive up to the cap
     runIntake(-1); // Run intake to flip the cap
-   
-    sleep(100);
     drive(-8, -40); // Flip the cap (12 points)
     
-    sleep(100);
+    // PART 7 - 13 POINTS
     drive(8, 40); // Back in line
-    
-    sleep(100);
     turnTo(90); // Turn to 90º
-    
-    sleep(100);
     drive(-24, -80); // Back up to be in line with next cap
-    
-    sleep(100);
     turnTo(180); // Turn to 180º to be in line with second cap
-    
-    sleep (100);
     drive(-24, -75); // Collect next ball
-    runIntake(0);
-    
-    sleep(100);
+    runIntake(0); // Stop intake
     drive(3, 30); // Drive away from  cap
-    
-    sleep (200);
     runIntake(-1); // Run intake in reverse to flip cap
     drive(-20, -40); // Flip cap (13 points)
     
-    sleep(100);
+    // PART 8 - 16 POINTS
     drive(56, 75); // Drive away from flipped cap
-    
-    sleep(100);
     turnTo(-90); // Turn to flags backwards to pick up balls
     runIntake(1); // Start intake in case of any balls
-    
-    sleep(100);
     drive(-14, -75); // Line up with flags backwards
-
-    sleep(100);
     turnTo(90); // Turn to flags
     runIntake(0); // Turn off intake
+    skillShot(false, false); // Fire at flags (16 points)
     
-    // Ready to fire
-    skillShot(false, false);
-    
-    sleep(100);
+    // PART 9 - 22 POINTS
     drive(-72, -100); // Come back lined up with platform
-    
-    sleep(100);
     turnTo(0); // Turn to platform
-    
-    sleep(100);
-    drive(92.5, 40); // Drive onto platform
+    drive(92.5, 40); // Drive onto platform (22 points)
 }
 
 void usercontrol( void ) 
 {
   while (true)
   {
-    sleep(20);
+    sleep(50);
   }
 }
 
