@@ -119,7 +119,7 @@ void sideSelect()
 
 void pre_auton( void )
 {
-    gyroscope.startCalibratio();
+    gyroscope.startCalibration();
     invertedGyro.startCalibration();
 
     Brain.Screen.clearScreen();
@@ -242,6 +242,106 @@ void turnRight(double degrees)
     setBrakeMode(vex::brakeType::coast);
 }
 
+void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
+{
+    // Converting inches to motor rotaitons
+    double rots = inches / (wheelDiameter * PI);
+    rots -= rampUp(speed, cycles, timeSlice); // Subtracting ramping distance from total
+    
+    // PID Variables
+    double P = 0, kp = 75;
+    double I = 0, ki = .95;
+    double D = 0, kd = 230;
+    double error = 0, lError = 0;
+    double iThresh = .5;
+    double motorPower = 0, lMotorPower = 0;
+    
+    // Gyro Stabilization variables
+    double leftAdjustPwr = 0, stblConst = 2;
+    double init = getAngle();
+    
+    // Reset rotations before PID loop
+    FrontRight.resetRotation();
+    
+    // Reset Brain Timer Before PID Loop
+    Brain.resetTimer();
+    int theoreticalTime = abs(rots / (speed * 2) / 60);
+    
+    // PID Loop
+    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 1000)
+    {
+        // Setting PID Variables 
+        error = rots - (FrontRight.rotation(rotationUnits::rev));
+        P = error * kp;
+        D = (error - lError) * kd;
+        
+        if (abs(error) < iThresh)
+            I += error * ki;
+        else
+            I = 0;
+        
+        motorPower = abs(P) + abs(I) - abs(D); // Manually setting motor power
+
+        if (abs(motorPower) > abs(speed)) // Limiting motor power to top speed
+            motorPower = abs(speed);
+        
+        if(speed < 0) // In case of going backwards
+            motorPower *= -1;
+        
+        leftAdjustPwr = stblConst * (getAngle() - init); // Tracking difference in gyro value
+        
+        // Setting motor powers
+        BackLeft.spin(directionType::fwd, motorPower - leftAdjustPwr, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, motorPower, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, motorPower, velocityUnits::pct);        
+        FrontLeft.spin(directionType::fwd, motorPower - leftAdjustPwr, velocityUnits::pct);
+             
+        task::sleep(50);
+        lError = error;
+    }
+    
+    // Stopping motors after loop ends
+    BackLeft.stop(brakeType::brake);
+    BackRight.stop(brakeType::brake);
+    FrontRight.stop(brakeType::brake);
+    FrontLeft.stop(brakeType::brake);
+    
+    // Sleep here so we do not have to in the autonomous function
+    if (abs(inches) >= 16)
+        sleep(250);
+    else
+        sleep(100);
+}
+
+
+void turnTo(double degrees, double speed)
+{
+    double P = 0, kp = .8;
+    double error = 100, motorPower = 0;
+    while(abs(abs(degrees) - abs(getAngle())) >= .1 || abs(error) > .2)
+    {
+        error = degrees - getAngle();
+        P = error * kp;
+        motorPower = P;
+        
+        if(abs(motorPower) > abs(speed))
+            motorPower = speed;
+        if(error < 0 && motorPower > 0)
+            motorPower *= -1;
+        
+        BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);        
+        FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+        
+        task::sleep(50);
+    }
+    BackLeft.stop(brakeType::brake);
+    BackRight.stop(brakeType::brake);
+    FrontRight.stop(brakeType::brake);
+    FrontLeft.stop(brakeType::brake);    
+}
+
 // Tasks
 
 // Drive Variables
@@ -356,7 +456,7 @@ int taskShooter()
     double count = 0;
     while(true)
     {
-        if (manual && (Controller1.ButtonX.pressing() || fire))
+        if (Controller1.ButtonX.pressing() || fire)
         {
             fire = false;
             inUse = true;
@@ -368,7 +468,7 @@ int taskShooter()
             sleep(80);
             inUse = false;
         }
-        else if(manual && Controller1.ButtonB.pressing())
+        else if(Controller1.ButtonB.pressing())
         {
             Shooter.setStopping(brakeType::brake);
             ShooterAux.setStopping(brakeType::brake);
@@ -725,10 +825,10 @@ void usercontrol()
             vex::task shooter = vex::task(taskShooter, 1);
         }
 
-        /*if (!inUse || isDriving)
+        if (!inUse || isDriving)
             setBrakeMode(brakeType::coast);
         else if (inUse && !isDriving)
-            setBrakeMode(brakeType::hold);  */
+            setBrakeMode(brakeType::hold);
 
         sleep(100);
     }
