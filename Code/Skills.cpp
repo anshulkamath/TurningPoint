@@ -324,17 +324,19 @@ void autonomous( void )
     skillShot(true); // Fire at flags (6 points)
     
     // PART 3 - 7 POINTS
+    turnTo(0); // Added: turn to the wall
     runIntake(-1); // Run intake in reverse to flip cap
     drive(-20, -40); // Flip forward corner cap (7 points)
     runIntake(0); // Stop the intake from running
     drive(3, 30); // Drive away from flipped cap
     
     // PART 4 - 8 POINTS
+    
     turnTo(-90); // Turn to get next ball
     drive(24, 75); // Drive forward in line with the next ball
     turnTo(0); // Turn to face ball
     runIntake(1); // Run intake to take in ball
-    drive(-24, -75); // Collect next ball
+    drive(-20, -75); // Changed (already 17 inches in) Collect next ball
     runIntake(0); // Stop intake after ball is collected
     drive(3, 30); // Drive away from flipped cap
     runIntake(-1); // Run intake in reverse to flip cap
@@ -347,6 +349,7 @@ void autonomous( void )
     // PART 5 - 11 POINTS
     turnTo(90); // Turn to flags
     runIntake(0); // Turn off intake
+    sleep(200); // Added Let balls settle
     skillShot(true); // Fire at flags (11 points)
     turnTo(0); // Turn to 0º
     
@@ -356,7 +359,7 @@ void autonomous( void )
     drive(-8, -40); // Flip the cap (12 points)
     
     // PART 7 - 13 POINTS
-    drive(8, 40); // Back in line
+    drive(5, 40); // Changed (not all the way) Back in line
     turnTo(90); // Turn to 90º
     drive(-24, -80); // Back up to be in line with next cap
     turnTo(180); // Turn to 180º to be in line with second cap
