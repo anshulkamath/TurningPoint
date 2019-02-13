@@ -17,6 +17,7 @@ double wheelBaseLength = 9.5;
 string side = "BLUE";
 int autonNum = 1; // 0 is close to flags, 1 is far from flags
 bool park = true;
+bool braked = false;
 
 // Helper fuctions
 string toString1(double val)
@@ -66,6 +67,15 @@ void setDrive(double rightVel, double leftVel)
 double getAngle()
 {
     return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20;
+}
+
+// Made this a function so it can be called by other tasks
+void refresh()
+{
+    Controller1.Screen.print("Braked: %d", braked);
+    Controller1.Screen.newLine();
+    int temp = Brain.Battery.capacity(percentUnits::pct);
+    Controller1.Screen.print("Battery: %d", temp);
 }
 
 // 1 is forward, 0 is stop, -1 is backward
@@ -367,14 +377,12 @@ void turnTo(double degrees, double speed = 40)
 
 // Drive Variables
 double turnLimiter = .6;
-bool braked = false;
-bool inverted = false;
 bool isDriving = false;
 
 // Drive Task
 int taskDrive()
 {
-    int fRightEnc = 0, fLeftEncoder = 0, bRightEnc = 0, bLeftEncoder = 0;
+    int fRightEnc = 0, fLeftEnc = 0, bRightEnc = 0, bLeftEnc = 0;
     while (true)
     {
         int frontLeftValue = 0,
@@ -438,13 +446,13 @@ int taskDrive()
                 BackRight.setStopping(brakeType::hold);
 
                 braked = true;
-                refreshController();
+                refresh();
             }
             else
             {
                 setBrakeMode(brakeType::coast);
                 braked = false;
-                refreshController();
+                refresh();
             }
 
             while (Controller1.ButtonDown.pressing());
@@ -556,22 +564,11 @@ int taskIntakes()
     return 0;
 }
 
-// Made this a function so it can be called by other tasks
-void refreshController()
-{
-    Controller1.Screen.print("Braked: %d", braked);
-    Controller1.Screen.newLine();
-    Controller1.Screen.print("Inverted: %d", inverted);
-    Controller1.Screen.newLine();
-    int temp = Brain.Battery.capacity(percentUnits::pct);
-    Controller1.Screen.print("Battery: %d", temp);
-}
-
 int taskScreen()
 {
     while (true)
     {
-        refreshController();
+        refresh();
         sleep(5000);
     }
 }
