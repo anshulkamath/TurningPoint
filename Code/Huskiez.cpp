@@ -9,7 +9,7 @@ using namespace std;
 using namespace vex;
 
 // Global Variables
-double PI = 3.1415;
+double PI = M_PI;
 double wheelDiameter = 4;
 double wheelBaseLength = 9.5;
 
@@ -17,7 +17,7 @@ double wheelBaseLength = 9.5;
 string side = "BLUE";
 int autonNum = 1; // 0 is close to flags, 1 is far from flags
 bool park = true;
-bool braked = false;
+bool braked = false; // BRAKES: Hold for parking, Brake for shooting
 
 // Helper fuctions
 string toString1(double val)
@@ -745,9 +745,9 @@ void usercontrol()
             vex::task shooter = vex::task(taskShooter, 1);
         }
 
-        // If the shooter IS in use and the drive is NOT moving turn on holding
+        // If the shooter IS in use and the drive is NOT moving turn on braking
         if (inUse && !isDriving)
-            setBrakeMode(brakeType::hold);
+            setBrakeMode(brakeType::brake);
         else
             setBrakeMode(brakeType::coast);
 
