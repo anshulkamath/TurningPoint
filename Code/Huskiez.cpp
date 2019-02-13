@@ -266,7 +266,7 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     // Converting inches to motor rotaitons
     double rots = inches / (wheelDiameter * PI);
     rots -= rampUp(speed, cycles, timeSlice); // Subtracting ramping distance from total
-    
+
     // PID Variables
     double P = 0, kp = 75;
     double I = 0, ki = .95;
@@ -274,57 +274,57 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     double error = 0, lError = 0;
     double iThresh = .5;
     double motorPower = 0, lMotorPower = 0;
-    
+
     // Gyro Stabilization variables
     double leftAdjustPwr = 0, stblConst = 2;
     double init = getAngle();
-    
+
     // Reset rotations before PID loop
     FrontRight.resetRotation();
-    
+
     // Reset Brain Timer Before PID Loop
     Brain.resetTimer();
     int theoreticalTime = abs(rots / (speed * 2) / 60);
-    
+
     // PID Loop
     while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 1000)
     {
-        // Setting PID Variables 
+        // Setting PID Variables
         error = rots - (FrontRight.rotation(rotationUnits::rev));
         P = error * kp;
         D = (error - lError) * kd;
-        
+
         if (abs(error) < iThresh)
             I += error * ki;
         else
             I = 0;
-        
+
         motorPower = abs(P) + abs(I) - abs(D); // Manually setting motor power
 
         if (abs(motorPower) > abs(speed)) // Limiting motor power to top speed
             motorPower = abs(speed);
-        
+
         if(speed < 0) // In case of going backwards
             motorPower *= -1;
-        
+
         leftAdjustPwr = stblConst * (getAngle() - init); // Tracking difference in gyro value
-        
+
         // Setting motor powers
         BackLeft.spin(directionType::fwd, motorPower - leftAdjustPwr, velocityUnits::pct);
         BackRight.spin(directionType::fwd, motorPower, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, motorPower, velocityUnits::pct);        
+        FrontRight.spin(directionType::fwd, motorPower, velocityUnits::pct);
         FrontLeft.spin(directionType::fwd, motorPower - leftAdjustPwr, velocityUnits::pct);
-             
+
         task::sleep(50);
         lError = error;
     }
-    
+
     // Stopping motors after loop ends
     BackLeft.stop(brakeType::brake);
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
-    
+
     // Sleep here so we do not have to in the autonomous function
     if (abs(inches) >= 16)
         sleep(250);
@@ -342,23 +342,25 @@ void turnTo(double degrees, double speed = 40)
         error = degrees - getAngle();
         P = error * kp;
         motorPower = P;
-        
+
         if(abs(motorPower) > abs(speed))
             motorPower = speed;
         if(error < 0 && motorPower > 0)
             motorPower *= -1;
-        
+
         BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
         BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);        
+        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
         FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
-        
+
         task::sleep(50);
     }
     BackLeft.stop(brakeType::brake);
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
-    FrontLeft.stop(brakeType::brake);    
+    FrontLeft.stop(brakeType::brake);
+
+    sleep(200);
 }
 
 // Tasks
@@ -372,12 +374,14 @@ bool isDriving = false;
 // Drive Task
 int taskDrive()
 {
+    int fRightEnc = 0, fLeftEncoder = 0, bRightEnc = 0, bLeftEncoder = 0;
     while (true)
     {
         int frontLeftValue = 0,
         frontRightValue = 0,
         backLeftValue = 0,
         backRightValue = 0;
+
         // Constant Straight Drive Control
         if (Controller1.ButtonR1.pressing())
             frontLeftValue = frontRightValue = backLeftValue = backRightValue = 60;
@@ -387,7 +391,6 @@ int taskDrive()
         // Tank Drive Controls
         else
         {
-            // Scale = x^2/100
             if (abs(Controller1.Axis2.value()) > 20)
             {
                 frontRightValue = Controller1.Axis2.value();
@@ -405,6 +408,7 @@ int taskDrive()
             frontLeftValue = backLeftValue = Controller1.Axis3.value();
             frontRightValue = backRightValue = Controller1.Axis2.value();
         }
+
         // Throttling Turns
         if(abs(Controller1.Axis2.value() - Controller1.Axis3.value()) > 50)
         {
@@ -434,17 +438,24 @@ int taskDrive()
                 BackRight.setStopping(brakeType::hold);
 
                 braked = true;
+                refreshController();
             }
             else
             {
                 setBrakeMode(brakeType::coast);
                 braked = false;
+                refreshController();
             }
 
             while (Controller1.ButtonDown.pressing());
         }
 
-        if (frontLeftValue == 0 && backLeftValue == 0 && frontRightValue == 0 && backRightValue == 0)
+        // Checks to see if the motors have moved to determine whether or
+        // not the robot should be in coast mode
+        if ((FrontRight.rotation(rotationUnits::rev) - fRightEnc) == 0 &&
+            ((FrontLeft.rotation(rotationUnits::rev) - fLeftEnc) == 0) &&
+            ((BackRight.rotation(rotationUnits::rev) - bRightEnc) == 0) &&
+            ((BackLeft.rotation(rotationUnits::rev) - bLeftEnc) == 0))
             isDriving = false;
         else
             isDriving = true;
@@ -456,6 +467,11 @@ int taskDrive()
         BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
 
         task::sleep(20);
+
+        fRightEnc = FrontRight.rotation(rotationUnits::rev);
+        fLeftEnc = FrontLeft.rotation(rotationUnits::rev);
+        bRightEnc = BackRight.rotation(rotationUnits::rev);
+        bLeftEnc = BackLeft.rotation(rotationUnits::rev);
     }
     return 0;
 }
@@ -540,17 +556,22 @@ int taskIntakes()
     return 0;
 }
 
+// Made this a function so it can be called by other tasks
+void refreshController()
+{
+    Controller1.Screen.print("Braked: %d", braked);
+    Controller1.Screen.newLine();
+    Controller1.Screen.print("Inverted: %d", inverted);
+    Controller1.Screen.newLine();
+    int temp = Brain.Battery.capacity(percentUnits::pct);
+    Controller1.Screen.print("Battery: %d", temp);
+}
+
 int taskScreen()
 {
     while (true)
     {
-        Controller1.Screen.print("Braked: %d", braked);
-        Controller1.Screen.newLine();
-        Controller1.Screen.print("Inverted: %d", inverted);
-        Controller1.Screen.newLine();
-        int temp = Brain.Battery.capacity(percentUnits::pct);
-        Controller1.Screen.print("Battery: %d", temp);
-
+        refreshController();
         sleep(5000);
     }
 }
@@ -600,7 +621,7 @@ void oldFunc1(string side)
 void autonFunc1(string side)
 {
     task shooterTask = task(taskShooter, 1);
-    
+
     runIntake(1);
     drive(-36, -100); // Drive backwards and get ball
     runIntake(0);
@@ -618,7 +639,7 @@ void autonFunc1(string side)
     runIntake(-1); // Run intake backwards to flip cap
     drive(-24, -50); // Run backwards to flip the cap
     runIntake(0); // Stop the intake
-    
+
     if (park)
     {
         drive(-9, -40); // Drive in line with the platform
@@ -676,6 +697,26 @@ void autonFunc2(string side)
     }
 }
 
+void autonFunc3(string side)
+{
+    task(taskShooter, 1);
+    runIntake(-1);
+    drive(-42, -100);
+    runIntake(0);
+    drive(18, 75);
+    side == "RED" ? turnTo(63) : turnTo(-63);
+    runIntake(-1);
+    drive(-27, -75); // Drive up to cap
+    drive(-6, -30); // Flip cap
+    drive(33, 100); // Line up with platform
+    drive(12, 75); // Drive up to platform
+    drive(43, 40); // Drive onto the platform
+    drive(48, 100); // Drive to line up with Flags
+    side == "RED" ? turnTo(135) : turnTo(-135);
+    fire = true;
+    drive(40, 75); // Flip bottom flag
+}
+
 void autonomous( void )
 {
     if (autonNum == 0)
@@ -686,13 +727,13 @@ void autonomous( void )
 
 void usercontrol()
 {
+    Controller1.Screen.clearScreen();
     vex::task shooter = vex::task(taskShooter, 1);
     vex::task(taskDrive, 1);
     vex::task(taskIntakes, 1);
     vex::task(taskScreen, 2);
 
     setBrakeMode(brakeType::coast);
-    Controller1.Screen.clearScreen();
     FrontRight.resetRotation();
 
     while(true)
@@ -707,10 +748,11 @@ void usercontrol()
             vex::task shooter = vex::task(taskShooter, 1);
         }
 
-        if (!inUse || isDriving)
-            setBrakeMode(brakeType::coast);
-        else if (inUse && !isDriving)
+        // If the shooter IS in use and the drive is NOT moving turn on holding
+        if (inUse && !isDriving)
             setBrakeMode(brakeType::hold);
+        else
+            setBrakeMode(brakeType::coast);
 
         sleep(100);
     }
