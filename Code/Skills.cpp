@@ -70,7 +70,7 @@ void turnTo(double degrees, double speed = 40)
     Controller1.Screen.clearScreen();
     double P = 0, kp = .8;
     double error = 100, motorPower = 0;
-    while(abs(degrees) - abs(getAngle())  >= .1 && abs(error) > .2)
+    while(abs(abs(degrees) - abs(getAngle()))  >= .1)
     {
         error = degrees - getAngle();
         P = error * kp;
@@ -78,15 +78,13 @@ void turnTo(double degrees, double speed = 40)
         motorPower = P;
 
         if(abs(motorPower) > abs(speed))
-            motorPower = speed;
-
-        if(error < 0)
-            motorPower *= -1;
+            motorPower = speed * sgn(motorPower);
 
         BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
         BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
         FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+
         sleep(50);
     }
     BackLeft.stop(brakeType::brake);
@@ -97,19 +95,29 @@ void turnTo(double degrees, double speed = 40)
     sleep(150); // Sleep here so we do not have to in the autonomous function
 }
 
+double stblConst = 2;
+
 // Drive functions
 double rampUp(double deltaV, int cycles, int timeSlice)
 {
     double currVel = FrontRight.velocity(velocityUnits::pct);
     FrontRight.resetRotation();
 
+    // Gyro Stabilization variables
+    double leftAdjustPwr = 0;
+    double init = getAngle();
+
     for (int i = 0; i < cycles; i++)
     {
         currVel += deltaV/cycles;
-        BackLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
+
+        leftAdjustPwr = stblConst * (getAngle() - init); // Tracking difference in gyro value
+
+        // Setting motor powers
+        BackLeft.spin(directionType::fwd, currVel - leftAdjustPwr, velocityUnits::pct);
         BackRight.spin(directionType::fwd, currVel, velocityUnits::pct);
         FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);
-        FrontLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, currVel - leftAdjustPwr, velocityUnits::pct);
 
         task::sleep(timeSlice);
     }
@@ -132,7 +140,7 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50)
     double motorPower = 0, lMotorPower = 0;
 
     // Gyro Stabilization variables
-    double leftAdjustPwr = 0, stblConst = 2;
+    double leftAdjustPwr = 0;
     double init = getAngle();
 
     // Reset rotations before PID loop
@@ -255,7 +263,7 @@ void flipCap(bool isRed, double capDist, bool intakeBall)
 }
 
 // Pre-condition - Robot is in position to shoot
-// Postcondition - Robot is back to original starting place (or not)
+// Postcondition - Robot is back to original starting place (toggleable)
 void skillShot(bool isRed, bool retreat = true)
 {
     fire = true; // Fire at middle column of flags (10 [or 12] points)
@@ -346,24 +354,14 @@ void autonomous( void )
     // PART 1 - 1 POINT
     runIntake(1); // Run intake fwd
     drive(-36, -80); // Collect the ball
-    drive(4, 30);  // Forward to get away from cap
+    runIntake(0);
+    drive(2, 30);  // Forward to get away from cap
     runIntake(-1); // Run intake backwards to flip cap
     drive(-20, -30); // Flip Cap (1 point)
     runIntake(0); // Stop running the intake
     turnTo(0);
     drive(50, 80); // Drive back to starting position
     turnTo(90); // Turn To 90º
-    while (getAngle() < 90)
-    {
-        BackLeft.spin(directionType::fwd, 10, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, -10, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, -10, velocityUnits::pct);
-        FrontLeft.spin(directionType::fwd, 10, velocityUnits::pct);
-    }
-    BackLeft.stop(brakeType::brake);
-    BackRight.stop(brakeType::brake);
-    FrontRight.stop(brakeType::brake);
-    FrontLeft.stop(brakeType::brake);
 
     // PART 2 - 6 POINTS
     drive(75, 100); // Drive to shooting position
