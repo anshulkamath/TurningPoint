@@ -129,7 +129,7 @@ void autonSelect()
     Brain.Screen.drawLine(240, 0, 240, 480);
     Brain.Screen.printAt(100, 136, "PARK");
     Brain.Screen.printAt(340, 136, "NO PARK");
-    Brain.Screen.pressed(autonPark);
+    Brain.Screen.released(autonPark);
 }
 
 void sideSelect()
@@ -144,7 +144,7 @@ void sideSelect()
     Brain.Screen.printAt(100, 136, "FRONT");
     Brain.Screen.printAt(340, 136, "BACK");
     Brain.Screen.render();
-    Brain.Screen.pressed(autonSelect);
+    Brain.Screen.released(autonSelect);
 }
 
 void pre_auton( void )
@@ -156,15 +156,13 @@ void pre_auton( void )
     Brain.Screen.setPenColor(vex::color::black);
     Brain.Screen.drawRectangle(0, 0, 240, 272, vex::color::blue);
     Brain.Screen.drawRectangle(241, 0, 480, 272, vex::color::red);
-    Brain.Screen.pressed(sideSelect);
+    Brain.Screen.released(sideSelect);
 }
 
 void forward(double inches, double speed = 70)
 {
-    setBrakeMode(vex::brakeType::brake);
-    double rampConst = (double)(200) / 360;
+    setBrakeMode(brakeType::brake);
     double rots = inches/(wheelDiameter*PI);
-    rampConst = 0;
 
     FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
@@ -174,9 +172,8 @@ void forward(double inches, double speed = 70)
 
 void forward(double inches, double speed, int time)
 {
-    setBrakeMode(vex::brakeType::brake);
+    setBrakeMode(brakeType::brake);
     double rots = inches/(wheelDiameter*PI);
-
 
     FrontLeft.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
@@ -189,24 +186,19 @@ void forward(double inches, double speed, int time)
 
 void backward(double inches, double speed = 50)
 {
-    setBrakeMode(vex::brakeType::brake);
+    setBrakeMode(brakeType::brake);
     double rots = inches/(wheelDiameter*PI);
-    double rampConst = (double)(300) / 360;
-
-    rampConst = 0;
 
     FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     BackLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, true);
 }
+
 void backward1(double inches, double speed = 50)
 {
-    setBrakeMode(vex::brakeType::brake);
-    double rots = inches/(wheelDiameter*PI);
-    double rampConst = (double)(300) / 360;
-
-    rampConst = 0;
+    setBrakeMode(brakeType::brake);
+    double rots = inches/(wheelDiameter * PI);
 
     FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
@@ -216,11 +208,8 @@ void backward1(double inches, double speed = 50)
 
 void backward(double inches, int time, double speed = 50)
 {
-    setBrakeMode(vex::brakeType::brake);
+    setBrakeMode(brakeType::brake);
     double rots = inches/(wheelDiameter*PI);
-    double rampConst = (double)(300) / 360;
-
-    rampConst = 0;
 
     FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, speed, vex::velocityUnits::pct, false);
@@ -251,11 +240,13 @@ void turnLeft(double degrees)
 {
     setBrakeMode(vex::brakeType::hold);
     double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86 * 92.5/90;
+
     FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
     BackLeft.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
     BackRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, true);
-    setBrakeMode(vex::brakeType::coast);
+
+    setBrakeMode(brakeType::coast);
 }
 
 void turnRight(double degrees)
@@ -268,7 +259,7 @@ void turnRight(double degrees)
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
     BackRight.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, true);
 
-    setBrakeMode(vex::brakeType::coast);
+    setBrakeMode(brakeType::coast);
 }
 
 void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
@@ -297,7 +288,7 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     int theoreticalTime = abs(rots / (speed * 2) / 60);
 
     // PID Loop
-    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 1000)
+    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 3000)
     {
         // Setting PID Variables
         error = rots - (FrontRight.rotation(rotationUnits::rev));

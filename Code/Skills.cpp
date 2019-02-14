@@ -67,24 +67,25 @@ double getAngle()
 // Turn Functions
 void turnTo(double degrees, double speed = 40)
 {
+    Controller1.Screen.clearScreen();
     double P = 0, kp = .8;
     double error = 100, motorPower = 0;
-    while(abs(getAngle()) - abs(degrees) >= .1 && abs(error) > .2)
+    while(abs(degrees) - abs(getAngle())  >= .1 && abs(error) > .2)
     {
         error = degrees - getAngle();
         P = error * kp;
-        
+
         motorPower = P;
-        
+
         if(abs(motorPower) > abs(speed))
             motorPower = speed;
-        
+
         if(error < 0)
             motorPower *= -1;
-        
+
         BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
         BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);        
+        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
         FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
         sleep(50);
     }
@@ -92,7 +93,7 @@ void turnTo(double degrees, double speed = 40)
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
-    
+
     sleep(150); // Sleep here so we do not have to in the autonomous function
 }
 
@@ -107,7 +108,7 @@ double rampUp(double deltaV, int cycles, int timeSlice)
         currVel += deltaV/cycles;
         BackLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
         BackRight.spin(directionType::fwd, currVel, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);        
+        FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);
         FrontLeft.spin(directionType::fwd, currVel, velocityUnits::pct);
 
         task::sleep(timeSlice);
@@ -116,12 +117,12 @@ double rampUp(double deltaV, int cycles, int timeSlice)
     return FrontRight.rotation(rotationUnits::rev);
 }
 
-void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
+void drive(double inches, double speed, int cycles = 15, int timeSlice = 50)
 {
     // Converting inches to motor rotaitons
     double rots = inches / (wheelDiameter * PI);
     rots -= rampUp(speed, cycles, timeSlice); // Subtracting ramping distance from total
-    
+
     // PID Variables
     double P = 0, kp = 75;
     double I = 0, ki = .95;
@@ -129,57 +130,57 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     double error = 0, lError = 0;
     double iThresh = .5;
     double motorPower = 0, lMotorPower = 0;
-    
+
     // Gyro Stabilization variables
     double leftAdjustPwr = 0, stblConst = 2;
     double init = getAngle();
-    
+
     // Reset rotations before PID loop
     FrontRight.resetRotation();
-    
+
     // Reset Brain Timer Before PID Loop
     Brain.resetTimer();
     int theoreticalTime = abs(rots / (speed * 2) / 60);
-    
+
     // PID Loop
-    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 1000)
+    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots)/* && Brain.timer(timeUnits::msec) < theoreticalTime + 1000*/)
     {
-        // Setting PID Variables 
+        // Setting PID Variables
         error = rots - (FrontRight.rotation(rotationUnits::rev));
         P = error * kp;
         D = (error - lError) * kd;
-        
+
         if (abs(error) < iThresh)
             I += error * ki;
         else
             I = 0;
-        
+
         motorPower = abs(P) + abs(I) - abs(D); // Manually setting motor power
 
         if (abs(motorPower) > abs(speed)) // Limiting motor power to top speed
             motorPower = abs(speed);
-        
+
         if(speed < 0) // In case of going backwards
             motorPower *= -1;
-        
+
         leftAdjustPwr = stblConst * (getAngle() - init); // Tracking difference in gyro value
-        
+
         // Setting motor powers
         BackLeft.spin(directionType::fwd, motorPower - leftAdjustPwr, velocityUnits::pct);
         BackRight.spin(directionType::fwd, motorPower, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, motorPower, velocityUnits::pct);        
+        FrontRight.spin(directionType::fwd, motorPower, velocityUnits::pct);
         FrontLeft.spin(directionType::fwd, motorPower - leftAdjustPwr, velocityUnits::pct);
-             
+
         task::sleep(50);
         lError = error;
     }
-    
+
     // Stopping motors after loop ends
     BackLeft.stop(brakeType::brake);
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
-    
+
     // Sleep here so we do not have to in the autonomous function
     if (abs(inches) >= 16)
         sleep(250);
@@ -198,10 +199,10 @@ int taskShooter()
 {
     Shooter.resetRotation();
     double count = 0;
-    
+
     Shooter.setStopping(brakeType::hold);
     ShooterAux.setStopping(brakeType::hold);
-    
+
     while(true)
     {
         if (fire)
@@ -209,11 +210,11 @@ int taskShooter()
             // Stops the intake
             runIntake(0);
             fire = false; // Sets catapult toggle to false
-            
+
             // Rotates until slip
             Shooter.rotateFor(3 + errorX, rotationUnits::rev, 100, velocityUnits::pct, false);
             ShooterAux.rotateFor(3 + errorX, rotationUnits::rev, 100, velocityUnits::pct, true);
-            
+
             sleep(80);
         }
         else
@@ -232,21 +233,25 @@ int taskShooter()
 // Postcondition - Robot flips cap and retrieves ball
 void flipCap(bool isRed, double capDist, bool intakeBall)
 {
-    isRed ? turnTo(0) : turnTo(180); // Added: turn to the wall
-    intakeBall ? runIntake(1) : runIntake(-1); // Turn  intake depending on ball
-    capDist > 20 ? drive(capDist - 5, -100) : 0; // Drive backwards if robot is too far from the cap
-    
+    isRed ? turnTo(0) : turnTo(180); // Turn to face the wall
+    intakeBall ? runIntake(1) : runIntake(-1); // Turn intake depending on ball
+
+    // Drive up to the cap
+    if (capDist > 5)
+        drive(capDist - 5, -100);
+
+    // Either intake the ball or flip the corner cap
     intakeBall ? drive(-5, -40) : drive(-11, -40); // Flip forward corner cap (7 points) at lower power
     runIntake(0); // Stop the intake from running
     drive(3, 30); // Drive away from flipped cap
-    
+
     if (intakeBall)
     {
         runIntake(-1); // Run intake in reverse to flip cap
         drive(-20, -40); // Flip cap (8 points)
-        drive(16, 75); // Drive away from flipped cap        
+        drive(16, 75); // Drive away from flipped cap
     }
-    
+
 }
 
 // Pre-condition - Robot is in position to shoot
@@ -255,22 +260,23 @@ void skillShot(bool isRed, bool retreat = true)
 {
     fire = true; // Fire at middle column of flags (10 [or 12] points)
     sleep(1000);
-    
+
     isRed ? turnTo(0) : turnTo(180); // Turn to 180º
-    
+
     sleep(100);
     drive(3, 30); // Move out of alignment with the pole
-    
+
     sleep(100);
     turnTo(90); // Turn to the bottom flag
-    
+
     sleep(100);
     drive(40, 75); // Flip bottom flag (11 points)
-    
+    turnTo(0);
+
     sleep(200);
     if (retreat)
     {
-        drive(-40, -75); // Back up to line up with corner cap 
+        drive(-35, -75); // Back up to line up with corner cap
         sleep (200); // Sleep here so we do not have to in the autuonmous function
     }
 }
@@ -289,7 +295,7 @@ void miscAuton(){
     drive(46, 40);
     turnLeft(35);
     forward(37.5, 35);*/
-    
+
     // CENTERING ON FIELD
     /*
     turnLeft(90);
@@ -333,30 +339,47 @@ void autonomous( void )
 {
     // Turn on intake
     task shooterTask = task(taskShooter, 1);
-    
+    gyroscope.startCalibration();
+    invertedGyro.startCalibration();
+    sleep(3000);
+
     // PART 1 - 1 POINT
     runIntake(1); // Run intake fwd
-    drive(-36, -100); // Collect the ball    
+    drive(-36, -80); // Collect the ball
     drive(4, 30);  // Forward to get away from cap
     runIntake(-1); // Run intake backwards to flip cap
-    drive(-16, -30); // Flip Cap (1 point)
+    drive(-20, -30); // Flip Cap (1 point)
     runIntake(0); // Stop running the intake
-    drive(50, 100); // Drive back to starting position
+    turnTo(0);
+    drive(50, 80); // Drive back to starting position
     turnTo(90); // Turn To 90º
-    
+    while (getAngle() < 90)
+    {
+        BackLeft.spin(directionType::fwd, 10, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, -10, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, -10, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, 10, velocityUnits::pct);
+    }
+    BackLeft.stop(brakeType::brake);
+    BackRight.stop(brakeType::brake);
+    FrontRight.stop(brakeType::brake);
+    FrontLeft.stop(brakeType::brake);
+
     // PART 2 - 6 POINTS
-    drive(62, 100); // Drive to shooting position
-    skillShot(true); // Fire at flags (6 points)
-    
+    drive(75, 100); // Drive to shooting position
+    turnTo(90);
+    //skillShot(true); // Fire at flags (6 points)
+
+    /*
     // PART 3 - 7 POINTS
     turnTo(0); // Added: turn to the wall
     runIntake(-1); // Run intake in reverse to flip cap
     drive(-20, -40); // Flip forward corner cap (7 points)
     runIntake(0); // Stop the intake from running
     drive(3, 30); // Drive away from flipped cap
-    
+
     // PART 4 - 8 POINTS
-    
+
     turnTo(-90); // Turn to get next ball
     drive(24, 75); // Drive forward in line with the next ball
     turnTo(0); // Turn to face ball
@@ -370,19 +393,19 @@ void autonomous( void )
     turnTo(-90); // Turn to flags backwards to pick up balls
     runIntake(1); // Start intake in case of any balls
     drive(-14, -75); // Line up with flags backwards
-    
+
     // PART 5 - 11 POINTS
     turnTo(90); // Turn to flags
     runIntake(0); // Turn off intake
     sleep(200); // Added Let balls settle
     skillShot(true); // Fire at flags (11 points)
     turnTo(0); // Turn to 0º
-    
+
     // PART 6 - 12 POINTS
     drive(-48, -100); // Drive up to the cap
     runIntake(-1); // Run intake to flip the cap
     drive(-8, -40); // Flip the cap (12 points)
-    
+
     // PART 7 - 13 POINTS
     drive(5, 40); // Changed (not all the way) Back in line
     turnTo(90); // Turn to 90º
@@ -393,7 +416,7 @@ void autonomous( void )
     drive(3, 30); // Drive away from  cap
     runIntake(-1); // Run intake in reverse to flip cap
     drive(-20, -40); // Flip cap (13 points)
-    
+
     // PART 8 - 16 POINTS
     drive(56, 75); // Drive away from flipped cap
     turnTo(-90); // Turn to flags backwards to pick up balls
@@ -402,32 +425,32 @@ void autonomous( void )
     turnTo(90); // Turn to flags
     runIntake(0); // Turn off intake
     skillShot(false, false); // Fire at flags (16 points)
-    
+
     // PART 9 - 22 POINTS
     drive(-72, -100); // Come back lined up with platform
     turnTo(0); // Turn to platform
     drive(92.5, 40); // Drive onto platform (22 points)
+    */
 }
 
-void usercontrol( void ) 
+void usercontrol( void )
 {
-  while (true)
-  {
-    sleep(50);
-  }
+    gyroscope.startCalibration();
+    invertedGyro.startCalibration();
+    sleep(3000);
+    autonomous();
 }
 
 int main()
 {
-    //Run the pre-autonomous function. 
+    //Run the pre-autonomous function.
     pre_auton();
-    
+
     //Set up callbacks for autonomous and driver control periods.
     Competition.autonomous( autonomous );
     Competition.drivercontrol( usercontrol );
 
-    //Prevent main from exiting with an infinite loop.                        
+    //Prevent main from exiting with an infinite loop.
     while(true)
       task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.
-       
 }
