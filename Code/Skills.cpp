@@ -98,14 +98,14 @@ void turnTo(double degrees, double speed = 40)
 double stblConst = 2;
 
 // Drive functions
-double rampUp(double deltaV, int cycles, int timeSlice)
+double rampUp(double deltaV, int cycles, int timeSlice, double angle = 0)
 {
     double currVel = FrontRight.velocity(velocityUnits::pct);
     FrontRight.resetRotation();
 
     // Gyro Stabilization variables
     double leftAdjustPwr = 0;
-    double init = getAngle();
+    double init = angle;
 
     for (int i = 0; i < cycles; i++)
     {
@@ -128,8 +128,9 @@ double rampUp(double deltaV, int cycles, int timeSlice)
 void drive(double inches, double speed, int cycles = 15, int timeSlice = 50)
 {
     // Converting inches to motor rotaitons
+    double init = getAngle();    
     double rots = inches / (wheelDiameter * PI);
-    rots -= rampUp(speed, cycles, timeSlice); // Subtracting ramping distance from total
+    rots -= rampUp(speed, cycles, timeSlice, init); // Subtracting ramping distance from total
 
     // PID Variables
     double P = 0, kp = 75;
@@ -141,7 +142,7 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50)
 
     // Gyro Stabilization variables
     double leftAdjustPwr = 0;
-    double init = getAngle();
+
 
     // Reset rotations before PID loop
     FrontRight.resetRotation();
