@@ -349,8 +349,8 @@ void autonomous( void )
     //drive(-50, -80);
     // Turn on intake
     task shooterTask = task(taskShooter, 1);
-    gyroscope.startCalibration();
-    invertedGyro.startCalibration();
+    gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
     sleep(6000);
     
     //turnTo(90, 50);
@@ -399,16 +399,19 @@ void autonomous( void )
     //turnTo(90); // Turn to flags
     runIntake(0); // Turn off intake
     sleep(200); // Added Let balls settle
-turnTo(97);    
-    skillShot(true); // Fire at flags (11 points)
-    turnTo(0);
+    turnTo(97);    
+    fire = true;
+    sleep(1000);
+    
+    //skillShot(true); // Fire at flags (11 points)
+    //turnTo(0);
      // Turn to 0º
     // PART 6 - 12 POINTS
-    drive(-25, -100); // Drive up to the cap
+    /*drive(-25, -100); // Drive up to the cap
     runIntake(-1); // Run intake to flip the cap
     drive(-14, -40); // Flip the cap (12 points)
     // PART 7 - 13 POINTS
-    /*drive(5, 40); // Changed (not all the way) Back in line
+    drive(5, 40); // Changed (not all the way) Back in line
     turnTo(90); // Turn to 90º
     drive(-24, -80); // Back up to be in line with next cap
     turnTo(180); // Turn to 180º to be in line with second cap
