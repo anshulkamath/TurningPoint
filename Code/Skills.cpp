@@ -65,9 +65,9 @@ double getAngle()
 }
 
 // Turn Functions
-void turnTo(double degrees, double speed = 40)
+void turnTo(double degrees, double speed = 60)
 {
-    double P = 0, kp =.8;
+    double P = 0, kp =.5;
     double error = 100, motorPower = 0, lastError = 100;
     while(true)
     {
@@ -194,9 +194,9 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, dou
     turnTo(init);
     // Sleep here so we do not have to in the autonomous function
     if (abs(inches) >= 16)
-        sleep(250);
+        sleep(150);
     else
-        sleep(100);
+        sleep(50);
 }
 
 // Catapult Task
