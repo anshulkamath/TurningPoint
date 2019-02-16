@@ -75,15 +75,26 @@ void setOffset(double targetValue)
 // Turn Functions
 void turnTo(double degrees, double speed = 60)
 {
-    double P = 0, kp =.725, kd = .1, D = 0;
+    double P = 0, kp =.725;
+    double I = 0; ki = 0.001;
+    double D = 0, kd = 0.1;
     double error = 100, motorPower = 0, lastError = 100;
     while(true)
     {
         lastError = error;
         error = degrees - getAngle();
         P = error * kp;
+        if (abs(error) < 2)
+          I += error * ki;
+        else
+          I = 0;
         D = kd * (error - lastError);
-        motorPower = P + D;
+
+        motorPower = abs(P) + abs(I) - abs(D);
+
+        if (error < 0)
+          motorPower *= -1;
+
         if(abs(error) <= 0.1 && abs(lastError) <= .1) break;;
 
         if(abs(motorPower) > abs(speed))
