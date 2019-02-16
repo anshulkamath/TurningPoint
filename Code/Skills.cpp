@@ -67,16 +67,16 @@ double getAngle()
 // Turn Functions
 void turnTo(double degrees, double speed = 60)
 {
-    double P = 0, kp =.5;
+    double P = 0, kp =.725, kd = .1, D = 0;
     double error = 100, motorPower = 0, lastError = 100;
     while(true)
     {
         lastError = error;
         error = degrees - getAngle();
         P = error * kp;
-
-        motorPower = P;
-        if(abs(error) <= 1 && abs(lastError) <= 1) return;
+        D = kd *(error - lastError);
+        motorPower = P + D;
+        if(abs(error) <=0.1 && abs(lastError) <= .1) break;;
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
@@ -269,10 +269,10 @@ void skillShot(bool isRed,  bool retreat = true)
     fire = true; // Fire at middle column of flags (10 [or 12] points)
     sleep(1000);
 
-    isRed ? turnTo(85) : turnTo(180); // Turn to 180º
+    isRed ? turnTo(80) : turnTo(180); // Turn to 180º
 
     sleep(100);
-    drive(5, 60); // Move out of alignment with the pole
+    drive(7,60); // Move out of alignment with the pole
 
     sleep(100);
     turnTo(95); // Turn to the bottom flag
@@ -356,31 +356,34 @@ void skills()
   drive(-20, -30); // Flip Cap (1 point)
   runIntake(0); // Stop running the intake
   turnTo(0);
-  drive(54, 60); // Drive back to starting position
-  turnTo(97); // Turn To 90º
+  drive(50, 60); // Drive back to starting position
+  turnTo(90); // Turn To 90º
   // PART 2 - 6 POINTS
-  drive(70, 60, 15, 50, 97); // Drive to shooting position
-  turnTo(97);
+  drive(69, 60, 15, 50, 90); // Drive to shooting position
+  turnTo(0);
+  //drive(10, );
+ // drive(10, -50);
+  turnTo(90);
   skillShot(true); // Fire at flags (6 points)
 
 
   // PART 3 - 7 POINTS
-  drive(-7, -40);
+ // drive(-3, -40);
   turnTo(0); // Added: turn to the wall
   runIntake(-1); // Run intake in reverse to flip cap
-  drive(-26, -70); // Flip forward corner cap (7 points)
+  drive(-28, -60); // Flip forward corner cap (7 points)
   runIntake(0); // Stop the intake from running
   drive(9, 60); // Drive away from flipped cap
   // PART 4 - 8 POINTS
   turnTo(-92); // Turn to get next ball
-  drive(26, 75); // Drive forward in line with the next ball
+  drive(22, 75); // Drive forward in line with the next ball
   turnTo(0); // Turn to face ball
   runIntake(1); // Run intake to take in ball
-  drive(-37, -75); // Changed (already 17 inches in) Collect next ball
+  drive(-32, -45); // Changed (already 17 inches in) Collect next ball
   runIntake(0); // Stop intake after ball is collected
   drive(3, 30); // Drive away from flipped cap
   runIntake(-1); // Run intake in reverse to flip cap
-  drive(-20, -30); // Flip cap (8 points)
+  drive(20, -30); // Flip cap (8 points)
   drive(6, 65); // Drive away from flipped cap
   turnTo(92); // Turn to flags backwards to pick up balls
   runIntake(1); // Start intake in case of any balls
@@ -389,7 +392,7 @@ void skills()
   //turnTo(90); // Turn to flags
   runIntake(0); // Turn off intake
   sleep(200); // Added Let balls settle
-  turnTo(97);
+  turnTo(100);
   fire = true;
   sleep(1000);
 
@@ -435,10 +438,24 @@ void autonomous( void )
     gyroscope.startCalibration(2);
     invertedGyro.startCalibration(2);
     sleep(6000);
+    //fire = true;
+    //turnTo(90);
+    //turnTo(0);
+    drive(-36, -100);
+    runIntake(1);
+    drive(-6, -20);
+    sleep(250);
 
-    //turnTo(90, 50);
+    drive(3, 30);
+    turnTo(-30);
+    drive(-3, -30);
+    turnTo(30);
+    runIntake(0);    
+    runIntake(-1);
+
+    drive(-6, -30);
     //return;
-    skills();
+   // skills();
 }
 
 void bringDown()
@@ -450,6 +467,7 @@ void usercontrol( void )
 {
    // bringDown();
     autonomous();
+    //turnTo(90);
 }
 
 int main()
