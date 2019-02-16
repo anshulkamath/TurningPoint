@@ -11,6 +11,7 @@ using namespace vex;
 int wheelDiameter = 4;
 double PI = M_PI;
 double wheelBaseLength = 9.5;
+double gyroOff = 0;
 
 void pre_auton( void )
 {
@@ -61,7 +62,14 @@ void runIntake(int num)
 
 double getAngle()
 {
-    return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20;
+    return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20 - gyroOff;
+}
+
+// Sets the offset of the gyro when centered against a wall
+void setOffset(double targetValue)
+{
+    if(abs(targetValue - getAngle()) < 3) // in the case that the robot did not center and gyroDrift would be too great
+      gyroOff += targetValue - getAngle();
 }
 
 // Turn Functions
@@ -74,9 +82,9 @@ void turnTo(double degrees, double speed = 60)
         lastError = error;
         error = degrees - getAngle();
         P = error * kp;
-        D = kd *(error - lastError);
+        D = kd * (error - lastError);
         motorPower = P + D;
-        if(abs(error) <=0.1 && abs(lastError) <= .1) break;;
+        if(abs(error) <= 0.1 && abs(lastError) <= .1) break;;
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
@@ -92,7 +100,6 @@ void turnTo(double degrees, double speed = 60)
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
-    Controller1.rumble("-.-.-");
     sleep(100); // Sleep here so we do not have to in the autonomous function
 }
 
@@ -289,6 +296,17 @@ void skillShot(bool isRed,  bool retreat = true)
     }
 }
 
+void newSkillShot(bool isFar)
+{
+    isFar ? drive(110, 100, 20, 50, 90) : drive(36, 100, 20, 50, 90); // Drives into the wall
+    setOffset(90); // Accounts for any gyro drift
+    drive(-44, -75); // Drive to shooting position
+    turnTo(100); // Angle towards the flags
+    fire = true; // Fire the catapult
+    sleep(1000); // Wait for catapult
+    turnTo(90); // Turn back to original angle
+}
+
 
 
 // Miscellaneous Auton
@@ -356,7 +374,7 @@ void skills()
   drive(-20, -30); // Flip Cap (1 point)
   runIntake(0); // Stop running the intake
   turnTo(0);
-  drive(50, 60); // Drive back to starting position
+  drive(53, 60); // Drive back to starting position
   turnTo(90); // Turn To 90º
   // PART 2 - 6 POINTS
   drive(69, 60, 15, 50, 90); // Drive to shooting position
@@ -375,7 +393,7 @@ void skills()
   runIntake(0); // Stop the intake from running
   drive(9, 60); // Drive away from flipped cap
   // PART 4 - 8 POINTS
-  turnTo(-92); // Turn to get next ball
+  turnTo(-90); // Turn to get next ball
   drive(22, 75); // Drive forward in line with the next ball
   turnTo(0); // Turn to face ball
   runIntake(1); // Run intake to take in ball
@@ -383,11 +401,11 @@ void skills()
   runIntake(0); // Stop intake after ball is collected
   drive(3, 30); // Drive away from flipped cap
   runIntake(-1); // Run intake in reverse to flip cap
-  drive(20, -30); // Flip cap (8 points)
+  drive(-20, -30); // Flip cap (8 points)
   drive(6, 65); // Drive away from flipped cap
-  turnTo(92); // Turn to flags backwards to pick up balls
-  runIntake(1); // Start intake in case of any balls
+  turnTo(90); // Turn to flags backwards to pick up balls
   drive(16, 60); // Line up with flags backwards
+
   // PART 5 - 11 POINTS
   //turnTo(90); // Turn to flags
   runIntake(0); // Turn off intake
@@ -450,7 +468,7 @@ void autonomous( void )
     turnTo(-30);
     drive(-3, -30);
     turnTo(30);
-    runIntake(0);    
+    runIntake(0);
     runIntake(-1);
 
     drive(-6, -30);
