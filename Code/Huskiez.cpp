@@ -264,7 +264,7 @@ void turnRight(double degrees)
 
 void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
 {
-    // Converting inches to motor rotaitons
+    // Converting inches to motor rotations
     double rots = inches / (wheelDiameter * PI);
     rots -= rampUp(speed, cycles, timeSlice); // Subtracting ramping distance from total
 
