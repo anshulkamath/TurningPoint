@@ -71,32 +71,46 @@ void setOffset(double targetValue)
     if(abs(targetValue - getAngle()) < 3) // in the case that the robot did not center and gyroDrift would be too great
       gyroOff += targetValue - getAngle();
 }
-
-// Turn Functions
-void turnTo(double degrees, double speed = 60)
+void turnLeft(double degrees)
 {
-    double P = 0, kp =.725;
-    double I = 0; ki = 0.001;
-    double D = 0, kd = 0.1;
+    setBrakeMode(vex::brakeType::hold);
+    double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86 * 92.5/90;
+
+    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, true);
+
+    setBrakeMode(brakeType::coast);
+}
+
+void turnRight(double degrees)
+{
+    setBrakeMode(vex::brakeType::hold);
+    double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86 * 92.5/90;
+
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 35, vex::velocityUnits::pct, true);
+
+    setBrakeMode(brakeType::coast);
+}
+// Turn Functions
+void turnTo(double degrees, double speed = 40)
+{
+    degrees *= 96.0/90.0;
+    double P = 0, kp =.7, kd = .03, D = 0;
     double error = 100, motorPower = 0, lastError = 100;
     while(true)
     {
         lastError = error;
         error = degrees - getAngle();
         P = error * kp;
-        if (abs(error) < 2)
-          I += error * ki;
-        else
-          I = 0;
-        D = kd * (error - lastError);
-
-        motorPower = abs(P) + abs(I) - abs(D);
-
-        if (error < 0)
-          motorPower *= -1;
-
-        if(abs(error) <= 0.1 && abs(lastError) <= .1) break;;
-
+        D = kd *(error - lastError);
+        motorPower = P + D;
+        if(abs(error) <=0.1 && abs(lastError) <= .1) break;;
+        
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
 
@@ -111,6 +125,7 @@ void turnTo(double degrees, double speed = 60)
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
+    Controller1.rumble("-.-.-");
     sleep(100); // Sleep here so we do not have to in the autonomous function
 }
 
@@ -309,13 +324,14 @@ void skillShot(bool isRed,  bool retreat = true)
 
 void newSkillShot(bool isFar)
 {
-    isFar ? drive(110, 100, 20, 50, 90) : drive(36, 100, 20, 50, 90); // Drives into the wall
-    setOffset(90); // Accounts for any gyro drift
-    drive(-44, -75); // Drive to shooting position
-    turnTo(100); // Angle towards the flags
+    runIntake(1);
+    isFar ? drive(110, 100, 20, 50, 93) : drive(36, 100, 20, 50, 90); // Drives into the wall
+    //setOffset(90); // Accounts for any gyro drift
+    drive(-36, -75); // Drive to shooting position
+    turnTo(101); // Angle towards the flags
     fire = true; // Fire the catapult
     sleep(1000); // Wait for catapult
-    turnTo(90); // Turn back to original angle
+    turnTo(95); // Turn back to original angle
 }
 
 
@@ -382,58 +398,68 @@ void skills()
   drive(2, 30);  // Forward to get away from cap
   turnTo(0);
   runIntake(-1); // Run intake backwards to flip cap
-  drive(-20, -30); // Flip Cap (1 point)
+  drive(-17, -30); // Flip Cap (1 point)
   runIntake(0); // Stop running the intake
   turnTo(0);
-  drive(53, 60); // Drive back to starting position
-  turnTo(90); // Turn To 90º
+  drive(50, 60); // Drive back to starting position
+  //turnRight(90);
+  turnTo(100); // Turn To 90º
   // PART 2 - 6 POINTS
-  drive(69, 60, 15, 50, 90); // Drive to shooting position
+  /*drive(69, 60, 15, 50, 90); // Drive to shooting position
   turnTo(0);
   //drive(10, );
  // drive(10, -50);
   turnTo(90);
-  skillShot(true); // Fire at flags (6 points)
-
+  skillShot(true);*/ // Fire at flags (6 points)
+    newSkillShot(true);
 
   // PART 3 - 7 POINTS
- // drive(-3, -40);
+  drive(4, 40);
   turnTo(0); // Added: turn to the wall
   runIntake(-1); // Run intake in reverse to flip cap
-  drive(-28, -60); // Flip forward corner cap (7 points)
+  drive(-22, -40); // Flip forward corner cap (7 points)
   runIntake(0); // Stop the intake from running
   drive(9, 60); // Drive away from flipped cap
   // PART 4 - 8 POINTS
   turnTo(-90); // Turn to get next ball
-  drive(22, 75); // Drive forward in line with the next ball
+  drive(24, 75); // Drive forward in line with the next ball
   turnTo(0); // Turn to face ball
   runIntake(1); // Run intake to take in ball
-  drive(-32, -45); // Changed (already 17 inches in) Collect next ball
-  runIntake(0); // Stop intake after ball is collected
-  drive(3, 30); // Drive away from flipped cap
-  runIntake(-1); // Run intake in reverse to flip cap
-  drive(-20, -30); // Flip cap (8 points)
-  drive(6, 65); // Drive away from flipped cap
-  turnTo(90); // Turn to flags backwards to pick up balls
-  drive(16, 60); // Line up with flags backwards
+  drive(-28, -100);
+    runIntake(1);
+    drive(-6, -20);
+    sleep(250);
 
+    drive(5, 30);
+    //turnTo(45);
+    //drive(-3, -30);
+    //turnTo(-30);
+    runIntake(0);
+    //runIntake(-1);
+
+    //drive(-8, -30);
+    
   // PART 5 - 11 POINTS
   //turnTo(90); // Turn to flags
   runIntake(0); // Turn off intake
   sleep(200); // Added Let balls settle
-  turnTo(100);
+  turnTo(120);
+    drive(24, 60);
   fire = true;
   sleep(1000);
+  drive(24, 50);
+  turnTo(100);
+  drive(-24, -50);
 
   //skillShot(true); // Fire at flags (11 points)
-  //turnTo(0);
+  turnTo(0);
    // Turn to 0º
   // PART 6 - 12 POINTS
-  /*drive(-25, -100); // Drive up to the cap
+  drive(-25, -100); // Drive up to the cap
   runIntake(-1); // Run intake to flip the cap
   drive(-14, -40); // Flip the cap (12 points)
   // PART 7 - 13 POINTS
-  drive(5, 40); // Changed (not all the way) Back in line
+  /*drive(5, 40); // Changed (not all the way) Back in line
   turnTo(90); // Turn to 90º
   drive(-24, -80); // Back up to be in line with next cap
   turnTo(180); // Turn to 180º to be in line with second cap
@@ -467,7 +493,8 @@ void autonomous( void )
     gyroscope.startCalibration(2);
     invertedGyro.startCalibration(2);
     sleep(6000);
-    //fire = true;
+    //turnTo(90);
+    /*//fire = true;
     //turnTo(90);
     //turnTo(0);
     drive(-36, -100);
@@ -482,9 +509,9 @@ void autonomous( void )
     runIntake(0);
     runIntake(-1);
 
-    drive(-6, -30);
+    drive(-6, -30);*/
     //return;
-   // skills();
+    skills();
 }
 
 void bringDown()
