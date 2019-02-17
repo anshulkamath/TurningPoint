@@ -119,7 +119,7 @@ void turnTo(double degrees, double speed = 40)
         FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
         FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
 
-        sleep(50);
+        sleep(10);
     }
     BackLeft.stop(brakeType::brake);
     BackRight.stop(brakeType::brake);
@@ -325,13 +325,13 @@ void skillShot(bool isRed,  bool retreat = true)
 void newSkillShot(bool isFar)
 {
     runIntake(1);
-    isFar ? drive(110, 100, 20, 50, 93) : drive(36, 100, 20, 50, 90); // Drives into the wall
+    isFar ? drive(110, 100, 20, 50, 96) : drive(36, 100, 20, 50, 90); // Drives into the wall
     //setOffset(90); // Accounts for any gyro drift
     drive(-36, -75); // Drive to shooting position
     turnTo(101); // Angle towards the flags
     fire = true; // Fire the catapult
     sleep(1000); // Wait for catapult
-    turnTo(95); // Turn back to original angle
+    turnTo(90); // Turn back to original angle
 }
 
 
@@ -401,9 +401,9 @@ void skills()
   drive(-17, -30); // Flip Cap (1 point)
   runIntake(0); // Stop running the intake
   turnTo(0);
-  drive(50, 60); // Drive back to starting position
+  drive(54, 60); // Drive back to starting position
   //turnRight(90);
-  turnTo(100); // Turn To 90º
+  turnTo(90); // Turn To 90º
   // PART 2 - 6 POINTS
   /*drive(69, 60, 15, 50, 90); // Drive to shooting position
   turnTo(0);
@@ -493,9 +493,15 @@ void autonomous( void )
     gyroscope.startCalibration(2);
     invertedGyro.startCalibration(2);
     sleep(6000);
+    //drive(48, 60);
+    //turnTo(180);
+    
+    //drive(48, 60);
     //turnTo(90);
+    //turnTo(90);
+    //turnTo(0);
     /*//fire = true;
-    //turnTo(90);
+    //turn;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;To(90);
     //turnTo(0);
     drive(-36, -100);
     runIntake(1);
