@@ -39,7 +39,10 @@ void setBrakeMode(vex::brakeType brake)
     BackLeft.setStopping(brake);
     BackRight.setStopping(brake);
 }
-
+int sgn(double val)
+{
+    return val > 0 ? 1 : -1;
+}
 void setDrive(double vel)
 {
     BackLeft.spin(directionType::fwd, vel, velocityUnits::pct);
@@ -149,8 +152,9 @@ void sideSelect()
 
 void pre_auton( void )
 {
-    gyroscope.startCalibration();
-    invertedGyro.startCalibration();
+    gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
+    sleep(5000);
 
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(vex::color::black);
@@ -219,16 +223,27 @@ void backward(double inches, int time, double speed = 50)
     Brain.resetTimer();
     while(Brain.timer(timeUnits::msec) < time && FrontRight.isSpinning() && BackRight.isSpinning());
 }
-
-double rampUp(double deltaV, int cycles, int timeSlice)
+double stblConst = .7;
+double rampUp(double deltaV, int cycles, int timeSlice, double angle = 0)
 {
     double currVel = FrontRight.velocity(velocityUnits::pct);
     FrontRight.resetRotation();
 
+    // Gyro Stabilization variables
+    double leftAdjustPwr = 0;
+    double init = angle;
+
     for (int i = 0; i < cycles; i++)
     {
         currVel += deltaV/cycles;
-        setDrive(currVel);
+
+        leftAdjustPwr = stblConst * (getAngle() - init); // Tracking difference in gyro value
+
+        // Setting motor powers
+        BackLeft.spin(directionType::fwd, currVel - leftAdjustPwr, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, currVel, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, currVel, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, currVel - leftAdjustPwr, velocityUnits::pct);
 
         task::sleep(timeSlice);
     }
@@ -261,12 +276,45 @@ void turnRight(double degrees)
 
     setBrakeMode(brakeType::coast);
 }
+void turnTo(double degrees, double speed = 40)
+{
+    degrees *= 96.0/90.0;
+    double P = 0, kp =.7, kd = .03, D = 0;
+    double error = 100, motorPower = 0, lastError = 100;
+    while(true)
+    {
+        lastError = error;
+        error = degrees - getAngle();
+        P = error * kp;
+        D = kd *(error - lastError);
+        motorPower = P + D;
+        if(abs(error) <=0.1 && abs(lastError) <= .1) break;;
+        
+        if(abs(motorPower) > abs(speed))
+            motorPower = speed * sgn(motorPower);
 
-void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
+        BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+
+        sleep(10);
+    }
+    BackLeft.stop(brakeType::brake);
+    BackRight.stop(brakeType::brake);
+    FrontRight.stop(brakeType::brake);
+    FrontLeft.stop(brakeType::brake);
+    Controller1.rumble("-.-.-");
+    sleep(100); // Sleep here so we do not have to in the autonomous function
+}
+
+void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, double heading = -121)
 {
     // Converting inches to motor rotations
+    double init = getAngle();
+    if(heading != -121) init = heading;
     double rots = inches / (wheelDiameter * PI);
-    rots -= rampUp(speed, cycles, timeSlice); // Subtracting ramping distance from total
+    rots -= rampUp(speed, cycles, timeSlice, init); // Subtracting ramping distance from total
 
     // PID Variables
     double P = 0, kp = 75;
@@ -277,8 +325,8 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     double motorPower = 0, lMotorPower = 0;
 
     // Gyro Stabilization variables
-    double leftAdjustPwr = 0, stblConst = 2;
-    double init = getAngle();
+    double leftAdjustPwr = 0;
+
 
     // Reset rotations before PID loop
     FrontRight.resetRotation();
@@ -288,7 +336,7 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     int theoreticalTime = abs(rots / (speed * 2) / 60);
 
     // PID Loop
-    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 3000)
+    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots)/* && Brain.timer(timeUnits::msec) < theoreticalTime + 1000*/)
     {
         // Setting PID Variables
         error = rots - (FrontRight.rotation(rotationUnits::rev));
@@ -325,44 +373,17 @@ void drive(double inches, double speed, int cycles = 10, int timeSlice = 50)
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
-
+    turnTo(init);
     // Sleep here so we do not have to in the autonomous function
     if (abs(inches) >= 16)
-        sleep(250);
+        sleep(150);
     else
-        sleep(100);
+        sleep(50);
 }
 
 
-void turnTo(double degrees, double speed = 40)
-{
-    double P = 0, kp = .8;
-    double error = 100, motorPower = 0;
-    while(abs(abs(degrees) - abs(getAngle())) >= .1 || abs(error) > .2)
-    {
-        error = degrees - getAngle();
-        P = error * kp;
-        motorPower = P;
 
-        if(abs(motorPower) > abs(speed))
-            motorPower = speed;
-        if(error < 0 && motorPower > 0)
-            motorPower *= -1;
 
-        BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
-        FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
-
-        task::sleep(50);
-    }
-    BackLeft.stop(brakeType::brake);
-    BackRight.stop(brakeType::brake);
-    FrontRight.stop(brakeType::brake);
-    FrontLeft.stop(brakeType::brake);
-
-    sleep(200);
-}
 
 // Tasks
 
@@ -479,7 +500,7 @@ int taskDrive()
 bool inUse = false;
 bool fire = false;
 double errorB = 0.1;
-double errorX = 0.02;
+double errorX = 0.03;
 
 // Shooter Task
 int taskShooter()
@@ -611,9 +632,10 @@ void autonFunc1(string side)
     task shooterTask = task(taskShooter, 1);
 
     runIntake(1);
-    drive(-36, -100); // Drive backwards and get ball
+    drive(-37.5, -100); // Drive backwards and get ball
     runIntake(0);
     drive(39, 100); // Drive to shooting position
+    
     side == "RED" ? turnTo(90) : turnTo(-90); // Turn to face flags
     drive(20, 60); // Drive up to flag
     fire = true; // Fire
@@ -622,7 +644,7 @@ void autonFunc1(string side)
     drive(3, 30); // Move out of alignment with pole
     side == "RED" ? turnTo(90) : turnTo(-90); // Turn back to flags
     drive(32, 100); // Hit the flags
-    drive(-28, -100); // Come back in line with second cap
+    drive(-22, -100); // Come back in line with second cap
     turnTo(0); // Turn in line with second cap
     runIntake(-1); // Run intake backwards to flip cap
     drive(-24, -50); // Run backwards to flip the cap
@@ -708,7 +730,7 @@ void autonFunc3(string side)
 void autonomous( void )
 {
     if (autonNum == 0)
-        oldFunc1(side);
+        autonFunc1(side);
     else if (autonNum == 1)
         autonFunc2(side);
 }
