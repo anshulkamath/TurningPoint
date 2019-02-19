@@ -329,7 +329,7 @@ void newSkillShot(bool isFar)
     //setOffset(90); // Accounts for any gyro drift
     drive(-36, -75, 20, 50, 96); // Drive to shooting position
     turnTo(101); // Angle towards the flags
-  //  fire = true; // Fire the catapult
+    fire = true; // Fire the catapult
     sleep(1000); // Wait for catapult
     turnTo(90); // Turn back to original angle
 }
