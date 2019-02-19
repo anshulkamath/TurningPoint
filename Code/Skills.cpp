@@ -329,7 +329,7 @@ void newSkillShot(bool isFar)
     //setOffset(90); // Accounts for any gyro drift
     drive(-36, -75); // Drive to shooting position
     turnTo(101); // Angle towards the flags
-    fire = true; // Fire the catapult
+  //  fire = true; // Fire the catapult
     sleep(1000); // Wait for catapult
     turnTo(90); // Turn back to original angle
 }
@@ -430,7 +430,7 @@ void skills()
     drive(-6, -20);
     sleep(250);
 
-    drive(5, 30);
+    //drive(5, 30);
     //turnTo(45);
     //drive(-3, -30);
     //turnTo(-30);
@@ -445,7 +445,6 @@ void skills()
   sleep(200); // Added Let balls settle
   turnTo(120);
     drive(24, 60);
-  fire = true;
   sleep(1000);
   drive(24, 50);
   turnTo(100);
