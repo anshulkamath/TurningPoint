@@ -289,7 +289,7 @@ void turnTo(double degrees, double speed = 40)
         D = kd *(error - lastError);
         motorPower = P + D;
         if(abs(error) <=0.1 && abs(lastError) <= .1) break;;
-        
+
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
 
@@ -313,6 +313,14 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, dou
     // Converting inches to motor rotations
     double init = getAngle();
     if(heading != -121) init = heading;
+
+    // Making sure a drive call backwards will have the same result
+    if (inches < 0 || speed < 0)
+    {
+      inches = abs(inches) * -1;
+      speed = abs(speed) * -1;
+    }
+
     double rots = inches / (wheelDiameter * PI);
     rots -= rampUp(speed, cycles, timeSlice, init); // Subtracting ramping distance from total
 
@@ -380,9 +388,6 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, dou
     else
         sleep(50);
 }
-
-
-
 
 
 // Tasks
@@ -635,7 +640,7 @@ void autonFunc1(string side)
     drive(-37.5, -100); // Drive backwards and get ball
     runIntake(0);
     drive(39, 100); // Drive to shooting position
-    
+
     side == "RED" ? turnTo(90) : turnTo(-90); // Turn to face flags
     drive(20, 60); // Drive up to flag
     fire = true; // Fire
@@ -649,6 +654,44 @@ void autonFunc1(string side)
     runIntake(-1); // Run intake backwards to flip cap
     drive(-24, -50); // Run backwards to flip the cap
     runIntake(0); // Stop the intake
+
+    if (park)
+    {
+        drive(-9, -40); // Drive in line with the platform
+        side == "RED" ? turnTo(-90) : turnTo(90); // Turn to face flags
+        drive(36, 100); // Drive up to platform
+        drive(30, 40); // Drive onto the platform
+    }
+    else
+    {
+        drive(-26, -75); // Drive backwards in line with bottom flag
+        turnTo(90); // Turn to bottom flag
+        drive(33, 100); // Drive forward to turn bottom flag
+        drive(-33, -100); // Drive backwards to reset
+    }
+}
+
+// 1 - Shoot 3 flags, flip cap, flip bottom flag
+void autonFunc1Revamped(string side)
+{
+    task shooterTask = task(taskShooter, 1);
+
+    runIntake(1);
+    drive(-37.5, -100); // Drive backwards and get ball
+    runIntake(0);
+    drive(40.5, 100); // Drive to shooting position
+
+    side == "RED" ? turnTo(90) : turnTo(-90); // Turn to face flags
+    drive(84, 100); // Drive into the flag at 100
+    side == "RED" ? turnTo(90) : turnTo(-90); // Re-center
+    drive(-63, -100); // Drive back to shooting position
+    side == "RED" ? turnTo(100) : turnTo(-100); // Turn to face flags
+    fire = true; // Fire at flags
+    sleep(400);
+    turnTo(0); // Turn to face the cap
+    runIntake(-1); // Run intake backwards to flip cap
+    drive(-30, -50); // Flip the near cap
+    runIntake(0); // Stop intake after cap has been flipped
 
     if (park)
     {
@@ -707,6 +750,7 @@ void autonFunc2(string side)
     }
 }
 
+// EXPERIMENTAL - DO NOT RUN
 void autonFunc3(string side)
 {
     task(taskShooter, 1);
