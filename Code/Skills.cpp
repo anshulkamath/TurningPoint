@@ -78,6 +78,20 @@ void runIntake(int num)
     }
 }
 
+// Pre-condition  : assumes robot is in line with bottom flag and has two balls
+// Post-condition : all three flags are toggled
+void autonFire(double initDist)
+{
+  drive(initDist, 100); // Drive into the flag at 100
+  side == "RED" ? turnTo(90) : turnTo(-90); // Re-center
+  drive(-38, -100); // Drive back to shooting position
+  side == "RED" ? turnTo(100) : turnTo(-100); // Turn to face flags
+  fire = true; // Fire at flags
+  sleep(400);
+  side == "RED" ? turnTo(90) : turnTo(-90);
+}
+
+
 double getAngle()
 {
     return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20 - gyroOff;
