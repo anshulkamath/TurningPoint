@@ -804,7 +804,8 @@ void alphaAuton()
 
     // Wait until we are inside height
     while (Scraper.rotation(rotationUnits::deg) < scraperMid) { sleep(50); }
-
+    Scraper.stop(brakeType::hold);
+    
     autonFire(72); // Fire all flags
 
     drive(-16, -75); // Drive back to line up with balls on cap
@@ -832,6 +833,18 @@ void alphaAuton()
     side == "RED" ? turnTo(95) : turnTo(-95); // Turn to face flags
     drive(36, 100); // Flip the bottom flag
 
+}
+
+void godAuton()
+{
+    // Start facing
+    task shooterTask = task(taskShooter, 1);
+
+    runIntake(1); 
+    drive(-24, -100);
+    runScraper(1);
+    drive(24, 100);
+    turnTo(
 }
 
 // EXPERIMENTAL - DO NOT RUN
