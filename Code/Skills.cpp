@@ -325,7 +325,7 @@ void skillShot(bool isRed,  bool retreat = true)
 void newSkillShot(bool isFar)
 {
     runIntake(1);
-    isFar ? drive(78, 100, 20, 50, 96) : drive(36, 100, 20, 50, 90); // Drives into the wall
+    isFar ? drive(78, 100, 20, 50, 96) : drive(36, 100, 20, 50, 96); // Drives into the wall
     //setOffset(90); // Accounts for any gyro drift
     drive(-36, -75, 20, 50, 96); // Drive to shooting position
     turnTo(98); // Angle towards the flags
@@ -425,20 +425,48 @@ void skills()
     scraper.rotateTo(1425, rotationUnits::deg, 500, velocityUnits::pct);
     runIntake(1);
     drive(7, 30);
-scraper.rotateTo(1150, rotationUnits::deg, 50, velocityUnits::pct, true);
-     
+    scraper.rotateTo(1150, rotationUnits::deg, 50, velocityUnits::pct, true);
     sleep(800);
     runIntake(1);
-    
     drive(-5, -60);
-        runIntake(-1);
+    runIntake(-1);
     drive(-20, -60);
+    
+    
     turnTo(0);
     drive(-28, -60);
     turnTo(90);
-    drive(-10, -60);
-    fire = true;
-    drive(24, 50);
+    newSkillShot(false);
+    
+    turnTo(0);
+    drive(-48, -100);
+    
+    turnTo(90);    
+    drive(-24, -50);
+    turnTo(-45);
+    drive(-24, -50);
+    
+    scraper.rotateTo(1425, rotationUnits::deg, 500, velocityUnits::pct);
+    runIntake(1);
+    drive(7, 30);
+    scraper.rotateTo(1150, rotationUnits::deg, 50, velocityUnits::pct, true);
+    sleep(800);
+    runIntake(1);
+    drive(-5, -60);
+    runIntake(-1);
+    drive(-20, -60);   
+    
+    turnTo(0);
+    drive(5, 40);
+    turnTo(90);
+    drive(-10, -40);
+    newSkillShoot(false);
+    turnTo(0);
+    drive(-48, -100);
+    turnTo(-90);
+    drive(24, 70);
+    turnTo(0);
+    drive(80, 50);
    // scraper.rotateFor()
     // PART 3 - 7 POINTS
     /*turnTo(0); // Added: turn to the wall
