@@ -205,11 +205,10 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, dou
     double D = 0, kd = 230;
     double error = 0, lError = 0;
     double iThresh = .5;
-    double motorPower = 0, lMotorPower = 0;
+    double motorPower = 0;
 
     // Gyro Stabilization variables
     double leftAdjustPwr = 0;
-
 
     // Reset rotations before PID loop
     FrontRight.resetRotation();
@@ -274,7 +273,6 @@ double errorX = 0.005;
 int taskShooter()
 {
     Shooter.resetRotation();
-    double count = 0;
 
     Shooter.setStopping(brakeType::hold);
     ShooterAux.setStopping(brakeType::hold);
@@ -425,21 +423,21 @@ void newSkills()
     // Start facing
     task shooterTask = task(taskShooter, 1);
 
-    runIntake(1); 
+    runIntake(1);
     drive(-24, -100);
     runScraper(1);
     drive(24, 100);
     turnTo(0);
-    runScraper(0);    
+    runScraper(0);
     drive(3, 40);
-    
+
     side == "RED" ? turnTo(90) : turnTo(-90);
-    
+
     autonFire(64);
     drive(-5, -40);
     turnTo(0);
     drive(-36, -100);
-    
+
     turnTo(180);
     drive(-10, -40);
     runScraper(1);
@@ -449,13 +447,13 @@ void newSkills()
     drive(10, 40);
     turnTo(90);
     autonFire(64);
-    
+
     turnTo(0);
     drive(-96, -100);
     runScraper(1);
     drive(10, 40);
     turnTo(90);
-    
+
     drive(-30, -100);
     turnTo(0);
     runScraper(1);
@@ -466,7 +464,7 @@ void newSkills()
     drive(24, 100);
     turnTo(90);
     autonFire(64);
-    
+
     turnTo(0);
     //runIntake(-1);
     drive(-24, -100);
@@ -474,7 +472,7 @@ void newSkills()
     drive(60, 40);
     turnTo(0);
     drive(60, 40);
-    
+
 }
 
 void skills()
