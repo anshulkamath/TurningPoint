@@ -97,7 +97,7 @@ void turnRight(double degrees)
     setBrakeMode(brakeType::coast);
 }
 // Turn Functions
-void turnTo(double degrees, double speed = 40)
+void turnTo(double degrees, double speed = 80)
 {
     degrees *= 96.0/90.0;
     double P = 0, kp =.7, kd = .03, D = 0;
@@ -325,10 +325,10 @@ void skillShot(bool isRed,  bool retreat = true)
 void newSkillShot(bool isFar)
 {
     runIntake(1);
-    isFar ? drive(110, 100, 20, 50, 96) : drive(36, 100, 20, 50, 90); // Drives into the wall
+    isFar ? drive(78, 100, 20, 50, 96) : drive(36, 100, 20, 50, 90); // Drives into the wall
     //setOffset(90); // Accounts for any gyro drift
     drive(-36, -75, 20, 50, 96); // Drive to shooting position
-    turnTo(101); // Angle towards the flags
+    turnTo(98); // Angle towards the flags
     fire = true; // Fire the catapult
     sleep(1000); // Wait for catapult
     turnTo(90); // Turn back to original angle
@@ -395,15 +395,18 @@ void skills()
     drive(-36, -80); // Collect the ball
     turnTo(0);
     runIntake(0);
-    drive(2, 30);  // Forward to get away from cap
-    turnTo(0);
+    //drive(2, 30);  // Forward to get away from cap
+    //turnTo(0);
+    sleep(700);
     runIntake(-1); // Run intake backwards to flip cap
-    drive(-17, -30); // Flip Cap (1 point)
+    drive(-18, -30); // Flip Cap (1 point)
     runIntake(0); // Stop running the intake
     turnTo(0);
-    drive(56.5, 100); // Drive back to starting position
+    drive(64, 80); // Drive back to starting position
     //turnRight(90);
     turnTo(90); // Turn To 90º
+    drive(-20, -40);
+    scraper.rotateTo(1150, rotationUnits::deg, 100, velocityUnits::pct, true);
     // PART 2 - 6 POINTS
     /*drive(69, 60, 15, 50, 90); // Drive to shooting position
     turnTo(0);
@@ -412,9 +415,33 @@ void skills()
     turnTo(90);
     skillShot(true);*/ // Fire at flags (6 points)
     newSkillShot(true);
+    
+    //NEW
+    turnTo(90);
+    drive(-24, -50);
+    turnTo(-45);
+    drive(-24, -50);
 
+    scraper.rotateTo(1425, rotationUnits::deg, 500, velocityUnits::pct);
+    runIntake(1);
+    drive(7, 30);
+scraper.rotateTo(1150, rotationUnits::deg, 50, velocityUnits::pct, true);
+     
+    sleep(800);
+    runIntake(1);
+    
+    drive(-5, -60);
+        runIntake(-1);
+    drive(-20, -60);
+    turnTo(0);
+    drive(-28, -60);
+    turnTo(90);
+    drive(-10, -60);
+    fire = true;
+    drive(24, 50);
+   // scraper.rotateFor()
     // PART 3 - 7 POINTS
-    turnTo(0); // Added: turn to the wall
+    /*turnTo(0); // Added: turn to the wall
     runIntake(-1); // Run intake in reverse to flip cap
     drive(-24, -60); // Flip forward corner cap (7 points)
     runIntake(0); // Stop the intake from running
@@ -442,7 +469,7 @@ void skills()
     runIntake(0); // Turn off intake
     sleep(200); // Added Let balls settle
     turnTo(90);
-    drive(27, 100);
+    drive(29, 100);
     //turnTo(90);
     //drive(36, 60);
     //turnTo(90);
@@ -454,17 +481,19 @@ void skills()
     // PART 6 - 12 POINTS
     drive(-36, -80); // Drive up to the cap
     runIntake(-1); // Run intake to flip the cap
-    drive(-19, -60); // Flip the cap (12 points)
+    drive(-22, -60); // Flip the cap (12 points)
     runIntake(0); // Added : Stop intake
     // PART 7 - 13 POINTS
-    drive(1, 40); // Changed (not all the way) Back in line
+    //drive(1, 40); // Changed (not all the way) Back in line
     turnTo(90); // Turn to 90º
     drive(-24, -80); // Back up to be in line with next cap
-    turnTo(180); // Turn to 180º to be in line with second cap
-    drive(-18, -75); // Collect next ball
+    turnTo(169); // Turn to 180º to be in line with second cap
+    runIntake(1);
+    drive(-16, -40); // Collect next ball
     runIntake(0); // Stop intake
     drive(3, 30); // Drive away from  cap
     runIntake(-1); // Run intake in reverse to flip cap
+    turnTo(169);
     drive(-12, -60); // Flip cap (13 points) -->  Changed to be less
     /*
     // PART 8 - 16 POINTS
@@ -514,6 +543,7 @@ void autonomous( void )
     runIntake(-1);
     drive(-6, -30);*/
     //return;
+    
     skills();
 }
 
