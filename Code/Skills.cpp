@@ -388,6 +388,46 @@ void miscAuton(){
       - Drive onto platform
 */
 
+void newSkills()
+{
+    // Start facing
+    task shooterTask = task(taskShooter, 1);
+
+    runIntake(1); 
+    drive(-24, -100);
+    runScraper(1);
+    drive(24, 100);
+    turnTo(0);
+    runScraper(0);    
+    drive(3, 40);
+    
+    side == "RED" ? turnTo(90) : turnTo(-90);
+    
+    autonFire(64);
+    drive(-5, -40);
+    turnTo(0);
+    drive(-36, -100);
+    
+    turnTo(180);
+    drive(-10, -40);
+    runScraper(1);
+    drive(10, 40);
+    turnTo(169);
+    runScraper(0);
+    drive(10, 40);
+    turnTo(90);
+    autonFire(64);
+    
+    /*turnTo(0);
+    drive(-96, -100);
+    turnTo(90);
+    drive(-36, -100);
+    runScraper(1);
+    drive(10, 40);*/
+    
+    
+}
+
 void skills()
 {
     // PART 1 - 1 POINT
