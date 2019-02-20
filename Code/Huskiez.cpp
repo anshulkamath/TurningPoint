@@ -101,6 +101,28 @@ void runIntake(int num)
     }
 }
 
+// -1 is starting position, 0 is middle, 1 is scraping level
+
+double scraperMid = 1150;
+double scraperDown = 1425;
+void runScraper(int num)
+{
+    switch(num)
+    {
+        case -1:
+            Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
+            break;
+        case 0:
+            Scraper.rotateTo(scraperMid, rotationUnits::deg, 100, velocityUnits::pct);
+            break;
+        case 1:
+            Scraper.rotateTo(scraperDown, rotationUnits::deg, 100, velocityUnits::pct);
+            break;
+        default:
+            break;
+    }
+}
+
 int sign(double val)
 {
     return val < 0 ? -1 : 1;
@@ -335,7 +357,6 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, dou
     // Gyro Stabilization variables
     double leftAdjustPwr = 0;
 
-
     // Reset rotations before PID loop
     FrontRight.resetRotation();
 
@@ -441,6 +462,7 @@ int taskDrive()
             frontRightValue = backRightValue *= turnLimiter;
         }
 
+        /*
         if (Controller1.ButtonRight.pressing())
         {
             backLeftValue = frontLeftValue = 30;
@@ -451,6 +473,7 @@ int taskDrive()
             backLeftValue = frontLeftValue = -30;
             frontRightValue = backRightValue = 30;
         }
+        */
 
         // Enables Brake Mode
         if (Controller1.ButtonDown.pressing())
@@ -569,13 +592,15 @@ int taskIntakes()
         else
             Intake.stop(brakeType::hold);
 
-        /*
-        if (Controller1.ButtonRight.pressing())
-            Descore.spin(directionType::fwd, 50, velocityUnits::pct);
+        if (Controller1.ButtonUp.pressing())
+            Scraper.rotateTo(scraperMid, rotationUnits::deg, 100, velocityUnits::pct, false);
         else if (Controller1.ButtonLeft.pressing())
-            Descore.spin(directionType::rev, 50, velocityUnits::pct);
+            Scraper.spin(directionType::rev, 100, velocityUnits::pct);
+        else if (Controller1.ButtonRight.pressing())
+            Scraper.spin(directionType::fwd, 100, velocityUnits::pct);
         else
-            Descore.stop(brakeType::hold);*/
+            Scraper.stop(brakeType::hold);
+
         task::sleep(50);
     }
     return 0;
@@ -591,8 +616,21 @@ int taskScreen()
 }
 // Autonomous Programs
 
+// Pre-condition  : assumes robot is in line with bottom flag and has two balls
+// Post-condition : all three flags are toggled
+void autonFire(double initDist)
+{
+  drive(initDist, 100); // Drive into the flag at 100
+  side == "RED" ? turnTo(90) : turnTo(-90); // Re-center
+  drive(-38, -100); // Drive back to shooting position
+  side == "RED" ? turnTo(100) : turnTo(-100); // Turn to face flags
+  fire = true; // Fire at flags
+  sleep(400);
+  side == "RED" ? turnTo(90) : turnTo(-90);
+}
+
 // Old 1 - Front - 3 Flags 1 Cap
-void oldFunc1(string side)
+void oldFunc1()
 {
     // Setup for Auton
     task shooterTask = task(taskShooter, 1);
@@ -632,7 +670,7 @@ void oldFunc1(string side)
 }
 
 // 1 - Shoot 3 flags, flip cap, flip bottom flag
-void autonFunc1(string side)
+void autonFunc1()
 {
     task shooterTask = task(taskShooter, 1);
 
@@ -672,7 +710,7 @@ void autonFunc1(string side)
 }
 
 // 1 - Shoot 3 flags, flip cap, flip bottom flag
-void autonFunc1Revamped(string side)
+void autonFunc1Revamped()
 {
     task shooterTask = task(taskShooter, 1);
 
@@ -710,7 +748,7 @@ void autonFunc1Revamped(string side)
 }
 
 // 2 - Shoot middle, flip back two caps, park
-void autonFunc2(string side)
+void autonFunc2()
 {
     task shooterTask = task(taskShooter, 1);
     fire = true;
@@ -750,8 +788,54 @@ void autonFunc2(string side)
     }
 }
 
+void alphaAuton()
+{
+    task shooterTask = task(taskShooter, 1);
+
+    runIntake(1);
+    drive(-37.5, -100); // Drive backwards and get ball
+    runIntake(0);
+    drive(42, 100); // Drive to shooting position
+    side == "RED" ? turnTo(90) : turnTo(-90); // Turn to face flags
+    drive(-12, -80); // Run back to the line to flip out scraper
+
+    // Bring scraper out
+    Scraper.rotateTo(scraperDown, rotationUnits::deg, 100, velocityUnits::pct);
+
+    // Wait until we are inside height
+    while (Scraper.rotation(rotationUnits::deg) < scraperMid) { sleep(50); }
+
+    autonFire(72); // Fire all flags
+
+    drive(-16, -75); // Drive back to line up with balls on cap
+    // Triangle: Legs = 22, 24, 32.5, Theta = 42.5
+    turnTo(-42.5); // Turn to the theta value made by the triangle
+    drive(-32.5, -100); // Drive up to the balls
+    runScraper(1); // Run scraper to ball level
+    runIntake(1); // Run intake to intake the balls
+    drive(6, 40); // Scrape balls off of cap
+    sleep(1500); // Wait for balls to be intaken
+    runScraper(0); // Bring scraper back to middle
+
+    runIntake(-1); // Run intake backwards to flip cap
+    drive(-10, -60); // Flip cap
+
+    // BE ADVISED :: The order of the shot is different than autonFire FOR TESTING PURPOSES
+    // SHOOT BOTH FLAGS IN CASE THERE IS NOT ENOUGH TIME
+    // CHANGE AFTER IF THERE IS AMPLE TIME
+
+    turnTo(0); // Face the wall
+    drive(-26, -100); // Drive to line up with flags
+    side == "RED" ? turnTo(104) : turnTo(-104); // Turn to face flags
+    fire = true; // Shoot next two balls
+
+    side == "RED" ? turnTo(95) : turnTo(-95); // Turn to face flags
+    drive(36, 100); // Flip the bottom flag
+
+}
+
 // EXPERIMENTAL - DO NOT RUN
-void autonFunc3(string side)
+void experimental()
 {
     task(taskShooter, 1);
     runIntake(-1);
@@ -774,9 +858,9 @@ void autonFunc3(string side)
 void autonomous( void )
 {
     if (autonNum == 0)
-        autonFunc1(side);
+        autonFunc1();
     else if (autonNum == 1)
-        autonFunc2(side);
+        autonFunc2();
 }
 
 void usercontrol()

@@ -12,7 +12,7 @@ vex::motor FrontRight = vex::motor(vex::PORT8, vex::gearSetting::ratio18_1, true
 vex::motor Intake = vex::motor(vex::PORT6, vex::gearSetting::ratio6_1);
 vex::motor Shooter = vex::motor(vex::PORT9, vex::gearSetting::ratio36_1, true);
 vex::motor ShooterAux = vex::motor(vex::PORT5, vex::gearSetting::ratio36_1, false);
-//vex::motor Descore = vex::motor(vex::PORT20, vex::gearSetting::ratio36_1, false);
+vex::motor Scraper = vex::motor(vex::PORT4, vex::gearSetting::ratio36_1, true);
 
 // Sensors
 vex::bumper Limit1 = vex::bumper(Brain.ThreeWirePort.A);

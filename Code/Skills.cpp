@@ -406,7 +406,7 @@ void skills()
     //turnRight(90);
     turnTo(90); // Turn To 90º
     drive(-20, -40);
-    scraper.rotateTo(1150, rotationUnits::deg, 100, velocityUnits::pct, true);
+    Scraper.rotateTo(1150, rotationUnits::deg, 100, velocityUnits::pct, true);
     // PART 2 - 6 POINTS
     /*drive(69, 60, 15, 50, 90); // Drive to shooting position
     turnTo(0);
@@ -415,47 +415,47 @@ void skills()
     turnTo(90);
     skillShot(true);*/ // Fire at flags (6 points)
     newSkillShot(true);
-    
+
     //NEW
     turnTo(90);
     drive(-24, -50);
     turnTo(-45);
     drive(-24, -50);
 
-    scraper.rotateTo(1425, rotationUnits::deg, 500, velocityUnits::pct);
+    Scraper.rotateTo(1425, rotationUnits::deg, 500, velocityUnits::pct);
     runIntake(1);
     drive(7, 30);
-    scraper.rotateTo(1150, rotationUnits::deg, 50, velocityUnits::pct, true);
+    Scraper.rotateTo(1150, rotationUnits::deg, 50, velocityUnits::pct, true);
     sleep(800);
     runIntake(1);
     drive(-5, -60);
     runIntake(-1);
     drive(-20, -60);
-    
-    
+
+
     turnTo(0);
     drive(-28, -60);
     turnTo(90);
     newSkillShot(false);
-    
+
     turnTo(0);
     drive(-48, -100);
-    
-    turnTo(90);    
+
+    turnTo(90);
     drive(-24, -50);
     turnTo(-45);
     drive(-24, -50);
-    
-    scraper.rotateTo(1425, rotationUnits::deg, 500, velocityUnits::pct);
+
+    Scraper.rotateTo(1425, rotationUnits::deg, 500, velocityUnits::pct);
     runIntake(1);
     drive(7, 30);
-    scraper.rotateTo(1150, rotationUnits::deg, 50, velocityUnits::pct, true);
+    Scraper.rotateTo(1150, rotationUnits::deg, 50, velocityUnits::pct, true);
     sleep(800);
     runIntake(1);
     drive(-5, -60);
     runIntake(-1);
-    drive(-20, -60);   
-    
+    drive(-20, -60);
+
     turnTo(0);
     drive(5, 40);
     turnTo(90);
@@ -467,7 +467,7 @@ void skills()
     drive(24, 70);
     turnTo(0);
     drive(80, 50);
-   // scraper.rotateFor()
+   // Scraper.rotateFor()
     // PART 3 - 7 POINTS
     /*turnTo(0); // Added: turn to the wall
     runIntake(-1); // Run intake in reverse to flip cap
@@ -571,7 +571,7 @@ void autonomous( void )
     runIntake(-1);
     drive(-6, -30);*/
     //return;
-    
+
     skills();
 }
 
