@@ -844,7 +844,15 @@ void godAuton()
     drive(-24, -100);
     runScraper(1);
     drive(24, 100);
-    turnTo(
+    turnTo(0);
+    drive(3, 40);
+    
+    side == "RED" ? turnTo(90) : turnTo(-90);
+    
+    autonFire(64);
+    
+    
+    
 }
 
 // EXPERIMENTAL - DO NOT RUN
