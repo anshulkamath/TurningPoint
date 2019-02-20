@@ -429,10 +429,6 @@ void newSkills()
     drive(6, 40);
     sleep(1000); // Wait for ball to go into intake
     drive(18, 100);
-<<<<<<< HEAD
-=======
-    runIntake(0);
->>>>>>> 2a699afcbcbf2e6299f101458e26fb523cfece54
     turnTo(0);
     runScraper(0);
     drive(3, 40);
