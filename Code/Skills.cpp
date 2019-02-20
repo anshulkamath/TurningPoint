@@ -20,7 +20,25 @@ void pre_auton( void )
     FrontRight.resetRotation();
 }
 
-
+double scraperMid = 1150;
+double scraperDown = 1425;
+void runScraper(int num)
+{
+    switch(num)
+    {
+        case -1:
+            Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
+            break;
+        case 0:
+            Scraper.rotateTo(scraperMid, rotationUnits::deg, 100, velocityUnits::pct);
+            break;
+        case 1:
+            Scraper.rotateTo(scraperDown, rotationUnits::deg, 100, velocityUnits::pct);
+            break;
+        default:
+            break;
+    }
+}
 // Helper functions
 void sleep(int time)
 {
