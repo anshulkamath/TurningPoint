@@ -450,13 +450,30 @@ void newSkills()
     turnTo(90);
     autonFire(64);
     
-    /*turnTo(0);
+    turnTo(0);
     drive(-96, -100);
-    turnTo(90);
-    drive(-36, -100);
     runScraper(1);
-    drive(10, 40);*/
+    drive(10, 40);
+    turnTo(90);
     
+    drive(-30, -100);
+    turnTo(0);
+    runScraper(1);
+    drive(10, 40);
+    runScraper(0);
+    drive(14, 40);
+    turnTo(0);
+    drive(24, 100);
+    turnTo(90);
+    autonFire(64);
+    
+    turnTo(0);
+    //runIntake(-1);
+    drive(-24, -100);
+    turnTo(-90);
+    drive(60, 40);
+    turnTo(0);
+    drive(60, 40);
     
 }
 
