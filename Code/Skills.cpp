@@ -426,12 +426,15 @@ void newSkills()
     runIntake(1);
     drive(-24, -100);
     runScraper(1);
-    drive(24, 100);
+    drive(6, 40);
+    sleep(1000); // Wait for ball to go into intake
+    drive(18, 100);
+    runIntake(0);
     turnTo(0);
     runScraper(0);
     drive(3, 40);
 
-    side == "RED" ? turnTo(90) : turnTo(-90);
+    turnTo(90);
 
     autonFire(64);
     drive(-5, -40);
