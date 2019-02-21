@@ -83,8 +83,14 @@ void runIntake(int num)
 
 // Pre-condition  : assumes robot is in line with bottom flag and has two balls
 // Post-condition : all three flags are toggled
-
-
+int scraperTarget = 0;
+void taskScraper()
+{
+    while(true)
+    {
+        Scraper.rotateTo(scraperTarget, rotationUnits::deg, 100, velocityUnits::pct);
+    }
+}
 
 double getAngle()
 {
@@ -426,6 +432,7 @@ void newSkills()
 {
     // Start facing
     task shooterTask = task(taskShooter, 1);
+    task scraperTask = task(taskScraper, 1);
     turnTo(25);
     runIntake(1);
    
