@@ -15,13 +15,16 @@ double gyroOff = 0;
 
 void pre_auton( void )
 {
-    gyroscope.startCalibration();
-    invertedGyro.startCalibration();
+    //task shooterTask = task(taskShooter, 1);
+    gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
+    task::sleep(6000);
     FrontRight.resetRotation();
+    Scraper.resetRotation();
 }
 
 double scraperMid = 1150;
-double scraperDown = 1425;
+double scraperDown = 1620;
 void runScraper(int num)
 {
     switch(num)
@@ -80,16 +83,7 @@ void runIntake(int num)
 
 // Pre-condition  : assumes robot is in line with bottom flag and has two balls
 // Post-condition : all three flags are toggled
-void autonFire(double initDist)
-{
-  drive(initDist, 100); // Drive into the flag at 100
-  side == "RED" ? turnTo(90) : turnTo(-90); // Re-center
-  drive(-38, -100); // Drive back to shooting position
-  side == "RED" ? turnTo(100) : turnTo(-100); // Turn to face flags
-  fire = true; // Fire at flags
-  sleep(400);
-  side == "RED" ? turnTo(90) : turnTo(-90);
-}
+
 
 
 double getAngle()
@@ -129,7 +123,7 @@ void turnRight(double degrees)
     setBrakeMode(brakeType::coast);
 }
 // Turn Functions
-void turnTo(double degrees, double speed = 80)
+void turnTo(double degrees, double speed = 40)
 {
     degrees *= 96.0/90.0;
     double P = 0, kp =.7, kd = .03, D = 0;
@@ -298,7 +292,17 @@ int taskShooter()
     }
     return 0;
 }
-
+string side = "RED";
+void autonFire(double initDist)
+{
+  drive(initDist, 100); // Drive into the flag at 100
+  side == "RED" ? turnTo(90) : turnTo(-90); // Re-center
+  drive(-38, -100); // Drive back to shooting position
+  side == "RED" ? turnTo(100) : turnTo(-100); // Turn to face flags
+  fire = true; // Fire at flags
+  sleep(400);
+  side == "RED" ? turnTo(90) : turnTo(-90);
+}
 // Auton for skills auton
 // Precondition - Robot is in line with the cap
 // Postcondition - Robot flips cap and retrieves ball
@@ -357,7 +361,7 @@ void newSkillShot(bool isFar)
     runIntake(1);
     isFar ? drive(78, 100, 20, 50, 96) : drive(36, 100, 20, 50, 96); // Drives into the wall
     //setOffset(90); // Accounts for any gyro drift
-    drive(-36, -75, 20, 50, 96); // Drive to shooting position
+    drive(-32, -75, 20, 50, 96); // Drive to shooting position
     turnTo(98); // Angle towards the flags
     fire = true; // Fire the catapult
     sleep(1000); // Wait for catapult
@@ -422,35 +426,41 @@ void newSkills()
 {
     // Start facing
     task shooterTask = task(taskShooter, 1);
-
+    turnTo(25);
     runIntake(1);
-    drive(-24, -100);
+   
+    drive(-18, -60);
     runScraper(1);
-    drive(6, 40);
-    sleep(1000); // Wait for ball to go into intake
-    drive(18, 100);
-    turnTo(0);
+    drive(11, 40);
     runScraper(0);
-    drive(3, 40);
-
+    sleep(500); // Wait for ball to go into intake
+    drive(11, 40);
+    //turnTo(0);
+    runScraper(0);
+    //drive(3, 40);
+    runIntake(1);
     turnTo(90);
-
-    autonFire(64);
-    drive(-5, -40);
+    drive(24, 60, 20, 50, 96);
+    fire = true;
+    //autonFire(64);
+        runIntake(1);
+    drive(-22, -60);
     turnTo(0);
-    drive(-36, -100);
+    turnTo(0);
+        runIntake(1);
+    drive(-40, -100);
 
-    turnTo(180);
-    drive(-10, -40);
+    turnTo(215);
+    drive(-18, -40);
     runScraper(1);
-    drive(10, 40);
-    turnTo(169);
-    runScraper(0);
-    drive(10, 40);
-    turnTo(90);
-    autonFire(64);
+    drive(5, 40);
+    sleep(500);
+    
+    turnTo(120);
+    fire = true;
+    //autonFire(64);
 
-    turnTo(0);
+    /*turnTo(0);
     drive(-96, -100);
     runScraper(1);
     drive(10, 40);
@@ -473,7 +483,7 @@ void newSkills()
     turnTo(-90);
     drive(60, 40);
     turnTo(0);
-    drive(60, 40);
+    drive(60, 40);*/
 
 }
 
@@ -549,7 +559,7 @@ void skills()
     drive(5, 40);
     turnTo(90);
     drive(-10, -40);
-    newSkillShoot(false);
+    newSkillShot(false);
     turnTo(0);
     drive(-48, -100);
     turnTo(-90);
@@ -563,7 +573,6 @@ void skills()
     drive(-24, -60); // Flip forward corner cap (7 points)
     runIntake(0); // Stop the intake from running
     drive(10, 60); // Drive away from flipped cap
-
     // PART 4 - 8 POINTS
     turnTo(-90); // Turn to get next ball
     drive(32, 60); // Drive forward in line with the next ball
@@ -572,15 +581,12 @@ void skills()
     drive(-28, -80);
     runIntake(1);
     drive(-6, -20);
-
     //drive(5, 30);
     //turnTo(45);
     //drive(-3, -30);
     //turnTo(-30);
     //runIntake(-1);
-
     //drive(-8, -30);
-
     // PART 5 - 11 POINTS
     //turnTo(90); // Turn to flags
     runIntake(0); // Turn off intake
@@ -591,7 +597,6 @@ void skills()
     //drive(36, 60);
     //turnTo(90);
     //drive(-36, -50);
-
     //skillShot(true); // Fire at flags (11 points)
     turnTo(0);
     // Turn to 0º
@@ -635,9 +640,9 @@ void autonomous( void )
     //drive(-50, -80);
     // Turn on intake
     task shooterTask = task(taskShooter, 1);
-    gyroscope.startCalibration(2);
-    invertedGyro.startCalibration(2);
-    sleep(6000);
+    //gyroscope.startCalibration(2);
+    //invertedGyro.startCalibration(2);
+    //sleep(6000);
     //drive(48, 60);
     //turnTo(180);
 
@@ -661,7 +666,7 @@ void autonomous( void )
     drive(-6, -30);*/
     //return;
 
-    skills();
+    newSkills();
 }
 
 void bringDown()
