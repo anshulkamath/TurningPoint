@@ -16,9 +16,7 @@ double gyroOff = 0;
 void pre_auton( void )
 {
     //task shooterTask = task(taskShooter, 1);
-    gyroscope.startCalibration(2);
-    invertedGyro.startCalibration(2);
-    task::sleep(6000);
+
     FrontRight.resetRotation();
     Scraper.resetRotation();
 }
@@ -84,12 +82,13 @@ void runIntake(int num)
 // Pre-condition  : assumes robot is in line with bottom flag and has two balls
 // Post-condition : all three flags are toggled
 int scraperTarget = 0;
-void taskScraper()
+int taskScraper()
 {
     while(true)
     {
         Scraper.rotateTo(scraperTarget, rotationUnits::deg, 100, velocityUnits::pct);
     }
+    return 0;
 }
 
 double getAngle()
@@ -160,6 +159,28 @@ void turnTo(double degrees, double speed = 40)
     //Controller1.rumble("-.-.-");
     sleep(50); // Sleep here so we do not have to in the autonomous function
 }
+void forward(double inches, double speed = 70)
+{
+    setBrakeMode(brakeType::brake);
+    double rots = inches/(wheelDiameter*PI);
+
+    FrontLeft.rotateFor(rots, rotationUnits::rev, speed, velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, rotationUnits::rev, speed, velocityUnits::pct, false);
+    BackRight.rotateFor(rots, rotationUnits::rev, speed, velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, rotationUnits::rev, speed, velocityUnits::pct, true);
+}
+
+
+void backward(double inches, double speed = 50)
+{
+    setBrakeMode(brakeType::brake);
+    double rots = inches/(wheelDiameter*PI);
+
+    FrontLeft.rotateFor(-rots, rotationUnits::rev, speed, velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, rotationUnits::rev, speed, velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, rotationUnits::rev, speed, velocityUnits::pct, false);
+    BackLeft.rotateFor(-rots, rotationUnits::rev, speed, velocityUnits::pct, true);
+}
 
 double stblConst = .7;
 
@@ -191,7 +212,7 @@ double rampUp(double deltaV, int cycles, int timeSlice, double angle = 0)
     return FrontRight.rotation(rotationUnits::rev);
 }
 
-void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, double heading = -121)
+void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, double heading = -121, bool turn = true)
 {
     // Converting inches to motor rotations
     double init = getAngle();
@@ -255,7 +276,8 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, dou
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
-    turnTo(init);
+    if(turn)
+        turnTo(init);
     // Sleep here so we do not have to in the autonomous function
     if (abs(inches) >= 16)
         sleep(100);
@@ -433,37 +455,52 @@ void newSkills()
     // Start facing
     task shooterTask = task(taskShooter, 1);
     task scraperTask = task(taskScraper, 1);
-    turnTo(25);
+    //turnTo(25);
+    scraperTarget = -350;
+    backward(6, 50);
+    //drive(-6, -60, 0, 50, -96, false);
+    //backwards1()
     runIntake(1);
-   
-    drive(-18, -60);
-    runScraper(1);
-    drive(11, 40);
-    runScraper(0);
-    sleep(500); // Wait for ball to go into intake
-    drive(11, 40);
-    //turnTo(0);
-    runScraper(0);
+    turnTo(-90, 100);
+    backward(9.5, 50);
+   // drive(-9, -100, 5, 50, 0, false);
+    scraperTarget = -40; 
+    sleep(900);
+    //while(Scraper.isSpinning());
+    //runScraper(1);
+    drive(13, 60);
+    
+    scraperTarget = -350;
+  //  sleep(100); // Wait for ball to go into intake
+   // drive(15, 80);
+    turnTo(0, 100);
+    //runScraper(0);
     //drive(3, 40);
     runIntake(1);
-    turnTo(90);
-    drive(24, 60, 20, 50, 96);
+    //turnTo(0);
+    //forward(6, 40);
+    drive(35, 100, 15, 50, 0);
+    turnTo(0, 60);
+    
     fire = true;
-    //autonFire(64);
-        runIntake(1);
-    drive(-22, -60);
-    turnTo(0);
-    turnTo(0);
-        runIntake(1);
-    drive(-40, -100);
+        sleep(500);
+    //turnTo(0);
 
-    turnTo(215);
-    drive(-18, -40);
+    //autonFire(64);
+    
+        runIntake(1);
+    drive(-26, -100, 0, 0, 0, false);
+    turnTo(-90);
+        runIntake(1);
+    drive(-40, -100,0, 0, -90, false);
+    forward(5, 40);
+    turnTo(142.5);
+    drive(-15, -80);
     runScraper(1);
     drive(5, 40);
     sleep(500);
     
-    turnTo(120);
+    turnTo(-30);
     fire = true;
     //autonFire(64);
 
@@ -472,7 +509,6 @@ void newSkills()
     runScraper(1);
     drive(10, 40);
     turnTo(90);
-
     drive(-30, -100);
     turnTo(0);
     runScraper(1);
@@ -483,7 +519,6 @@ void newSkills()
     drive(24, 100);
     turnTo(90);
     autonFire(64);
-
     turnTo(0);
     //runIntake(-1);
     drive(-24, -100);
@@ -652,14 +687,16 @@ void autonomous( void )
     //sleep(6000);
     //drive(48, 60);
     //turnTo(180);
-
+    gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
+    task::sleep(6000);
     //drive(48, 60);
     //turnTo(90);
     //turnTo(90);
     //turnTo(0);
     /*//fire = true;
     //turn;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;To(90);
-    //turnTo(0);
+    turnTo(0);
     drive(-36, -100);
     runIntake(1);
     drive(-6, -20);
@@ -672,8 +709,10 @@ void autonomous( void )
     runIntake(-1);
     drive(-6, -30);*/
     //return;
-
-    newSkills();
+    //task s = task(taskScraper, 2);
+   // scraperTarget = 1050;
+    //while(true);
+    //newSkills();
 }
 
 void bringDown()
