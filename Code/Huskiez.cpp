@@ -473,6 +473,7 @@ int taskDrive()
         }
         */
 
+        /*
         // Enables Brake Mode
         if (Controller1.ButtonDown.pressing())
         {
@@ -490,14 +491,14 @@ int taskDrive()
             }
 
             while (Controller1.ButtonDown.pressing());
-        }
+        }*/
 
         // Checks to see if the motors have moved to determine whether or
         // not the robot should be in coast mode
-        if ((FrontRight.rotation(rotationUnits::deg) - fRightEnc) == 0 &&
-            ((FrontLeft.rotation(rotationUnits::deg) - fLeftEnc) == 0) &&
-            ((BackRight.rotation(rotationUnits::deg) - bRightEnc) == 0) &&
-            ((BackLeft.rotation(rotationUnits::deg) - bLeftEnc) == 0))
+        if ((FrontRight.rotation(rotationUnits::deg) - fRightEnc) < 10 &&
+            ((FrontLeft.rotation(rotationUnits::deg) - fLeftEnc) < 10) &&
+            ((BackRight.rotation(rotationUnits::deg) - bRightEnc) < 10) &&
+            ((BackLeft.rotation(rotationUnits::deg) - bLeftEnc) < 10))
             isDriving = false;
         else
             isDriving = true;
@@ -573,7 +574,7 @@ int taskShooter()
     return 0;
 }
 
-int taskIntakes()
+int taskIntake()
 {
     while (true)
     {
@@ -585,18 +586,24 @@ int taskIntakes()
         else
             Intake.stop(brakeType::hold);
 
-        if (Controller1.ButtonUp.pressing())
-            Scraper.rotateTo(scraperMid, rotationUnits::deg, 100, velocityUnits::pct, false);
-        else if (Controller1.ButtonLeft.pressing())
-            Scraper.spin(directionType::rev, 100, velocityUnits::pct);
-        else if (Controller1.ButtonRight.pressing())
-            Scraper.spin(directionType::fwd, 100, velocityUnits::pct);
-        else
-            Scraper.stop(brakeType::hold);
-
         task::sleep(50);
     }
     return 0;
+}
+
+int taskScraper()
+{
+  while (true)
+  {
+    if (Controller1.ButtonUp.pressing())
+        Scraper.spin(directionType::fwd, 100, velocityUnits::pct);
+    else if (Controller1.ButtonDown.pressing())
+        Scraper.spin(directionType::rev, 100, velocityUnits::pct);
+    else
+        Scraper.stop(brakeType::hold);
+
+    task::sleep(50);
+  }
 }
 
 int taskScreen()
@@ -858,7 +865,8 @@ void usercontrol()
     Controller1.Screen.clearScreen();
     task shooter = task(taskShooter, 1);
     task(taskDrive, 1);
-    task(taskIntakes, 1);
+    task(taskIntake, 1);
+    task(taskScraper, 1);
     task(taskScreen, 2);
 
     setBrakeMode(brakeType::coast);
