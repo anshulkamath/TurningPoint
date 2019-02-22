@@ -495,10 +495,10 @@ int taskDrive()
 
         // Checks to see if the motors have moved to determine whether or
         // not the robot should be in coast mode
-        if ((FrontRight.rotation(rotationUnits::deg) - fRightEnc) < 10 &&
-            ((FrontLeft.rotation(rotationUnits::deg) - fLeftEnc) < 10) &&
-            ((BackRight.rotation(rotationUnits::deg) - bRightEnc) < 10) &&
-            ((BackLeft.rotation(rotationUnits::deg) - bLeftEnc) < 10))
+        if (abs(FrontRight.rotation(rotationUnits::deg) - fRightEnc) < 10 &&
+            (abs(FrontLeft.rotation(rotationUnits::deg) - fLeftEnc) < 10) &&
+            (abs(BackRight.rotation(rotationUnits::deg) - bRightEnc) < 10) &&
+            (abs(BackLeft.rotation(rotationUnits::deg) - bLeftEnc) < 10))
             isDriving = false;
         else
             isDriving = true;
