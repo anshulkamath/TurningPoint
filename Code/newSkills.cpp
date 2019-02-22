@@ -573,7 +573,7 @@ void oldSkills()
     sleep(100);
     drive(11, 30);
     sleep(100);
-    turnRight(100);
+    turnTo(90);
     Intake.stop(brakeType::hold);
     //backward(10, 1000, 40);
     drive(26, 40);
@@ -602,6 +602,9 @@ void oldSkills()
 }
 
 void autonomous( void ) {
+    gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
+    task::sleep(6000);
     oldSkills();
 }
 
