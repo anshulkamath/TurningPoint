@@ -108,6 +108,43 @@ void pre_auton( void )
     Brain.Screen.pressed(sideSelect);
 }
 
+double getAngle()
+{
+    return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20 - gyroOff;
+}
+
+void turnTo(double degrees, double speed = 40)
+{
+    degrees *= 96.0/90.0;
+    double P = 0, kp =.7, kd = .03, D = 0;
+    double error = 100, motorPower = 0, lastError = 100;
+    while(true)
+    {
+        lastError = error;
+        error = degrees - getAngle();
+        P = error * kp;
+        D = kd *(error - lastError);
+        motorPower = P + D;
+        if(abs(error) <=0.1 && abs(lastError) <= .1) break;;
+
+        if(abs(motorPower) > abs(speed))
+            motorPower = speed * sgn(motorPower);
+
+        BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+
+        sleep(10);
+    }
+    BackLeft.stop(brakeType::brake);
+    BackRight.stop(brakeType::brake);
+    FrontRight.stop(brakeType::brake);
+    FrontLeft.stop(brakeType::brake);
+    //Controller1.rumble("-.-.-");
+    sleep(50); // Sleep here so we do not have to in the autonomous function
+}
+
 void forward(double inches, double speed = 70)
 {
     setBrakeMode(vex::brakeType::brake);
