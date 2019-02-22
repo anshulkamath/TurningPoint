@@ -245,7 +245,8 @@ void drive(double inches, double speed = 60, int rampCycles = 7,  int timeSlice 
     double rots = inches / (wheelDiameter * PI);
     double initRots= 0;
     setBrakeMode(vex::brakeType::brake);
-        
+    if (speed < 0) 
+        rots *= -1;        
     BackLeft.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);
     BackRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);
     FrontRight.rotateFor(rots, rotationUnits:: rev, speed , velocityUnits::pct, false);        
@@ -289,97 +290,6 @@ bool isDriving = false;
 int sign(double val)
 {
     return val < 0 ? -1 : 1;
-}
-
-// Drive Task
-int taskDrive()
-{
-    while (true)
-    {
-        int frontLeftValue = 0, 
-        frontRightValue = 0, 
-        backLeftValue = 0, 
-        backRightValue = 0;        
-        // Constant Straight Drive Control
-        if (Controller1.ButtonR1.pressing())
-            frontLeftValue = frontRightValue = backLeftValue = backRightValue = 60;
-        else if (Controller1.ButtonR2.pressing())
-            frontLeftValue = frontRightValue = backLeftValue = backRightValue = -60;       
-
-        // Tank Drive Controls
-        else
-        {
-            // Scale = x^2/100
-            if (abs(Controller1.Axis2.value()) > 20)
-            {
-                frontRightValue = Controller1.Axis2.value();
-                backRightValue = frontRightValue;
-            }
-            if (abs(Controller1.Axis3.value()) > 20)
-            {
-                frontLeftValue  = Controller1.Axis3.value();
-                backLeftValue = frontLeftValue;
-            }
-        }
-
-        if(abs(abs(Controller1.Axis2.value()) - abs(Controller1.Axis3.value())) > 20)
-        {
-            frontLeftValue = backLeftValue = Controller1.Axis3.value();
-            frontRightValue = backRightValue = Controller1.Axis2.value();
-        }
-        // Throttling Turns
-        if(abs(Controller1.Axis2.value() - Controller1.Axis3.value()) > 50)
-        {
-            frontLeftValue = backLeftValue *= turnLimiter; 
-            frontRightValue = backRightValue *= turnLimiter; 
-        }
-        
-        if (Controller1.ButtonRight.pressing())
-        {
-            backLeftValue = frontLeftValue = 30;
-            frontRightValue = backRightValue = -30;
-        }
-        else if (Controller1.ButtonLeft.pressing())
-        {
-            backLeftValue = frontLeftValue = -30;
-            frontRightValue = backRightValue = 30;
-        }
-
-        // Enables Brake Mode
-        if (Controller1.ButtonDown.pressing())
-        {
-            if(!braked) 
-            {
-                FrontLeft.setStopping(brakeType::hold);
-                FrontRight.setStopping(brakeType::hold);
-                BackLeft.setStopping(brakeType::hold);
-                BackRight.setStopping(brakeType::hold);
-                
-                braked = true;
-            }
-            else
-            {
-                setBrakeMode(brakeType::coast);
-                braked = false;
-            }
-
-            while (Controller1.ButtonDown.pressing());
-        }
-
-        if (frontLeftValue == 0 && backLeftValue == 0 && frontRightValue == 0 && backRightValue == 0)
-            isDriving = false;
-        else
-            isDriving = true;
-        
-        // Sets Motor Powers
-        FrontLeft.spin(directionType::fwd, frontLeftValue, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, frontRightValue, velocityUnits::pct);
-        BackLeft.spin(directionType::fwd, backLeftValue, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, backRightValue, velocityUnits::pct);
-
-        task::sleep(20);
-    }
-    return 0;
 }
 
 // Shooter Variables
@@ -461,30 +371,6 @@ int taskShooter()
     return 0;
 }
 
-int taskIntakes()
-{
-    while (true)
-    {
-        // Controls intake
-        if (Controller1.ButtonL1.pressing() && !inUse)
-            Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-        else if(Controller1.ButtonL2.pressing() && !inUse)
-            Intake.spin(directionType::rev, 100, velocityUnits::pct);
-        else
-            Intake.stop(brakeType::hold);
-        
-        /*
-        if (Controller1.ButtonRight.pressing())
-            Descore.spin(directionType::fwd, 50, velocityUnits::pct);
-        else if (Controller1.ButtonLeft.pressing())
-            Descore.spin(directionType::rev, 50, velocityUnits::pct);
-        else
-            Descore.stop(brakeType::hold);*/
-        sleep(50);
-    }
-    return 0;
-}
-
 
 void oldSkills()
 {
@@ -498,12 +384,12 @@ void oldSkills()
     drive(19, -30); // 1 point
     
     drive(43, 40);
-    sleep(100);
+    sleep(50);
     turnRight(5); 
     drive(10, 40);
     turnLeft(5);
     forward(15, 40, 2000);
-    sleep(300);
+    sleep(50);
     // Added
     /*backward(21, 30.0);
     turnRight(35);
@@ -515,27 +401,26 @@ void oldSkills()
     turnLeft(35);
     forward(37.5, 35);*/
     // Added
-    
-    sleep(500);
+   
     // turn
     drive(10, -40);
     turnRight(90);
     
     // Center on field
     drive(68, 40);
-    task::sleep(500);
+    task::sleep(50);
     turnLeft(90);
-    task::sleep(100);
+    task::sleep(50);
     forward(19.5, 40, 1000);
-    task::sleep(100);
+    task::sleep(50);
     drive(10, -40);
-    task::sleep(100);
+    task::sleep(50);
     turnRight(90);
-    task::sleep(200);
+    task::sleep(50)
     
     // Ready to fire
     fire = true; // 6 points
-    task::sleep(1000);
+    task::sleep(600);
     turnLeft(16.5);
     drive(14, 40);
     turnRight(16.5);
@@ -547,17 +432,17 @@ void oldSkills()
    
     // Go for the middle caps
     turnLeft(90);
-    sleep(400);
+    sleep(100);
     forward(12, 40, 3000);
-    sleep(400);
+    sleep(100);
     Intake.spin(directionType::rev, 100, velocityUnits::pct);  
     drive(30, -40);
-    sleep(500);
+    sleep(300);
     Intake.stop(brakeType::hold);
     drive(25, 40);
-    sleep(200);
+    sleep(50);
     turnLeft(90);
-    sleep(200);
+    sleep(50);
     drive(21, 40);// 47
     
     // Added
@@ -570,14 +455,14 @@ void oldSkills()
     task::sleep(700);
     Intake.spin(directionType::rev, 100, velocityUnits::pct);
     drive(19, -30); // 1 point
-    sleep(100);
+    sleep(50);
     drive(11, 30);
-    sleep(100);
+    sleep(50);
     turnTo(90);
     Intake.stop(brakeType::hold);
     //backward(10, 1000, 40);
     drive(26, 40);
-    sleep(500);
+    sleep(100);
     fire = true;
     sleep(500);
     drive(24, -30);
@@ -585,17 +470,17 @@ void oldSkills()
     turnLeft(90);
     drive(33, 40);
     //drive(47, 40);
-    sleep(100);
+    sleep(50);
     forward(15, 40, 2000);
-    sleep(300);
+    sleep(50);
     backward(24, 40);
 
-    sleep(500);
+    sleep(50);
     turnLeft(90);
     drive(16, 40);
     // Added   
     turnLeft(90);
-    sleep(200);
+    sleep(50);
     backward(12, 1000, 40);
     sleep(200);
     forward(92.5, 50);
@@ -610,34 +495,7 @@ void autonomous( void ) {
 
 void usercontrol() 
 {
-    vex::task shooter = vex::task(taskShooter, 1);
-    vex::task(taskDrive, 1);
-    vex::task(taskIntakes, 1);
-    vex::task(taskScreen, 2);
-    
-    setBrakeMode(brakeType::coast); 
-    Controller1.Screen.clearScreen();
-    FrontRight.resetRotation();
-    
-    while(true)
-    {   
-        if(Controller1.ButtonA.pressing())
-        {
-            shooter.suspend(); // previously shooter.stop();
-            Shooter.stop(brakeType::coast);
-            ShooterAux.stop(brakeType::coast);
-            while (Controller1.ButtonA.pressing())
-                sleep(50);
-            shooter.resume();  // previously vex::task shooter = vex::task(taskShooter, 1);
-        }
-        
-        /*if (!inUse || isDriving)
-            setBrakeMode(brakeType::coast);
-        else if (inUse && !isDriving)
-            setBrakeMode(brakeType::hold);  */
-
-        sleep(100);
-    }
+    autonomous();
 }
 
 int main() {
