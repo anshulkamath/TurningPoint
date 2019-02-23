@@ -127,20 +127,37 @@ void turnRight(double degrees)
 
     setBrakeMode(brakeType::coast);
 }
+
 // Turn Functions
 void turnTo(double degrees, double speed = 40)
 {
     degrees *= 96.0/90.0;
-    double P = 0, kp =.7, kd = .03, D = 0;
-    double error = 100, motorPower = 0, lastError = 100;
+    double P = 0, kp =.7;
+    double I = 0, ki = 0.001;
+    double D = 0, kd = 0.03;
+    double error = 100, lastError = 100;
+    double motorPower = 0;
+    int iThresh = 5;
     while(true)
     {
         lastError = error;
         error = degrees - getAngle();
+
+        if (abs(error) > 180)
+            error =  sgn(error) * (360 - abs(error));
+
         P = error * kp;
-        D = kd *(error - lastError);
-        motorPower = P + D;
-        if(abs(error) <=0.1 && abs(lastError) <= .1) break;;
+        D = kd * (error - lastError);
+
+        if (abs(error) < iThresh)
+            I += error * ki;
+
+        if (abs(I) > 15)
+          I = 15 * sgn(error);
+
+        motorPower = P + I + D;
+
+        if(abs(error) <= 0.3 && abs(lastError) <= .3) break; // Break statement
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
@@ -156,9 +173,9 @@ void turnTo(double degrees, double speed = 40)
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
-    //Controller1.rumble("-.-.-");
     sleep(50); // Sleep here so we do not have to in the autonomous function
 }
+
 void forward(double inches, double speed = 70)
 {
     setBrakeMode(brakeType::brake);
@@ -464,12 +481,12 @@ void newSkills()
     turnTo(-90, 100);
     backward(9.5, 50);
    // drive(-9, -100, 5, 50, 0, false);
-    scraperTarget = -40; 
+    scraperTarget = -40;
     sleep(900);
     //while(Scraper.isSpinning());
     //runScraper(1);
     drive(13, 60);
-    
+
     scraperTarget = -350;
   //  sleep(100); // Wait for ball to go into intake
    // drive(15, 80);
@@ -481,13 +498,13 @@ void newSkills()
     //forward(6, 40);
     drive(35, 100, 15, 50, 0);
     turnTo(0, 60);
-    
+
     fire = true;
         sleep(500);
     //turnTo(0);
 
     //autonFire(64);
-    
+
         runIntake(1);
     drive(-26, -100, 0, 0, 0, false);
     turnTo(-90);
@@ -499,7 +516,7 @@ void newSkills()
     runScraper(1);
     drive(5, 40);
     sleep(500);
-    
+
     turnTo(-30);
     fire = true;
     //autonFire(64);
