@@ -174,7 +174,7 @@ void pre_auton( void )
 {
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(color::red);
-    Brain.Screen.printAt(0, 0, 230, 136, "GYRO CALIBRATING...");
+    Brain.Screen.printAt(180, 136, "GYRO CALIBRATING...");
     gyroscope.startCalibration(2);
     invertedGyro.startCalibration(2);
     sleep(5000);
@@ -302,15 +302,16 @@ void turnRight(double degrees)
 }
 
 // Turn Functions
-void turnTo(double degrees, double speed = 40)
+// Turn Functions
+void turnTo(double degrees, double speed = 60)
 {
     degrees *= 96.0/90.0;
     double P = 0, kp =.7;
-    double I = 0, ki = 0.001;
+    double I = 0, ki = 0.004;
     double D = 0, kd = 0.03;
     double error = 100, lastError = 100;
     double motorPower = 0;
-    int iThresh = 5;
+    int iThresh = 25;
     while(true)
     {
         lastError = error;
@@ -330,7 +331,7 @@ void turnTo(double degrees, double speed = 40)
 
         motorPower = P + I + D;
 
-        if(abs(error) <= 0.3 && abs(lastError) <= .3) break; // Break statement
+        if(abs(error) <= 0.1 && abs(lastError) <= .1) break; // Break statement
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
@@ -346,7 +347,6 @@ void turnTo(double degrees, double speed = 40)
     BackRight.stop(brakeType::brake);
     FrontRight.stop(brakeType::brake);
     FrontLeft.stop(brakeType::brake);
-    //Controller1.rumble("-.-.-");
     sleep(50); // Sleep here so we do not have to in the autonomous function
 }
 
@@ -479,7 +479,7 @@ int taskDrive()
             frontRightValue = backRightValue *= turnLimiter;
         }
 
-        /*
+
         if (Controller1.ButtonRight.pressing())
         {
             backLeftValue = frontLeftValue = 30;
@@ -490,7 +490,7 @@ int taskDrive()
             backLeftValue = frontLeftValue = -30;
             frontRightValue = backRightValue = 30;
         }
-        */
+
 
         /*
         // Enables Brake Mode
@@ -514,10 +514,10 @@ int taskDrive()
 
         // Checks to see if the motors have moved to determine whether or
         // not the robot should be in coast mode
-        if (abs(FrontRight.rotation(rotationUnits::deg) - fRightEnc) < 10 &&
-            (abs(FrontLeft.rotation(rotationUnits::deg) - fLeftEnc) < 10) &&
-            (abs(BackRight.rotation(rotationUnits::deg) - bRightEnc) < 10) &&
-            (abs(BackLeft.rotation(rotationUnits::deg) - bLeftEnc) < 10))
+        if (abs(FrontRight.rotation(rotationUnits::deg) - fRightEnc) == 0 &&
+            (abs(FrontLeft.rotation(rotationUnits::deg) - fLeftEnc) == 0) &&
+            (abs(BackRight.rotation(rotationUnits::deg) - bRightEnc) == 0) &&
+            (abs(BackLeft.rotation(rotationUnits::deg) - bLeftEnc) == 0))
             isDriving = false;
         else
             isDriving = true;
@@ -615,9 +615,9 @@ int taskScraper()
   while (true)
   {
     if (Controller1.ButtonUp.pressing())
-        Scraper.spin(directionType::fwd, 100, velocityUnits::pct);
-    else if (Controller1.ButtonDown.pressing())
         Scraper.spin(directionType::rev, 100, velocityUnits::pct);
+    else if (Controller1.ButtonDown.pressing())
+        Scraper.spin(directionType::fwd, 100, velocityUnits::pct);
     else
         Scraper.stop(brakeType::hold);
 
@@ -796,11 +796,11 @@ void autonFunc2()
     Intake.stop(brakeType::hold);
 
     // Park
-    forward(16, 40);
+    forward(13.5, 40);
     if(park)
     {
         side == "RED" ? turnRight(40) : turnLeft(40);
-        forward(43, 40); // Drive onto the platform
+        forward(45, 40); // Drive onto the platform
     }
 }
 
@@ -849,6 +849,79 @@ void alphaAuton()
     drive(36, 100); // Flip the bottom flag
 
 }
+void godAuton()
+{
+    Scraper.stop(brakeType::hold);
+    // Start facing
+    task shooterTask = task(taskShooter, 1);
+    //turnTo(25);
+    //scraperTarget = -250;
+    Scraper.rotateTo(-250, rotationUnits::deg, 100, velocityUnits::pct, true);
+    //backward(6, 50);
+    side == "RED" ? backward(16.5, -40) : backward(15.5, -40); // 15.5
+    Scraper.rotateTo(-40, rotationUnits::deg, 100,  velocityUnits::pct, true);
+    //backwards1()
+    runIntake(1);
+    //turnTo(-90, 90);
+    //backward(9.5, 50);
+   // drive(-9, -100, 5, 50, 0, false);
+
+    sleep(500);
+    //while(Scraper.isSpinning());
+    //runScraper(1);
+    forward(15, 40); // 15
+    turnTo(1, 40);
+
+  //  sleep(100); // Wait for ball to go into intake
+   // drive(15, 80);
+    //turnTo(0, 100);
+    //runScraper(0);
+    //drive(3, 40);
+    runIntake(1);
+    //turnTo(0);
+    //forward(6, 40);
+    drive(29, 70, 15, 50, 1); //20
+    //turnTo(0, 60);
+    sleep(50);
+    fire = true;
+    sleep(500);
+    //turnTo(0);
+
+    //autonFire(64);
+
+    runIntake(1);
+    backward(22, 40);
+   // drive(-24.5, -80, 0, 0, 0, false);
+    Scraper.rotateTo(-250, rotationUnits::deg, 100,  velocityUnits::pct, true);
+    side == "RED" ? turnTo(-96) : turnTo(96);
+    runIntake(1);
+    side == "RED" ? drive(-46, -80,15, 50, -96) : drive(-46, -80,15, 50, 96);
+    //forward(5, 40);
+    Scraper.rotateTo(-260, rotationUnits::deg, 100,  velocityUnits::pct,  true);
+    side == "RED" ? turnTo(-215) : turnTo(125);
+    backward(17, -60);
+    //drive(-15, -80);
+    Scraper.rotateTo(-40, rotationUnits::deg, 100,  velocityUnits::pct,  true);
+    sleep(1200);
+    Scraper.rotateTo(-350, rotationUnits::deg, 100,  velocityUnits::pct,  true);
+    sleep(600);
+    runIntake(-1);
+    backward(13, 40);
+    forward(15, 40);
+    /*turnTo(-90);
+    drive(26, 80);
+    turnTo(0);*/
+
+    turnTo(-27);
+    forward(8, 20);
+    //runScraper(1);
+    sleep(500);
+    fire = true;
+    Scraper.rotateTo(-40, rotationUnits::deg, 100, velocityUnits::pct,  false);
+    drive(30, 100);
+
+
+}
 
 // EXPERIMENTAL - DO NOT RUN
 void experimental()
@@ -874,10 +947,11 @@ void experimental()
 void autonomous( void )
 {
     if (autonNum == 0)
-        autonFunc1();
+        godAuton();
     else if (autonNum == 1)
         autonFunc2();
 }
+
 
 void usercontrol()
 {
@@ -904,16 +978,16 @@ void usercontrol()
         }
 
         // If the shooter IS in use and the drive is NOT moving turn on braking
-        /*if (inUse && !isDriving)
+        if (inUse && !isDriving)
             setBrakeMode(brakeType::brake);
         else
-            setBrakeMode(brakeType::coast);*/
+            setBrakeMode(brakeType::coast);
 
         // If the drive is not moving go to brake mode
-        if (isDriving)
+        /*if (isDriving)
             setBrakeMode(brakeType::coast);
         else
-            setBrakeMode(brakeType::brake);
+            setBrakeMode(brakeType::brake);*/
 
         sleep(100);
     }

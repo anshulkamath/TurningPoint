@@ -132,15 +132,15 @@ void turnRight(double degrees)
 }
 
 // Turn Functions
-void turnTo(double degrees, double speed = 40)
+void turnTo(double degrees, double speed = 60)
 {
     degrees *= 96.0/90.0;
     double P = 0, kp =.7;
-    double I = 0, ki = 0.001;
+    double I = 0, ki = 0.004;
     double D = 0, kd = 0.03;
     double error = 100, lastError = 100;
     double motorPower = 0;
-    int iThresh = 5;
+    int iThresh = 25;
     while(true)
     {
         lastError = error;
@@ -160,7 +160,7 @@ void turnTo(double degrees, double speed = 40)
 
         motorPower = P + I + D;
 
-        if(abs(error) <= 0.3 && abs(lastError) <= .3) break; // Break statement
+        if(abs(error) <= 0.1 && abs(lastError) <= .1) break; // Break statement
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
@@ -259,7 +259,7 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, dou
     int theoreticalTime = abs(rots / (speed * 2) / 60);
 
     // PID Loop
-    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots)/* && Brain.timer(timeUnits::msec) < theoreticalTime + 1000*/)
+    while (abs(FrontRight.rotation(rotationUnits::rev)) < abs(rots) && Brain.timer(timeUnits::msec) < theoreticalTime + 1000)
     {
         // Setting PID Variables
         error = rots - (FrontRight.rotation(rotationUnits::rev));
@@ -415,6 +415,7 @@ void newSkillShot(bool isFar)
     drive(-32, -75, 20, 50, 96); // Drive to shooting position
     turnTo(98); // Angle towards the flags
     fire = true; // Fire the catapult
+    Controller1.rumble("--");
     sleep(1000); // Wait for catapult
     turnTo(90); // Turn back to original angle
 }
@@ -422,10 +423,11 @@ void newSkillShot(bool isFar)
 void shoot(double initDist = 36)
 {
     drive(initDist, 90, 15, 50, 0); // Hit bottom flag
-    drive(-46, -80, 15, 50, 0); // Drive back to shooting position
-    turnTo(5, 40); // Turn to face flags
+    drive(-35, -80, 15, 50, 0, false); // Drive back to shooting position
+    turnTo(10, 40); // Turn to face flags
     sleep(50);
     fire = true; // Shoot flags (5 points)
+    //Controller1.rumble("-.-");
     sleep(500);
     turnTo(0);
 }
@@ -522,7 +524,7 @@ void skills16pt()
     //autonFire(64);
 
     runIntake(1);
-    backward(22, 40);
+    backward(24, 40);
     // drive(-24.5, -80, 0, 0, 0, false);
     scraperTarget = -140;
     turnTo(-96);
@@ -531,10 +533,11 @@ void skills16pt()
     //forward(5, 40);
     scraperTarget = -260;
     turnTo(-215);
-    backward(17, -60);
+    backward(18, -60);
     //drive(-15, -80);
-    scraperTarget = -40;
+    scraperTarget = -10;
     sleep(1500);
+    forward(3, 40);
     scraperTarget = -350;
     sleep(600);
     runIntake(-1);
@@ -552,7 +555,7 @@ void skills16pt()
     scraperTarget = -40;
     sleep(200);
     turnTo(40);
-    drive(-60, -100);
+    drive(-55, -100);
     turnTo(90);
     //backward(10,);
     forward(75, 40);
@@ -595,46 +598,76 @@ void skills18pt()
     scraperTarget = -40; // Bring scraper down to catch ball
 
     sleep(500);
-    forward(15, 40); // 15
-    turnTo(0, 40);
+    forward(16, 40); // 15
+    turnTo(0, 60);
+    forward(12, 40); // added
+    sleep(50);
 
-    shoot(56); // Shoot all flags
-    backward(12, 40); // Move back in line with cap
+    fire = true;
+    sleep(250);
+    //shoot(60); // Shoot all flags
+    backward(12, 40); // Move back in line with cap /16
     sleep(300);
     turnTo(-90); // Turn to face caps
     runIntake(1); // Intake the ball
 
-    scraperTarget = -140; // Set the scraper
-    drive(-46, -80 ,15 , 50, -90, false); // Drive back to intake the ball
+    scraperTarget = -170; // Set the scraper
+    drive(-46, -80 ,15 , 50, -96, false); // Drive back to intake the ball
     scraperTarget = -260; // Move the scraper up
 
-    turnTo(-215); // Turn to be in line with the next cap
-    backward(17, -50); // Back into the next cap
+    turnTo(-220); // Turn to be in line with the next cap
+    backward(14.5, -50); // Back into the next cap
+
+
     scraperTarget = -40; // Move intake to capture the next cap
     sleep(1250);
+     forward(3, 50);
     scraperTarget = -350; // Move intake down to take the ball
     sleep(600);
     runIntake(-1); // Run intake to flip cap
-    backward(13, 40); // Flip cap
+    backward(18, 40); // Flip cap
+    runIntake(1);
     forward(13, 40); // Back to middle of tile
 
     turnTo(90); // Face the wall
-    drive(28, 80, 15, 50, 90); // Drive in line with second bottom cap
+    forward(18.5); // Drive in line with second bottom flag
     turnTo(0); // Face bottom flag
-    drive(36, 80, 15, 50, 0); // Flip bottom flag
-    turnTo(0); // Re-center
-    drive(-36, -80, 15, 50, 0); // Drive back to position
-    turnTo(5, 40); // Face the flags
+    drive(42, 80, 15, 50, 0); // Flip bottom flag
+    turnTo(0); // Re-center*/
+    drive(-38, -80, 15, 50, 0); // Drive back to position
+    turnTo(10, 40); // Face the flags
     fire = true; // Shoot the flags
 
     sleep(500);
-    turnTo(45.7); // Leg: 48, 54
-    scraperTarget = -40;
+    turnTo(0);
+    forward(10, 20);
+    turnTo(-90);
+    runIntake(-1);
+    backward(48, 40);
+    backward(6, 20);
     sleep(200);
-    drive(-71, -100); // Legs: 48, 54
+    forward(2, 20);
+    turnTo(0);
+    drive(36, 100);
+    drive(-36, -100);
     turnTo(90);
-    backward(12, 20);
-    forward(75, 40);
+        scraperTarget = -40;
+    drive(-180, -100);
+    runIntake(0);
+    //turnTo(0);
+    //backward(12, 20);
+
+    //turnTo(90); // Leg: 48, 54
+
+    sleep(200);
+    //drive(-60, -100); // Legs: 48, 54
+    forward(12, 40);
+    turnTo(180);
+    drive(50, 100);
+
+    turnTo(90);
+    //backward(6, 20);
+    forward(63, 60);
 }
 
 void skills21pt()
@@ -700,7 +733,7 @@ void skills21pt()
     drive(36, 100, 15, 50, 180); // Drive in line with platform
     turnTo(270, 60); // Turn to face platform
     backward(3, 30); // Back into wall
-    forwrd(70, 40); // Drive onto platform
+    forward(70, 40); // Drive onto platform
 }
 
 void skills25pt()
@@ -744,7 +777,7 @@ void skills25pt()
     drive(36, 80, 15, 50, 0); // Flip bottom flag
     turnTo(0); // Re-center
     drive(-36, -80, 15, 50, 0); // Drive back to position
-    turnTo(5, 40); // Face the flags
+    turnTo(10, 40); // Face the flags
     fire = true; // Shoot the flags
     sleep(500);
 
@@ -780,16 +813,96 @@ void skills25pt()
     forward(45, 40); // Drive onto platform
 }
 
+void godAuton()
+{
+    Scraper.stop(brakeType::hold);
+    // Start facing
+    task shooterTask = task(taskShooter, 1);
+    //turnTo(25);
+    //scraperTarget = -250;
+    Scraper.rotateTo(-250, rotationUnits::deg, 100, velocityUnits::pct, true);
+    //backward(6, 50);
+    side == "RED" ? backward(16.5, -40) : backward(15.5, -40); // 15.5
+    Scraper.rotateTo(-40, rotationUnits::deg, 100,  velocityUnits::pct, true);
+    //backwards1()
+    runIntake(1);
+    //turnTo(-90, 90);
+    //backward(9.5, 50);
+   // drive(-9, -100, 5, 50, 0, false);
+
+    sleep(500);
+    //while(Scraper.isSpinning());
+    //runScraper(1);
+    forward(15, 40); // 15
+    turnTo(1, 40);
+
+  //  sleep(100); // Wait for ball to go into intake
+   // drive(15, 80);
+    //turnTo(0, 100);
+    //runScraper(0);
+    //drive(3, 40);
+    runIntake(1);
+    //turnTo(0);
+    //forward(6, 40);
+    drive(29, 70, 15, 50, 1); //20
+    //turnTo(0, 60);
+    sleep(50);
+    fire = true;
+    sleep(500);
+    //turnTo(0);
+
+    //autonFire(64);
+
+    runIntake(1);
+    backward(22, 40);
+   // drive(-24.5, -80, 0, 0, 0, false);
+    Scraper.rotateTo(-250, rotationUnits::deg, 100,  velocityUnits::pct, true);
+    side == "RED" ? turnTo(-96) : turnTo(96);
+    runIntake(1);
+    side == "RED" ? drive(-46, -80,15, 50, -96) : drive(-46, -80,15, 50, 96);
+    //forward(5, 40);
+    Scraper.rotateTo(-260, rotationUnits::deg, 100,  velocityUnits::pct,  true);
+    side == "RED" ? turnTo(-215) : turnTo(125);
+    backward(17, -60);
+    //drive(-15, -80);
+    Scraper.rotateTo(-40, rotationUnits::deg, 100,  velocityUnits::pct,  true);
+    sleep(1200);
+    Scraper.rotateTo(-350, rotationUnits::deg, 100,  velocityUnits::pct,  true);
+    sleep(600);
+    runIntake(-1);
+    backward(13, 40);
+    forward(15, 40);
+    /*turnTo(-90);
+    drive(26, 80);
+    turnTo(0);*/
+
+    turnTo(-27);
+    forward(8, 20);
+    //runScraper(1);
+    sleep(500);
+    fire = true;
+    Scraper.rotateTo(-40, rotationUnits::deg, 100, velocityUnits::pct,  false);
+    drive(30, 100);
+
+
+}
 void autonomous( void )
 {
     // Turn on intake
-    task shooterTask = task(taskShooter, 1);
-    skills16pt();
+  //  task shooterTask = task(taskShooter, 1);
+    //skills18pt();
+   // godAuton();
+    skills18pt();
 }
-
 void usercontrol( void )
 {
-    autonomous();
+    //autonomous();
+   /* gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
+    task::sleep(13000);*/
+
+    //skills18pt();
+
 }
 
 int main()
