@@ -7,6 +7,7 @@ class Drivetrain
     motor FrontLeft;
     motor BackRight;
     motor BackLeft;
+    DriveTrain() {}
   public:
     Drivetrain (motor m1, motor m2, motor m3, motor m4) : FrontRight(m1), FrontLeft(m2), BackRight(m3), BackLeft(m4) {}
     void setDrive(int velocity)
@@ -23,4 +24,12 @@ class Drivetrain
       BackLeft.spin(directionType::fwd, rightVel, velocityUnits::pct);
       BackRight.spin(directionType::fwd, leftVel, velocityUnits::pct);
     }
+    Drivetrain(const Drivetrain &p2) 
+    {
+      FrontRight = p2.FrontRight;
+      FrontLeft = p2.FrontLeft;
+      BackRight = p2.BackRight;
+      BackLeft = p2.BackLeft;
+    }
+  
 };
