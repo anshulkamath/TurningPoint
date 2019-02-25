@@ -1,5 +1,5 @@
 class Functions
 {
   private:
-    Drivetrain* drive;
+    Drivetrain& drive;
 };
