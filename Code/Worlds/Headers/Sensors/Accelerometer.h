@@ -2,8 +2,3 @@ class Accelerometer
 {
 
 };
-
-class Gyroscope
-{
-
-};

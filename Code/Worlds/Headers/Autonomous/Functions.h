@@ -1,4 +1,4 @@
-class Auton
+class Functions
 {
   private:
     Drivetrain* drive;
