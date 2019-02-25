@@ -1,5 +1,5 @@
 class Auton
 {
   private:
-    Drivetrain drive;
+    Drivetrain* drive;
 };
