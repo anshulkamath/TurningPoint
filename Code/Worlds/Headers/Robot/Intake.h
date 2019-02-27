@@ -1,9 +1,10 @@
+#include "..\\Sensors\\LineSensor.h"
 class Intake
 {
   motor& indexer;
   motor& intake;
   LineSensor& line, puncherSensor;
-
+  bool inUse = false;
 public:
   int intakeMode = 0;
 
@@ -20,8 +21,11 @@ public:
   {
     while(true)
     {
+      if(line.isBall() && !inUse)
+      {
+        indexer.spin(direction::rev);
+      }
 
-      
       task::sleep(10);
     }
   }
