@@ -4,8 +4,8 @@ class LineSensor
   vex::line Line;
  public:
   LineSensor(vex::line Liney) : Line(Liney) {}
-  
-  bool isBall() 
+
+  bool isBall()
   {
     return (threshHold < Line.value(analogUnits::range12bit));
   }
