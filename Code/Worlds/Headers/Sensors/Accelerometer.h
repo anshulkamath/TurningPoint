@@ -14,7 +14,7 @@ class Accelerometer
     {
         if(accelXData.size() < 3)
         {
-            accelX.push_back
+            //accelXData.push_back(accelX.value());
         }
     }
 

@@ -21,7 +21,7 @@ public:
 
   void firePuncher()
   {
-    puncher.spin(direction::fwd);
+    puncher.spin(directionType::fwd);
     while(limter.pressing());
     while(!limter.pressing());
     puncher.stop();
