@@ -11,10 +11,10 @@ class Puncher
   Motor& puncher;
   Motor& angler;
   pros::ADIDigitalIn& limter;
-  Intake& intake;
+  ::Intake& intake;
   LineSensor& lineS;
 public:
-  Puncher(Motor& p1, Motor& a1, Intake& in, LineSensor& liney,
+  Puncher(Motor& p1, Motor& a1, ::Intake& in, LineSensor& liney,
     pros::ADIDigitalIn& limter1) :
   puncher(p1), angler(a1), intake(in), lineS(liney), limter(limter1) {}
 
