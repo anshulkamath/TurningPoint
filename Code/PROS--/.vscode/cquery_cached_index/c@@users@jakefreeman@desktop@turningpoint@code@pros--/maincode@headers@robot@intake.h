@@ -1,4 +1,4 @@
-#include "..\\Sensors\\LineSensor.h"
+#include "../Sensors/Linesensor.h"
 class Intake
 {
   motor& indexer;
@@ -8,7 +8,7 @@ class Intake
 public:
   int intakeMode = 0;
 
-  Intake(motor& ind, motor& inty, LineSensor& liney, LineSensor& puncherSensor1)
+  Intake(Motor& ind, Motor& inty, LineSensor& liney, LineSensor& puncherSensor1)
   {
     indexer = ind;
     intake = inty;

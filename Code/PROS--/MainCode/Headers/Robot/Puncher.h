@@ -1,18 +1,22 @@
 #include "robot-config.h"
+#include "../Sensors/lineSensor.h"
+#include "../Robot/Intake.h"
+#include "pros/motors.hpp"
+#include "pros/ADI.hpp"
 
-using namespace vex;
 using namespace std;
 
 class Puncher
 {
-  motor& puncher;
-  motor& angler;
-  limit& limter;
+  Motor& puncher;
+  Motor& angler;
+  pros::ADIDigitalIn& limter;
   Intake& intake;
   LineSensor& lineS;
 public:
-  Puncher(motor& p1, motor& a1, Intake& in, LineSensor& liney) :
-  puncher(p1), angler(a1), intake(in), lineS(liney) {}
+  Puncher(Motor& p1, Motor& a1, Intake& in, LineSensor& liney,
+    pros::ADIDigitalIn& limter1) :
+  puncher(p1), angler(a1), intake(in), lineS(liney), limter(limter1) {}
 
   void setAngle(double angle)
   {
@@ -21,10 +25,10 @@ public:
 
   void firePuncher()
   {
-    puncher.spin(directionType::fwd);
-    while(limter.pressing());
-    while(!limter.pressing());
-    puncher.stop();
+    puncher.move_velocity(100);
+    while(limter.get_value());
+    while(!limter.get_value());
+    puncher.move_velocity(0);
 
   }
   void waitForBall()
