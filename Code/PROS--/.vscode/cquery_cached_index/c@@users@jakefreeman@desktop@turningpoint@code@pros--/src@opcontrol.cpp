@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include "../MainCode/headers/autonomous/AutonSelector.h"
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -14,7 +14,7 @@
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	pros::ADILineSensor line(1);
+	/*pros::ADILineSensor line(1);
 	line.calibrate();
 	pros::lcd::print(1, "HHEE");
 	pros::Task::delay(1000);
@@ -23,5 +23,6 @@ void opcontrol() {
 		pros::lcd::print(1, "%d", line.get_value_calibrated());
 		//printf("%d", line.get_value());
 		pros::delay(50);
-	}
+	}*/
+		displaySide();
 }

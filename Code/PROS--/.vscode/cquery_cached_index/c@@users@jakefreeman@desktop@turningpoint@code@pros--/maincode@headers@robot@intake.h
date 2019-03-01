@@ -1,19 +1,17 @@
 #include "../Sensors/Linesensor.h"
+#include "pros/motors.hpp"
 class Intake
 {
-  motor& indexer;
-  motor& intake;
+  Motor& intake;
   LineSensor& line, puncherSensor;
   bool inUse = false;
 public:
   int intakeMode = 0;
 
-  Intake(Motor& ind, Motor& inty, LineSensor& liney, LineSensor& puncherSensor1)
+  Intake(Motor& inty, LineSensor& liney, LineSensor& puncherSensor1)
+  : intake(inty), line(liney), puncherSensor(puncherSensor1)
   {
-    indexer = ind;
-    intake = inty;
-    line = liney;
-    punsherSensor = puncherSensor1;
+
   }
 
 
@@ -23,10 +21,9 @@ public:
     {
       if(line.isBall() && !inUse)
       {
-        indexer.spin(direction::rev);
+        intake.move_velocity(100);
       }
 
-      task::sleep(10);
     }
   }
 
