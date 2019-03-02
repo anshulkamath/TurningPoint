@@ -93,6 +93,21 @@ class Drivetrain
     Drivetrain (pros::Motor m1, pros::Motor m2, pros::Motor m3, pros::Motor m4, Gyroscope gyro1)
     : FrontRight(m1), FrontLeft(m2), BackRight(m3), BackLeft(m4), gyro(gyro1) {}
 
+    int driveTask()
+    {
+      pros::Controller cont (E_CONTROLLER_MASTER);
+      while(true)
+      {
+        int leftSide = cont.get_analog(ANALOG_LEFT_Y);
+        int rightSide = cont.get_analog(ANALOG_RIGHT_Y);
+        FrontLeft.move_velocity(leftSide);
+        FrontRight.move_velocity(rightSide);
+        BackRight.move_velocity(rightSide);
+        BackLeft.move_velocity(leftSide);
+        delay(10);
+      }
+    }
+
     void drive(double distance, double speed)
     {
       double target = distance/(4 * 3.1415) * 360;
