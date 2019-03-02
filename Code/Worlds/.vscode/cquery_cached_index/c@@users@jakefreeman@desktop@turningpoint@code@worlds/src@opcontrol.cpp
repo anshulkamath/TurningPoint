@@ -1,5 +1,7 @@
 #include "main.h"
 #include "../MainCode/headers/autonomous/AutonSelector.h"
+#include "../MainCode/headers/Sensors/Gyroscope.h"
+#include "../MainCode/headers/Robot/DriveTrain.h"
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -24,5 +26,8 @@ void opcontrol() {
 		//printf("%d", line.get_value());
 		pros::delay(50);
 	}*/
-		displaySide();
+		//displaySide();
+		Drivetrain train(pros::Motor(1), pros::Motor(2), pros::Motor(3), pros::Motor(4), Gyroscope(pros::ADIGyro(5), pros::ADIGyro(6)));
+		std::string x = "";
+		pros::Task task(train, &Drivetrain::driveTask, &x);
 }

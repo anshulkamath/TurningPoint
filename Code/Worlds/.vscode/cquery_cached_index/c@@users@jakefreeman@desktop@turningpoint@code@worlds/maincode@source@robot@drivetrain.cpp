@@ -74,7 +74,7 @@ void Drivetrain::turnToRight(double degrees, double speed)
 }
 
 
-int Drivetrain::driveTask()
+void Drivetrain::driveTask(void * parms)
 {
   pros::Controller cont (E_CONTROLLER_MASTER);
   while(true)

@@ -17,7 +17,7 @@ public:
   }
 
 
-  int intakeTask()
+  void intakeTask(void * parms)
   {
     Controller cont(E_CONTROLLER_MASTER);
     while(true)
