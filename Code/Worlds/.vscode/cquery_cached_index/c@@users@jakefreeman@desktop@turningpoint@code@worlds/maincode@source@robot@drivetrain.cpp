@@ -1,6 +1,77 @@
 #include "../../Headers/Robot/DriveTrain.h"
 
+int Drivetrain::sign(double val)
+{
+  return val < 0 ? -1 : 1;
+}
 
+void Drivetrain::turnToLeft(double degrees, double speed)
+{
+
+  double kp = 0, P = 0;
+  double ki = 0, I = 0;
+  double kd = 0, D = 0;
+  double error = 0, lastError = 0;
+  double motorPower = 0;
+
+
+  double threshold = 20;
+  while(true)
+  {
+    error = degrees - gyro.getAngle();
+    P = kp * error;
+
+    if(error < threshold)
+    {
+        I += ki * error;
+    }
+
+    D = kd * (error - lastError);
+
+    motorPower = abs(P) + abs(I) - abs(D);
+
+    if(motorPower > abs(speed))
+      motorPower = abs(speed);
+
+    if(error < 0) motorPower *= -1;
+    setDrive(-motorPower, motorPower);
+  }
+  setDrive(0);
+}
+
+void Drivetrain::turnToRight(double degrees, double speed)
+{
+
+  double kp = 0, P = 0;
+  double ki = 0, I = 0;
+  double kd = 0, D = 0;
+  double error = 0, lastError = 0;
+  double motorPower = 0;
+
+
+  double threshold = 20;
+  while(true)
+  {
+    error = degrees - gyro.getAngle();
+    P = kp * error;
+
+    if(error < threshold)
+    {
+        I += ki * error;
+    }
+
+    D = kd * (error - lastError);
+
+    motorPower = abs(P) + abs(I) - abs(D);
+
+    if(motorPower > abs(speed))
+      motorPower = abs(speed);
+
+    if(error < 0) motorPower *= -1;
+    setDrive(motorPower, -motorPower);
+  }
+  setDrive(0);
+}
 
 
 int Drivetrain::driveTask()
