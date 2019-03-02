@@ -21,16 +21,25 @@ public:
   {
     while(true)
     {
-      if(line.isBall() && !inUse)
+      bool puncherLoaded = puncherSensor.isBall();
+      if(controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_L1))
       {
         intake.move_velocity(100);
-      }
+      }else if(puncherLoaded){
 
+      }else{
+        if(controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_L2))
+        {
+          intake.move_velocity(-100);
+        }else if(line.isBall())
+        {
+          intake.move_velocity(100);
+        }else{
+          intake.move_velocity(0);
+        }
+      }
+      pros::delay(10);
     }
   }
 
-  void releaseBall()
-  {
-
-  }
 };
