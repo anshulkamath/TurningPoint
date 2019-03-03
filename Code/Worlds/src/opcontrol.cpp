@@ -2,32 +2,25 @@
 #include "../MainCode/headers/autonomous/AutonSelector.h"
 #include "../MainCode/headers/Sensors/Gyroscope.h"
 #include "../MainCode/headers/Robot/DriveTrain.h"
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
-void opcontrol() {
-	/*pros::ADILineSensor line(1);
+
+using namespace pros;
+
+void opcontrol()
+{
+	/*ADILineSensor line(1);
 	line.calibrate();
-	pros::lcd::print(1, "HHEE");
-	pros::Task::delay(1000);
+	lcd::print(1, "HHEE");
+	Task::delay(1000);
 	while (true) {
-		pros::lcd::clear_line(1);
-		pros::lcd::print(1, "%d", line.get_value_calibrated());
+		lcd::clear_line(1);
+		lcd::print(1, "%d", line.get_value_calibrated());
 		//printf("%d", line.get_value());
-		pros::delay(50);
+		delay(50);
 	}*/
 		//displaySide();
-		Drivetrain train(pros::Motor(1), pros::Motor(2), pros::Motor(3), pros::Motor(4), Gyroscope(pros::ADIGyro(5), pros::ADIGyro(6)));
-		std::string x = "";
-		pros::Task task(train, &Drivetrain::driveTask, &x);
+
+		Drivetrain train(Motor(1), Motor(2), Motor(3), Motor(4), Gyroscope(ADIGyro(5), ADIGyro(6)));
+		std::string x = "Argument";
+		task_t driveTask = c::task_create(train.driveTask(), NULL, TASK_PRIORITY_MAX, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
+
 }
