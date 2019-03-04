@@ -26,7 +26,7 @@ class Drivetrain
     Drivetrain (pros::Motor m1, pros::Motor m2, pros::Motor m3, pros::Motor m4, Gyroscope gyro1)
     : FrontRight(m1), FrontLeft(m2), BackRight(m3), BackLeft(m4), gyro(gyro1) {}
 
-    void driveTask(void * parms);
+    void driveTask(void * params);
 
     void drive(double distance, double speed);
 

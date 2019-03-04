@@ -16,34 +16,13 @@ public:
     pros::ADIDigitalIn& limter1) :
   puncher(p1), angler(a1), intake(in), lineS(liney), limter(limter1) {}
 
-  void setAngle(double angle)
-  {
+  void firePuncher();
+  void waitForBall();
 
-  }
-
-  void firePuncher()
-  {
-    puncher.move_velocity(100);
-    while(limter.get_value());
-    while(!limter.get_value());
-    puncher.move_velocity(0);
-
-  }
-  void waitForBall()
-  {
-    while(!lineS.isBall());
-  }
-  void fire(double angle1, double angle2)
-  {
-    setAngle(angle1);
-    firePuncher();
-    intake.releaseBall();
-
-    setAngle(angle2);
-    waitForBall();
-    firePuncher();
-
-  }
+  // Fire with two different sets of arguments in order to have
+  // a double shot as well as a single shot
+  void fire(double angle1);
+  void fire(double angle1, double angle2);
 
 
 };
