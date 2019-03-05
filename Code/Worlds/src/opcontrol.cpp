@@ -36,17 +36,19 @@ void opcontrol()
 		//displaySide();
 		std::vector<std::pair<double, double>> angles;
 
+    LineSensor line1(ADILineSensor(6));
+    LineSensor line2(ADILineSensor(7));
+
 		Drivetrain train(pros::Motor(FRONTRIGHT), pros::Motor(FRONTLEFT), pros::Motor(BACKRIGHT), pros::Motor(BACKLEFT), Gyroscope(pros::ADIGyro(5), pros::ADIGyro(6)));
-LineSensor d(ADILineSensor(6));
-LineSensor e(ADILineSensor(7));
-		Intake inta(pros::Motor(INTAKEMOT), d, e);
-		Puncher pun(pros::Motor(PUNCHER), Angler(pros::Motor(ANGLER), ADIAnalogIn(potent)), inta,d, ADIDigitalIn(3) );
+		Intake inta(pros::Motor(INTAKEMOT), line1, line2);
+		Puncher pun(pros::Motor(PUNCHER), Angler(pros::Motor(ANGLER), ADIAnalogIn(potent)), inta,d, ADIDigitalIn(3));
+
 		//std::string x = "";
 //driveTask1(&train);
-		
+
 		pros::Task taskDrive(driveTask1, &train);
 		pros::Task taskP(puncherTask, &pun);
-		while(true);
+		while(true) { delay(100) };
 
 		/*
 		pros::Motor FrontLeft(1), BackLeft(2), FrontRight(3), BackRight(4);
