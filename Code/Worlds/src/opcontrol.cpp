@@ -8,6 +8,15 @@
 #include "../MainCode/headers/Robot/Puncher.h"
 #include "../MainCode/headers/Robot/Angler.h"
 
+#define FRONTLEFT 2
+#define FRONTRIGHT 3
+#define BACKLEFT 7
+#define BACKRIGHT 6
+#define INTAKEMOT 1
+#define ANGLER 5
+#define PUNCHER 10
+#define potent = 1
+
 void driveTask1(void * t)
 {
 	Drivetrain x = *(Drivetrain*)(t);
@@ -15,19 +24,29 @@ void driveTask1(void * t)
 
 }
 
+void puncherTask(void * t)
+{
+	Puncher x = *(Puncher*)(t);
+	x.puncherDriveTask();
+}
+
+
 void opcontrol()
 {
 		//displaySide();
 		std::vector<std::pair<double, double>> angles;
 
-		Drivetrain train(pros::Motor(1), pros::Motor(2), pros::Motor(3), pros::Motor(4), Gyroscope(pros::ADIGyro(5), pros::ADIGyro(6)));
+		Drivetrain train(pros::Motor(FRONTRIGHT), pros::Motor(FRONTLEFT), pros::Motor(BACKRIGHT), pros::Motor(BACKLEFT), Gyroscope(pros::ADIGyro(5), pros::ADIGyro(6)));
 LineSensor d(ADILineSensor(6));
 LineSensor e(ADILineSensor(7));
-		Intake inta(pros::Motor(5), d, e);
-		Puncher pun(pros::Motor(2), Angler(pros::Motor(3), ADIAnalogIn(4)), inta,d, ADIDigitalIn(3) );
+		Intake inta(pros::Motor(INTAKEMOT), d, e);
+		Puncher pun(pros::Motor(PUNCHER), Angler(pros::Motor(ANGLER), ADIAnalogIn(potent)), inta,d, ADIDigitalIn(3) );
 		//std::string x = "";
 //driveTask1(&train);
+		
 		pros::Task taskDrive(driveTask1, &train);
+		pros::Task taskP(puncherTask, &pun);
+		while(true);
 
 		/*
 		pros::Motor FrontLeft(1), BackLeft(2), FrontRight(3), BackRight(4);
