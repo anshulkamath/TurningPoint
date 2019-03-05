@@ -17,6 +17,17 @@ public:
     pros::ADIDigitalIn& limter1) :
   puncher(p1), angler(a1), intake(in), lineS(liney), limter(limter1) {}
 
+  void puncherDriveTask()
+  {
+     pros::Controller cont (E_CONTROLLER_MASTER);
+    while(true)
+    {
+      if(cont.get_digital( E_CONTROLLER_DIGITAL_UP))
+      {
+        fire(2240, 2445);
+        delay(50);
+      }
+  }
   void setAngle(double angle)
   {
     angler.setAngle(angle);
