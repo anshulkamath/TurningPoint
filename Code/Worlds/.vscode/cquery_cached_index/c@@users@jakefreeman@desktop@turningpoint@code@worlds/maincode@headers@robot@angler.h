@@ -4,11 +4,11 @@
 class Angler
 {
   private:
-    Motor& angler;
-    ADIAnalogIn& pot;
+    Motor angler;
+    ADIAnalogIn pot;
 
   public:
-    Angler(Motor& angle, ADIAnalogIn& poten) : angler(angle), pot(poten) {}
+    Angler(Motor angle, ADIAnalogIn poten) : angler(angle), pot(poten) {}
 
     bool setAngle(double angle);
 };

@@ -3,57 +3,31 @@
 #include "../MainCode/headers/Sensors/Gyroscope.h"
 #include "../MainCode/headers/Robot/DriveTrain.h"
 #include "../MainCode/headers/Sensors/LineSensor.h"
+#include "../MainCode/source/Robot/DriveTrain.cpp"
+#include "../MainCode/headers/Robot/Intake.h"
+#include "../MainCode/headers/Robot/Puncher.h"
+#include "../MainCode/headers/Robot/Angler.h"
 
-void driveTask(Drivetrain& train)
+void driveTask1(void * t)
 {
-  pros::Controller cont (E_CONTROLLER_MASTER);
-  int leftSide = 0;
-  int rightSide = 0;
-  double turnLimiter = 1;
-  while(true)
-  {
-    // Introducing deadzone
-    if (E_CONTROLLER_ANALOG_LEFT_Y > 10)
-      leftSide = cont.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
-    if (E_CONTROLLER_ANALOG_RIGHT_Y > 10)
-      rightSide = cont.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
-    else
-    {
-      leftSide = 0;
-      rightSide = 0;
-    }
+	Drivetrain x = *(Drivetrain*)(t);
+	x.driveTask();
 
-    // Limiting turns
-    if (abs(abs(rightSide) - abs(leftSide)) > 50)
-    {
-      rightSide *= turnLimiter;
-      leftSide *= turnLimiter;
-    }
-
-    // Slow drive mode
-    if (E_CONTROLLER_DIGITAL_R1)
-      rightSide = leftSide = 60 * 127/100;
-    else if (E_CONTROLLER_DIGITAL_R2)
-      rightSide = leftSide = -60 * 127/100;
-
-
-    // Brake mode
-    if (isDriving())
-      train.setBrakeMode(E_MOTOR_BRAKE_COAST);
-    else
-      train.setBrakeMode(E_MOTOR_BRAKE_BRAKE);
-
-    train.setDrive(rightSide, leftSide);
-    delay(10);
-  }
 }
 
 void opcontrol()
 {
 		//displaySide();
+		std::vector<std::pair<double, double>> angles;
+
 		Drivetrain train(pros::Motor(1), pros::Motor(2), pros::Motor(3), pros::Motor(4), Gyroscope(pros::ADIGyro(5), pros::ADIGyro(6)));
+LineSensor d(ADILineSensor(6));
+LineSensor e(ADILineSensor(7));
+		Intake inta(pros::Motor(5), d, e);
+		Puncher pun(pros::Motor(2), Angler(pros::Motor(3), ADIAnalogIn(4)), inta,d, ADIDigitalIn(3) );
 		//std::string x = "";
-		pros::Task taskDrive(driveTask, train);
+//driveTask1(&train);
+		pros::Task taskDrive(driveTask1, &train);
 
 		/*
 		pros::Motor FrontLeft(1), BackLeft(2), FrontRight(3), BackRight(4);

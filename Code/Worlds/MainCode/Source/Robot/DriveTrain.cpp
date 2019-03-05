@@ -111,6 +111,7 @@ void Drivetrain::drive(double distance, double speed)
   setDrive(0);
 }
 
+
 void Drivetrain::turnTo(double degrees, double speed)
 {
   double error = degrees - gyro.getAngle();
@@ -157,4 +158,47 @@ bool Drivetrain::isDriving()
         return false;
     else
       return true;
+}
+void Drivetrain::driveTask()
+{
+  pros::Controller cont (E_CONTROLLER_MASTER);
+  int leftSide = 0;
+  int rightSide = 0;
+  double turnLimiter = 1;
+  while(true)
+  {
+    // Introducing deadzone
+    if (E_CONTROLLER_ANALOG_LEFT_Y > 10)
+      leftSide = cont.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
+    if (E_CONTROLLER_ANALOG_RIGHT_Y > 10)
+      rightSide = cont.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
+    else
+    {
+      leftSide = 0;
+      rightSide = 0;
+    }
+
+    // Limiting turns
+    if (abs(abs(rightSide) - abs(leftSide)) > 50)
+    {
+      rightSide *= turnLimiter;
+      leftSide *= turnLimiter;
+    }
+
+    // Slow drive mode
+    if (E_CONTROLLER_DIGITAL_R1)
+      rightSide = leftSide = 60 * 127/100;
+    else if (E_CONTROLLER_DIGITAL_R2)
+      rightSide = leftSide = -60 * 127/100;
+
+
+    // Brake mode
+    if (isDriving())
+      setBrakeMode(E_MOTOR_BRAKE_COAST);
+    else
+      setBrakeMode(E_MOTOR_BRAKE_BRAKE);
+
+    setDrive(rightSide, leftSide);
+    delay(10);
+  }
 }

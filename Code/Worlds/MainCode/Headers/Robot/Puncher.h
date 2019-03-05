@@ -1,32 +1,32 @@
 #include "../../../include/api.h"
 #include "../Sensors/lineSensor.h"
 #include "../Robot/Intake.h"
+#include "../Robot/Angler.h"
 
 using namespace std;
 
 class Puncher
 {
-  Motor& puncher;
-  Motor& angler;
-  pros::ADIDigitalIn& limter;
-  ::Intake& intake;
-  LineSensor& lineS;
+  Motor puncher;
+  Angler angler;
+  pros::ADIDigitalIn limter;
+  ::Intake intake;
+  LineSensor lineS;
 public:
-  Puncher(Motor& p1, Motor& a1, ::Intake& in, LineSensor& liney,
+  Puncher(Motor& p1, Angler& a1, ::Intake& in, LineSensor& liney,
     pros::ADIDigitalIn& limter1) :
   puncher(p1), angler(a1), intake(in), lineS(liney), limter(limter1) {}
 
   void setAngle(double angle)
   {
-
+    angler.setAngle(angle);
   }
 
   void firePuncher()
   {
-    puncher.move_velocity(100);
-    while(limter.get_value());
-    while(!limter.get_value());
-    puncher.move_velocity(0);
+    puncher.move_relative(340, 100);
+    //puncher.move_velocity(100);
+    //puncher.move_velocity(0);
 
   }
   void waitForBall()
@@ -37,10 +37,10 @@ public:
   {
     setAngle(angle1);
     firePuncher();
-    while(!lineS.isBall());
+    //while(!lineS.isBall());
 
     setAngle(angle2);
-    waitForBall();
+    delay(1000);
     firePuncher();
 
   }

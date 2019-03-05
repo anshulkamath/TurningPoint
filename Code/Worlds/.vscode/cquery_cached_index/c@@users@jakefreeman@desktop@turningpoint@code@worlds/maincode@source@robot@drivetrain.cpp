@@ -14,7 +14,6 @@ void Drivetrain::turnToLeft(double degrees, double speed)
   double error = 0, lastError = 0;
   double motorPower = 0;
 
-
   double threshold = 20;
   while(true)
   {
@@ -74,24 +73,10 @@ void Drivetrain::turnToRight(double degrees, double speed)
 }
 
 
-void Drivetrain::driveTask(void * parms)
-{
-  pros::Controller cont (E_CONTROLLER_MASTER);
-  while(true)
-  {
-    int leftSide = cont.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
-    int rightSide = cont.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
-    FrontLeft.move(leftSide);
-    FrontRight.move(rightSide);
-    BackRight.move(rightSide);
-    BackLeft.move(leftSide);
-    delay(10);
-  }
-}
 
 void Drivetrain::drive(double distance, double speed)
 {
-  double target = distance/(4 * 3.1415) * 360;
+  double target = distance/(4 * M_PI) * 360;
 
   double kp = 0, P = 0;
   double ki = 0, I = 0;
@@ -100,7 +85,7 @@ void Drivetrain::drive(double distance, double speed)
   double motorPower = 0;
   double start = FrontRight.get_position();
 
-  double thresHold = 20;
+  double threshold = 20;
   while(true)
   {
     error = FrontRight.get_position() - (start);
@@ -117,10 +102,15 @@ void Drivetrain::drive(double distance, double speed)
     if(motorPower > abs(speed))
       motorPower = abs(speed);
     if(error < 0) motorPower *= -1;
-      setDrive(motorPower);
+
+    setDrive(motorPower);
+
+    delay(25);
+    lastError = error;
   }
   setDrive(0);
 }
+
 
 void Drivetrain::turnTo(double degrees, double speed)
 {
@@ -153,10 +143,10 @@ void Drivetrain::setDrive(int rightVel, int leftVel)
 
 void Drivetrain::setBrakeMode(const motor_brake_mode_e mode)
 {
-    FrontRight.set_brake_mode(mode);
-    FrontLeft.set_brake_mode(mode);
-    BackLeft.set_brake_mode(mode);
-    BackRight.set_brake_mode(mode);
+  FrontRight.set_brake_mode(mode);
+  FrontLeft.set_brake_mode(mode);
+  BackLeft.set_brake_mode(mode);
+  BackRight.set_brake_mode(mode);
 }
 
 bool Drivetrain::isDriving()
@@ -168,4 +158,47 @@ bool Drivetrain::isDriving()
         return false;
     else
       return true;
+}
+void Drivetrain::driveTask()
+{
+  pros::Controller cont (E_CONTROLLER_MASTER);
+  int leftSide = 0;
+  int rightSide = 0;
+  double turnLimiter = 1;
+  while(true)
+  {
+    // Introducing deadzone
+    if (E_CONTROLLER_ANALOG_LEFT_Y > 10)
+      leftSide = cont.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
+    if (E_CONTROLLER_ANALOG_RIGHT_Y > 10)
+      rightSide = cont.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
+    else
+    {
+      leftSide = 0;
+      rightSide = 0;
+    }
+
+    // Limiting turns
+    if (abs(abs(rightSide) - abs(leftSide)) > 50)
+    {
+      rightSide *= turnLimiter;
+      leftSide *= turnLimiter;
+    }
+
+    // Slow drive mode
+    if (E_CONTROLLER_DIGITAL_R1)
+      rightSide = leftSide = 60 * 127/100;
+    else if (E_CONTROLLER_DIGITAL_R2)
+      rightSide = leftSide = -60 * 127/100;
+
+
+    // Brake mode
+    if (isDriving())
+      setBrakeMode(E_MOTOR_BRAKE_COAST);
+    else
+      setBrakeMode(E_MOTOR_BRAKE_BRAKE);
+
+    setDrive(rightSide, leftSide);
+    delay(10);
+  }
 }

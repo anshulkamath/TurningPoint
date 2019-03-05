@@ -6,12 +6,10 @@ using namespace pros;
 class LineSensor
 {
   int threshHold = 220;
-  pros::ADILineSensor & Line;
+  pros::ADILineSensor Line;
  public:
-  LineSensor(pros::ADILineSensor& Liney) : Line(Liney) {}
+  LineSensor(pros::ADILineSensor lineArg) : Line(lineArg) {}
 
-  bool isBall()
-  {
-    return (threshHold > Line.get_value());
-  }
+  void calibrateLine();
+  bool isBall();
 };
