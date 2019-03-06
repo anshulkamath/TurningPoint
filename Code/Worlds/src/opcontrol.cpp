@@ -15,7 +15,7 @@
 #define INTAKEMOT 1
 #define ANGLER 5
 #define PUNCHER 10
-#define potent = 1
+#define POTENT  1
 
 void driveTask1(void * t)
 {
@@ -41,14 +41,15 @@ void opcontrol()
 
 		Drivetrain train(pros::Motor(FRONTRIGHT), pros::Motor(FRONTLEFT), pros::Motor(BACKRIGHT), pros::Motor(BACKLEFT), Gyroscope(pros::ADIGyro(5), pros::ADIGyro(6)));
 		Intake inta(pros::Motor(INTAKEMOT), line1, line2);
-		Puncher pun(pros::Motor(PUNCHER), Angler(pros::Motor(ANGLER), ADIAnalogIn(potent)), inta,d, ADIDigitalIn(3));
+		Angler angler(pros::Motor(ANGLER), ADIAnalogIn(POTENT));
+		Puncher pun(pros::Motor(PUNCHER),angler, inta,line1, ADIDigitalIn(3));
 
 		//std::string x = "";
 //driveTask1(&train);
 
 		pros::Task taskDrive(driveTask1, &train);
 		pros::Task taskP(puncherTask, &pun);
-		while(true) { delay(100) };
+		while(true) { delay(100); }
 
 		/*
 		pros::Motor FrontLeft(1), BackLeft(2), FrontRight(3), BackRight(4);

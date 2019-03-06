@@ -168,9 +168,9 @@ void Drivetrain::driveTask()
   while(true)
   {
     // Introducing deadzone
-    if (E_CONTROLLER_ANALOG_LEFT_Y > 10)
+    if (cont.get_analog(E_CONTROLLER_ANALOG_LEFT_Y) > 10)
       leftSide = cont.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
-    if (E_CONTROLLER_ANALOG_RIGHT_Y > 10)
+    if (cont.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y) > 10)
       rightSide = cont.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
     else
     {
@@ -186,9 +186,9 @@ void Drivetrain::driveTask()
     }
 
     // Slow drive mode
-    if (E_CONTROLLER_DIGITAL_R1)
+    if (cont.get_digital(E_CONTROLLER_DIGITAL_R1))
       rightSide = leftSide = 60 * 127/100;
-    else if (E_CONTROLLER_DIGITAL_R2)
+    else if (cont.get_digital(E_CONTROLLER_DIGITAL_R2))
       rightSide = leftSide = -60 * 127/100;
 
 

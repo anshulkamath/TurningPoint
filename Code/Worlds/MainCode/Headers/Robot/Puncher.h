@@ -7,14 +7,14 @@ using namespace std;
 
 class Puncher
 {
-  Motor puncher;
+  pros::Motor puncher;
   Angler angler;
   pros::ADIDigitalIn limter;
   ::Intake intake;
   LineSensor lineS;
 public:
-  Puncher(Motor& p1, Angler& a1, ::Intake& in, LineSensor& liney,
-    pros::ADIDigitalIn& limter1) :
+  Puncher(Motor p1, Angler a1, ::Intake in, LineSensor liney,
+    pros::ADIDigitalIn limter1) :
   puncher(p1), angler(a1), intake(in), lineS(liney), limter(limter1) {}
 
   void puncherDriveTask()
@@ -27,6 +27,7 @@ public:
         fire(2240, 2445);
         delay(50);
       }
+    }
   }
   void setAngle(double angle)
   {
