@@ -1,5 +1,6 @@
 #pragma once
-#include "robot-config.h"
+#include <math.h>
+#include <stdlib.h>
 
 using namespace vex;
 
@@ -15,7 +16,6 @@ class Drivetrain
     // Drive variables
     int rightDrive;
     int leftDrive;
-    int turnLimiter;
 
     double realVelocityFR;
     double realVelocityFL;
@@ -24,19 +24,20 @@ class Drivetrain
 
   public:
     // Creating Drivetrain class
-    Drivetrain(motor m1, motor m2, motor m3, motor m4) : fRight(m1), fLeft(m2), bRight(m3), bLeft(m4)
+    Drivetrain(motor frontRight, motor frontLeft, motor backRight, motor backLeft) : fRight(frontRight), fLeft(frontLeft), bRight(backRight), bLeft(backLeft)
     {
       rightDrive = 0;
       leftDrive = 0;
-      turnLimiter = 1;
     }
 
     // Tasks
-    void driveTask();
+    static int driveTask();
 
     // Setting Drive Functions
     void setDrive(int vel);
     void setDrive(int rightVel, int leftVel);
+
+    double getTurnLimiter();
 
     // Autonomous Functions
     void drive(double inches, int speed);

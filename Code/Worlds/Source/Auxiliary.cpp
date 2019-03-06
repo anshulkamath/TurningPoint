@@ -1,4 +1,3 @@
-#pragma once
 #include "../Headers/Auxiliary.h"
 
 int Auxiliary::intakeTask()
@@ -38,9 +37,10 @@ int Auxiliary::puncherTask()
   }
   return 1;
 }
+
 int Auxiliary::setAngle(int angle)
 {
-  Angler.setStopping(brakeType::hold);
+  angler.setStopping(brakeType::hold);
   double P = 0, kp = 0.1;
   double I = 0, ki = 0;
   double D = 0, kd = 0;
@@ -49,12 +49,42 @@ int Auxiliary::setAngle(int angle)
 
   while(fabs(error) > 10 && fabs(lError) > 10)
   {
-      error = -potenVal + poten.value(analogUnits::range12bit);
+      error = -angle + poten.value(analogUnits::range12bit);
       P = error * kp;
 
-      Angler.spin(directionType::fwd, P, velocityUnits::pct);
+      angler.spin(directionType::fwd, P, velocityUnits::pct);
       task::sleep(50);
   }
 
   Angler.stop();
+}
+
+void Auxiliary::runIntake(int state)
+{
+  switch(state)
+  {
+    case -1:
+      intake.spin(directionType::fwd, 100, velocityUnits::pct);
+      break;
+    case 0:
+      intake.stop(brakeType::hold);
+      break;
+    case -1:
+      intake.spin(directionType::fwd, -100, velocityUnits::pct);
+      break;
+    default:
+      intake.stop(brakeType::hold);
+      break;
+  }
+}
+
+void Auxiliary::doubleShot(int angle1, int angle2)
+{
+  Auxiliary::setAngle(angle1);
+  puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct);
+
+  task::sleep(1000);
+
+  Auxiliary::setAngle(angle2);
+  puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct);
 }

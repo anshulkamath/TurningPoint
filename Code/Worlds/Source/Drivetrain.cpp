@@ -1,8 +1,7 @@
-#pragma once
 #include "../Headers/Drivetrain.h"
 #include <math.h>
 
-int Drivetrain::driveTask()
+static int Drivetrain::driveTask()
 {
   while(true)
   {
@@ -67,4 +66,20 @@ int Drivetrain::driveTask()
     }
     return 0;
   }
+}
+
+void Drivetrain::setDrive(int rightVel, int leftVel)
+{
+  fRight.spin(directionType::fwd, rightVel, velocityUnits::pct);
+  fLeft.spin(directionType::fwd, leftVel, velocityUnits::pct);
+  bRight.spin(directionType::fwd, rightVel, velocityUnits::pct);
+  bLeft.spin(directionType::fwd, leftVel, velocityUnits::pct);
+}
+
+void Drivetrain::setDrive(int vel)
+{
+  fRight.spin(directionType::fwd, vel, velocityUnits::pct);
+  fLeft.spin(directionType::fwd, vel, velocityUnits::pct);
+  bRight.spin(directionType::fwd, vel, velocityUnits::pct);
+  bLeft.spin(directionType::fwd, vel, velocityUnits::pct);
 }

@@ -1,5 +1,4 @@
 #pragma once
-#include "robot-config.h"
 
 class Auxiliary
 {
@@ -12,8 +11,8 @@ class Auxiliary
     pot& poten;
 
   public:
-    Auxiliary(motor int, motor punch, motor angle, motor scrape, pot potent) :
-    intake(int), puncher(punch), angler(angle), scraper(scrape), poten(potent) {}
+    Auxiliary(motor intk, motor punch, motor angle, motor scrape, pot potent) :
+    intake(intk), puncher(punch), angler(angle), scraper(scrape), poten(potent) {}
 
     // Tasks
     int intakeTask();
