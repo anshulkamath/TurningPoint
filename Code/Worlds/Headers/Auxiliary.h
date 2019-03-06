@@ -16,14 +16,13 @@ class Auxiliary
     intake(int), puncher(punch), angler(angle), scraper(scrape), poten(potent) {}
 
     // Tasks
-    void intakeTask(int state);
-    void puncherTask();
-    void anglerTask();
-    void scraperTask();·
+    int intakeTask();
+    int puncherTask();
+    int scraperTask();
 
     // Autonomous functions
     void runIntake(int state);
-    void runPuncher();
+    void firePuncher();
     void setAngler(double angle);
     void setScraper(double val);
 

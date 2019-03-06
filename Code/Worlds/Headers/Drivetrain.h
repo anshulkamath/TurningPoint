@@ -7,10 +7,10 @@ class Drivetrain
 {
   private:
     // Objects for class to manage
-    motor& FrontRight;
-    motor& FrontLeft;
-    motor& BackRight;
-    motor& BackLeft;
+    motor& fRight;
+    motor& fLeft;
+    motor& bRight;
+    motor& bLeft;
 
     // Drive variables
     int rightDrive;
@@ -24,7 +24,7 @@ class Drivetrain
 
   public:
     // Creating Drivetrain class
-    Drivetrain(motor m1, motor m2, motor m3, motor m4) : FrontRight(m1), FrontLeft(m2), BackRight(m3), BackLeft(m4)
+    Drivetrain(motor m1, motor m2, motor m3, motor m4) : fRight(m1), fLeft(m2), bRight(m3), bLeft(m4)
     {
       rightDrive = 0;
       leftDrive = 0;
