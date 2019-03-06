@@ -1,5 +1,4 @@
 #include "../include/main.h"
-#include "../MainCode/headers/autonomous/AutonSelector.h"
 #include "../MainCode/headers/Sensors/Gyroscope.h"
 #include "../MainCode/headers/Robot/DriveTrain.h"
 #include "../MainCode/headers/Sensors/LineSensor.h"

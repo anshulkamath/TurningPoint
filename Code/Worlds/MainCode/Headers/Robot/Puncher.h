@@ -2,6 +2,7 @@
 #include "../Sensors/lineSensor.h"
 #include "../Robot/Intake.h"
 #include "../Robot/Angler.h"
+#include "../../Source/Robot/Angler.cpp"
 
 using namespace std;
 
@@ -13,7 +14,7 @@ class Puncher
   ::Intake intake;
   LineSensor lineS;
 public:
-  Puncher(Motor p1, Angler a1, ::Intake in, LineSensor liney,
+  Puncher(pros::Motor p1, Angler a1, ::Intake in, LineSensor liney,
     pros::ADIDigitalIn limter1) :
   puncher(p1), angler(a1), intake(in), lineS(liney), limter(limter1) {}
 
@@ -29,10 +30,6 @@ public:
       }
     }
   }
-  void setAngle(double angle)
-  {
-    angler.setAngle(angle);
-  }
 
   void firePuncher()
   {
@@ -47,11 +44,11 @@ public:
   }
   void fire(double angle1, double angle2)
   {
-    setAngle(angle1);
+    angler.angle(angle1);
     firePuncher();
     //while(!lineS.isBall());
 
-    setAngle(angle2);
+    angler.angle(angle2);
     delay(1000);
     firePuncher();
 
