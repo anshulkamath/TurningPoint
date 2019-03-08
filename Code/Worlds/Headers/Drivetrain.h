@@ -8,10 +8,10 @@ class Drivetrain
 {
   private:
     // Objects for class to manage
-    motor& fRight;
-    motor& fLeft;
-    motor& bRight;
-    motor& bLeft;
+    motor fRight;
+    motor fLeft;
+    motor bRight;
+    motor bLeft;
 
     // Drive variables
     int rightDrive;

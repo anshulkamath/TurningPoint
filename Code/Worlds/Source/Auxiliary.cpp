@@ -22,7 +22,7 @@ int Auxiliary::puncherTask()
   while(true)
   {
     if (Controller.ButtonX.pressing())
-        puncher.spin(directionType::fwd, 100, velocityUnits::pct);
+        puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct);
     else if(Controller.ButtonB.pressing())
         doubleShot(2450, 2260); // Temporary, replace with variables later
     else
@@ -38,32 +38,44 @@ int Auxiliary::puncherTask()
   return 1;
 }
 
-int Auxiliary::setAngle(int angle)
+int sgn(int val)
 {
-  angler.setStopping(brakeType::hold);
-  double P = 0, kp = 0.1;
-  double I = 0, ki = 0;
-  double D = 0, kd = 0;
-  double error = 100, lError = 100;
-  double anglePower = 0;
+  return val < 0 ? -1 : 1;
+}
 
-  while(fabs(error) > 10 && fabs(lError) > 10)
-  {
-      error = -angle + poten.value(analogUnits::range12bit);
-      P = error * kp;
+void Auxiliary::setAngle(int angle)
+{
+    angler.setStopping(brakeType::hold);
+    double P = 0, kp = 0.1;
+    double I = 0, ki = 0.0001;
+    double D = 0, kd = 0.0;
+    double error = 0, lError = 0;
+    double anglePower = 30;
+    while(abs(error) > 10 || abs(lError) > 10 || abs(anglePower) > 3) //
+    {
+        error = -angle + Poten.value(analogUnits::range12bit);
+        P = error * kp;
+        //I += error * ki;
+        D = (lError - error) * kd;
 
-      angler.spin(directionType::fwd, P, velocityUnits::pct);
-      task::sleep(50);
-  }
+        anglePower = abs(P) + abs(I) - abs(D);
 
-  Angler.stop();
+        if (abs(anglePower) > 60)
+           anglePower = sgn(anglePower) * 45;
+
+        angler.spin(directionType::fwd, sgn(error) * anglePower, velocityUnits::pct);
+
+        task::sleep(40);
+        lError = error;
+    }
+    angler.stop();
 }
 
 void Auxiliary::runIntake(int state)
 {
   switch(state)
   {
-    case -1:
+    case 1:
       intake.spin(directionType::fwd, 100, velocityUnits::pct);
       break;
     case 0:
@@ -80,11 +92,14 @@ void Auxiliary::runIntake(int state)
 
 void Auxiliary::doubleShot(int angle1, int angle2)
 {
-  Auxiliary::setAngle(angle1);
-  puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct);
+  // Go to the first shot angle
+  setAngle(angle1);
+  int start = puncher.rotation(rotationUnits::rev);
+  puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true); // shoot first shot
+  puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false); // shoot second shot
+  //while(abs(Puncher.rotation(rotationUnits::rev)) - abs(start) < .24);
+  intake.spin(directionType::fwd, 100, velocityUnits::pct); // intake the next ball
+  //while(Puncher.isSpinning());
+  setAngle(angle2); // Set to the second angle
 
-  task::sleep(1000);
-
-  Auxiliary::setAngle(angle2);
-  puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct);
 }

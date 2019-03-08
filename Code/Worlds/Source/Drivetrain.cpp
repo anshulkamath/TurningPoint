@@ -1,6 +1,7 @@
 #include "../Headers/Drivetrain.h"
 #include <math.h>
 
+/*
 static int Drivetrain::driveTask()
 {
   while(true)
@@ -45,17 +46,6 @@ static int Drivetrain::driveTask()
         }
 
 
-        if (Controller.ButtonRight.pressing())
-        {
-            bLeftValue = fLeftValue = 30;
-            fRightValue = bRightValue = -30;
-        }
-        else if (Controller.ButtonLeft.pressing())
-        {
-            bLeftValue = fLeftValue = -30;
-            fRightValue = bRightValue = 30;
-        }
-
         // Sets Motor Powers
         fLeft.spin(directionType::fwd, fLeftValue, velocityUnits::pct);
         fRight.spin(directionType::fwd, fRightValue, velocityUnits::pct);
@@ -67,6 +57,7 @@ static int Drivetrain::driveTask()
     return 0;
   }
 }
+*/
 
 void Drivetrain::setDrive(int rightVel, int leftVel)
 {

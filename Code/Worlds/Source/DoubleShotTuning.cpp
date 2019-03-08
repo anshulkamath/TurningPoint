@@ -1,29 +1,42 @@
 #include "robot-config.h"
+#include <math.h>
+
 using namespace vex;
+
 int midFlag = 2403;
 int highFlag = 2656;
 int initPot;
 
-void setAngle(int potenVal)
+void setAngle(int angle)
 {
     Angler.setStopping(brakeType::hold);
-    double P = 0, kp = 0.21, D = 0, kd = .1;
+    double P = 0, kp = 0.21;
+    double I = 0, ki = 0;
+    double D = 0, kd = .1;
     double error = 100, lError = 100;
     double anglePower = 0;
 
     while(fabs(error) > 10 || fabs(lError) > 10)
     {
-        error = -potenVal + Poten.value(analogUnits::range12bit);
+        error = -angle + Poten.value(analogUnits::range12bit);
         P = error * kp;
-        //D = error - lError;
-        D *= kd;
-        lError = error;
-        Angler.spin(directionType::fwd, P + D, velocityUnits::pct);
+        D *= (lError - error) * kd;
+
+        anglePower = abs(P) - abs(D);
+
+        if (fabs(anglePower) < 15)
+          I += error * ki;
+        else
+          I = 0;
+
+        anglePower += abs(I);
+
+        Angler.spin(directionType::fwd, anglePower, velocityUnits::pct);
+
         task::sleep(10);
+        lError = error;
     }
-
     Angler.stop();
-
 }
 
 

@@ -1,14 +1,15 @@
 #pragma once
+#include <math.h>
 
 class Auxiliary
 {
   private:
-    motor& intake;
-    motor& puncher;
-    motor& angler;
-    motor& scraper;
+    motor intake;
+    motor puncher;
+    motor angler;
+    motor scraper;
 
-    pot& poten;
+    pot poten;
 
   public:
     Auxiliary(motor intk, motor punch, motor angle, motor scrape, pot potent) :
@@ -22,7 +23,7 @@ class Auxiliary
     // Autonomous functions
     void runIntake(int state);
     void firePuncher();
-    void setAngler(double angle);
+    void setAngle(int angle);
     void setScraper(double val);
 
     // Driver functions
