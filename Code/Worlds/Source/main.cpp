@@ -13,6 +13,7 @@ void sleep (int time)
     task::sleep(time);
 }
 
+bool doubleShotOn = false;
 void doubleShot(int angle1, int angle2)
 {
     // Go to the first shot angle
@@ -26,7 +27,7 @@ void doubleShot(int angle1, int angle2)
 
 int rightSide = 0, leftSide = 0;
 int turnLimiter = 1;
-int driveTask()
+int taskDrive()
 {
     while(true)
     {
@@ -69,13 +70,16 @@ int taskIntake()
 {
     while (true)
     {
-        // Controls intake
-        if (Controller.ButtonL1.pressing())
-            Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-        else if(Controller.ButtonL2.pressing())
-            Intake.spin(directionType::rev, 100, velocityUnits::pct);
-        else
-            Intake.stop(brakeType::hold);
+        if (!doubleShotOn)
+        {
+            // Controls intake
+            if (Controller.ButtonL1.pressing())
+                Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+            else if(Controller.ButtonL2.pressing())
+                Intake.spin(directionType::rev, 100, velocityUnits::pct);
+            else
+                Intake.stop(brakeType::hold);
+        }
 
         sleep(50);
     }
@@ -97,7 +101,7 @@ int taskScraper()
     }
 }
 
-int puncherTask()
+int taskPuncher()
 {
     while(true)
     {
@@ -131,10 +135,10 @@ void autonomous( void )
 void usercontrol( void )
 {
     Angler.setStopping(brakeType::hold);
-    task taskDrive(driveTask, 1);
-    //task intake(taskIntake, 1);
-    task scraper(taskScraper, 1);
-    task puncher(puncherTask, 1);
+    task driveTask(taskDrive, 1);
+    task intakeTask(taskIntake, 1);
+    task scraperTask(taskScraper, 1);
+    task puncherTask(taskPuncher, 1);
 
     Angler.resetRotation();
     //task angler(taskAngler, 1);
