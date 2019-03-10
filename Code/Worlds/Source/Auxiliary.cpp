@@ -7,7 +7,7 @@ string Auxiliary::toStr(int val)
     return v.str();
 }
 
-void Auxiliary::writeFile(double error, double lError, double P, double I, double D, double anglePower)
+/*void Auxiliary::writeFile(double error, double lError, double P, double I, double D, double anglePower)
 {
   ofstream write;
   write.open("output.txt");
@@ -23,7 +23,7 @@ void Auxiliary::writeFile(double error, double lError, double P, double I, doubl
   write << toStr((int)D);
   write << ", anglePower: ";
   write << toStr((int)anglePower) << endl;
-}
+}*/
 
 
 int Auxiliary::intakeTask()

@@ -59,6 +59,37 @@ static int Drivetrain::driveTask()
 }
 */
 
+int sgn(double v)
+{
+  return v < 0 ? -1 : 1;
+}
+/*
+void drivePID(double distance, double speed)
+{
+  double kP = 0, P = 0;
+  double kI = 0, I = 0;
+  double kD = 0, D = 0;
+  double error = 0, lError = 0;
+  double motorPower = 0, prevMotorPower = 0;
+  double iCap = 0;
+  FrontRight.resetRotation();
+
+  while(true)
+  {
+    //error = distance - FrontRight.rotation(rotationUnits::rots);
+    P = kP * error;
+    D = error - lError;
+
+
+    if(I < iCap)
+      I += kI * error;
+
+    motorPower = abs(P) + abs(I) - abs(D);
+  //  setDrive(motorPower * sgn(error))
+  }
+
+}*/
+
 void Drivetrain::setDrive(int rightVel, int leftVel)
 {
   fRight.spin(directionType::fwd, rightVel, velocityUnits::pct);

@@ -1,8 +1,9 @@
-#include "/Users/anshulkamath/Robotics/Turning Point/TurningPointGit/Code/Worlds/testConfigurations.h"
-#include "/Users/anshulkamath/Robotics/Turning Point/TurningPointGit/Code/Worlds/Headers/Drivetrain.h"
-#include "/Users/anshulkamath/Robotics/Turning Point/TurningPointGit/Code/Worlds/Headers/Auxiliary.h"
-#include "/Users/anshulkamath/Robotics/Turning Point/TurningPointGit/Code/Worlds/Source/Drivetrain.cpp"
-#include "/Users/anshulkamath/Robotics/Turning Point/TurningPointGit/Code/Worlds/Source/Auxiliary.cpp"
+#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/testConfigurations.h"
+#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Headers/Drivetrain.h"
+#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Headers/Auxiliary.h"
+#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Source/Drivetrain.cpp"
+#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Source/Auxiliary.cpp"
+
 using namespace vex;
 
 Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft);
