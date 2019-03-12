@@ -1,4 +1,4 @@
-#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/testConfigurations.h"
+#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/cleanConfigurations.h"
 #include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Headers/Drivetrain.h"
 #include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Headers/Auxiliary.h"
 #include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Source/Drivetrain.cpp"
@@ -14,7 +14,6 @@ void sleep (int time)
     task::sleep(time);
 }
 
-bool doubleShotOn = false;
 void doubleShot(int angle1, int angle2)
 {
     // Go to the first shot angle
@@ -25,7 +24,9 @@ void doubleShot(int angle1, int angle2)
     aux.setAngle(angle2); // Set to the second angle
     Intake.stop(brakeType::hold);
 }
-
+bool puncherUse = false;
+bool intakeUse = false;
+bool anglerUse = false;
 int rightSide = 0, leftSide = 0;
 int turnLimiter = 1;
 int taskDrive()
@@ -109,15 +110,15 @@ int taskPuncher()
         if (Controller.ButtonX.pressing())
             Puncher.spin(directionType::fwd, 100, velocityUnits::pct);
         else if(Controller.ButtonB.pressing())
-            doubleShot(2450, 2190); // Temporary, replace with variables later
-        else
+            aux.doubleShot(51.8, 105.6);
+        else if(!puncherUse)
             Puncher.stop(brakeType::coast);
 
         if (Controller.ButtonY.pressing())
             Angler.spin(directionType::fwd, 50, velocityUnits::pct);
         else if (Controller.ButtonA.pressing())
             Angler.spin(directionType::fwd, -50, velocityUnits::pct);
-        else
+        else if(!anglerUse)
             Angler.stop(brakeType::hold);
     }
     return 1;
@@ -142,13 +143,13 @@ void usercontrol( void )
     task puncherTask(taskPuncher, 1);
 
     Angler.resetRotation();
-    //task angler(taskAngler, 1);
+    // M2: M: 115.6 68
     //aux.doubleShot(2450, 2260);
     while (1)
     {
-        Brain.Screen.printAt(30, 30, "%d", Poten.value(analogUnits::range12bit));
-
-        sleep(1000);
+        Brain.Screen.printAt(30, 30, "%.2f", Angler.rotation(rotationUnits::deg));
+        Brain.Screen.printAt(30, 30, "%.2f", puncherLine.value(analogUnits::range12bit));
+        sleep(100);
     }
 }
 

@@ -19,7 +19,7 @@ class Auxiliary
     pot poten;
 
     string toStr(int val);
-    void writeFile(double error, double lError, double P, double I, double D, double anglePower);
+
 
   public:
     Auxiliary(motor intk, motor punch, motor angle, motor scrape, pot potent) :
@@ -33,7 +33,7 @@ class Auxiliary
     // Autonomous functions
     void runIntake(int state);
     void firePuncher();
-    void setAngle(int angle);
+    void setAngle(double angle);
     void setScraper(double val);
 
     // Driver functions

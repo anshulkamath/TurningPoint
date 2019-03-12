@@ -17,42 +17,6 @@ using namespace vex;
 int midFlag = 48.2;
 int highFlag = 0;
 int initPot;
-string run = "0";
-void setAngle(double angle)
-{
-  run += "0";
-    //file.close();
-    fstream file1(string("angle-")  + string(".csv"), fstream::app);
-    Angler.setStopping(brakeType::hold);
-    double P = 0, kp = .9605;
-    double I = 0, ki = 0.0;
-    double D = 0, kd = 0.0;
-    double error = 100, lError = 100;
-    double anglePower = 0;
-    int t = 0;
-    file1<<",Target,Current,Error,P,D,I,Power"<<endl;
-    while(fabs(error) > 10 || fabs(lError) > 10 || fabs(anglePower) > 3) //
-    {
-        error = angle - Angler.rotation(rotationUnits::deg);
-        P = error * kp;
-        //I += error * ki;
-        D = (lError - error) * kd;
-        if(fabs(anglePower) < 7)
-          I += error * ki;
-        anglePower = fabs(P) + fabs(I) - fabs(D);
-
-        if (fabs(anglePower) > 60)
-           anglePower = 60;
-
-        Angler.spin(directionType::fwd, (sgn(error) * anglePower), velocityUnits::pct);
-        t++;
-        file1<<t<<","<<angle<<","<<Angler.rotation(rotationUnits::deg)<<","<<error<<","<<abs(P)<<","<<-abs(D)<<","<<abs(I)<<","<<sgn(error) * anglePower<<endl;
-        task::sleep(10);
-        lError = error;
-
-    }
-    Angler.stop();
-}
 
 
 void doubleShot(int angle1, int angle2)

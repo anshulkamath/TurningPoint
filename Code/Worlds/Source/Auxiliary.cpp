@@ -1,5 +1,6 @@
 #include "../Headers/Auxiliary.h"
-
+bool doubleShotOn = false;
+const int puncherLineThres = 2000;
 string Auxiliary::toStr(int val)
 {
     ostringstream v;
@@ -69,34 +70,41 @@ int sgn(int val)
   return val < 0 ? -1 : 1;
 }
 
-void Auxiliary::setAngle(int angle)
+string run = "0";
+void Auxiliary::setAngle(double angle)
 {
-    angler.setStopping(brakeType::hold);
-    double P = 0, kp = 0.1;
-    double I = 0, ki = 0.0001;
+  run += "0";
+    //file.close();
+    fstream file1(string("angle-")  + string(".csv"), fstream::app);
+    Angler.setStopping(brakeType::hold);
+    double P = 0, kp = .932;
+    double I = 0, ki = 0.0;
     double D = 0, kd = 0.0;
-    double error = 0, lError = 0;
-    double anglePower = 30;
-    while(fabs(error) > 10 || fabs(lError) > 10 || fabs(anglePower) > 3) //
+    double error = 100, lError = 100;
+    double anglePower = 0;
+    int t = 0;
+    file1<<",Target,Current,Error,P,D,I,Power"<<endl;
+    while(fabs(error) > 1 || fabs(lError) > 1 || fabs(anglePower) > 3) //
     {
-        error = -angle + Poten.value(analogUnits::range12bit);
+        error = angle - Angler.rotation(rotationUnits::deg);
         P = error * kp;
         //I += error * ki;
         D = (lError - error) * kd;
-
+        if(fabs(anglePower) < 7)
+          I += error * ki;
         anglePower = fabs(P) + fabs(I) - fabs(D);
 
-        if (fabs(anglePower) > 60)
-           anglePower = sgn(anglePower) * 45;
+        if (fabs(anglePower) > 100)
+           anglePower = 100;
 
-        angler.spin(directionType::fwd, sgn(error) * anglePower, velocityUnits::pct);
-
-        task::sleep(40);
+        Angler.spin(directionType::fwd, (sgn(error) * anglePower), velocityUnits::pct);
+        t++;
+        file1<<t<<","<<angle<<","<<Angler.rotation(rotationUnits::deg)<<","<<error<<","<<abs(P)<<","<<-abs(D)<<","<<abs(I)<<","<<sgn(error) * anglePower<<endl;
+        task::sleep(10);
         lError = error;
 
-        writeFile(error, lError, P, I, D, anglePower);
     }
-    angler.stop();
+    Angler.stop();
 }
 
 void Auxiliary::runIntake(int state)
@@ -120,11 +128,17 @@ void Auxiliary::runIntake(int state)
 
 void Auxiliary::doubleShot(int angle1, int angle2)
 {
+    doubleShotOn = true;
     // Go to the first shot angle
     setAngle(angle1);
-    puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true); // shoot first shot
-    puncher.rotateFor(1, rotationUnits::rev, 50, velocityUnits::pct, false); // shoot second shot
-    intake.spin(directionType::fwd, 100, velocityUnits::pct); // intake the next ball
+    Puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false); // shoot first shot
+    while(puncherLine.value(analogUnits::range12bit) < puncherLineThres);
+    task::sleep(10);
+    Intake.spin(directionType::fwd, 100, velocityUnits::pct); // intake the next ball
+
     setAngle(angle2); // Set to the second angle
-    intake.stop(brakeType::hold);
+    //Puncer.stop();
+    Puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true); // shoot second shot
+    //while(puncherLine.value(analogUnits::range12bit) < 2400);
+    Intake.stop(brakeType::hold);
 }
