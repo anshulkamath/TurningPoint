@@ -130,15 +130,25 @@ void Auxiliary::doubleShot(int angle1, int angle2)
 {
     doubleShotOn = true;
     // Go to the first shot angle
-    setAngle(angle1);
-    Puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false); // shoot first shot
-    while(puncherLine.value(analogUnits::range12bit) < puncherLineThres);
-    task::sleep(10);
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct); // intake the next ball
 
-    setAngle(angle2); // Set to the second angle
+    setAngle(angle2);
+    double start = Puncher.rotation(rotationUnits::deg);
+    //Puncher.rotateFor(60, rotationUnits::deg, 100, velocityUnits::pct, true); // shoot first shot
+    Puncher.rotateFor(390*2-60, rotationUnits::deg, 100, velocityUnits::pct, false); // shoot first shot
+    double prevToq = Puncher.torque(torqueUnits::Nm);
+    while(Puncher.torque(torqueUnits::Nm) < 1.6);
+    task::sleep(22);
+    //while(Puncher.rotation(rotationUnits::deg) - start < 390);
+    //while(puncherLine.value(analogUnits::range12bit) < puncherLineThres);
+    //task::sleep(10);
+    //Intake.spin(directionType::fwd, 100, velocityUnits::pct); // intake the next ball
+
+    setAngle(angle1); // Set to the second angle
+
     //Puncer.stop();
-    Puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true); // shoot second shot
+    //Puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true); // shoot second shot
     //while(puncherLine.value(analogUnits::range12bit) < 2400);
-    Intake.stop(brakeType::hold);
+    //Intake.stop(brakeType::hold);*/
+    while(Puncher.isSpinning());
+    doubleShotOn = false;
 }

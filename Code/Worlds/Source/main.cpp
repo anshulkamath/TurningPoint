@@ -80,7 +80,7 @@ int taskIntake()
             else if(Controller.ButtonL2.pressing())
                 Intake.spin(directionType::rev, 100, velocityUnits::pct);
             else
-                Intake.stop(brakeType::hold);
+                Intake.stop(brakeType::coast);
         }
 
         sleep(50);
@@ -105,12 +105,15 @@ int taskScraper()
 
 int taskPuncher()
 {
+    double error = 30;
     while(true)
     {
         if (Controller.ButtonX.pressing())
-            Puncher.spin(directionType::fwd, 100, velocityUnits::pct);
+            /*Puncher.rotateFor(360 + error, rotationUnits::deg, 100, velocityUnits::pct);*/Puncher.spin(directionType::fwd, 100, velocityUnits::pct);//
         else if(Controller.ButtonB.pressing())
-            aux.doubleShot(51.8, 105.6);
+            aux.doubleShot(50.8, 94.6);
+        else if(Controller.ButtonLeft.pressing())
+          aux.doubleShot(73.2, 101.4);
         else if(!puncherUse)
             Puncher.stop(brakeType::coast);
 
@@ -136,6 +139,10 @@ void autonomous( void )
 
 void usercontrol( void )
 {
+//Puncher.setStopping(brakeType::hold);
+  //    Puncher.rotateFor(270, rotationUnits::deg, 100, velocityUnits::pct);
+
+    Puncher.setMaxTorque(2, vex::torqueUnits::Nm);
     Angler.setStopping(brakeType::hold);
     task driveTask(taskDrive, 1);
     task intakeTask(taskIntake, 1);
@@ -143,12 +150,15 @@ void usercontrol( void )
     task puncherTask(taskPuncher, 1);
 
     Angler.resetRotation();
+    double maxTorque = 0;
     // M2: M: 115.6 68
     //aux.doubleShot(2450, 2260);
     while (1)
     {
         Brain.Screen.printAt(30, 30, "%.2f", Angler.rotation(rotationUnits::deg));
-        Brain.Screen.printAt(30, 30, "%.2f", puncherLine.value(analogUnits::range12bit));
+        if (maxTorque <  Puncher.torque(torqueUnits::Nm))
+          maxTorque =  Puncher.torque(torqueUnits::Nm);
+        Brain.Screen.printAt(60, 60, "%.2f", maxTorque);
         sleep(100);
     }
 }
