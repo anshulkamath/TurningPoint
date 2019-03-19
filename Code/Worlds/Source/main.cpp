@@ -1,4 +1,4 @@
-#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/cleanConfigurations.h"
+#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/testConfigurations.h"
 #include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Headers/Drivetrain.h"
 #include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Headers/Auxiliary.h"
 #include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Source/Drivetrain.cpp"
@@ -109,18 +109,18 @@ int taskPuncher()
     while(true)
     {
         if (Controller.ButtonX.pressing())
-            /*Puncher.rotateFor(360 + error, rotationUnits::deg, 100, velocityUnits::pct);*/Puncher.spin(directionType::fwd, 100, velocityUnits::pct);//
+            drive.drivePID(24, 70);//*Puncher.rotateFor(360 + error, rotationUnits::deg, 100, velocityUnits::pct);*/Puncher.spin(directionType::fwd, 100, velocityUnits::pct);//
         else if(Controller.ButtonB.pressing())
             aux.doubleShot(50.8, 94.6);
         else if(Controller.ButtonLeft.pressing())
-          aux.doubleShot(73.2, 101.4);
+          aux.doubleShot(111.6, 143.4);
         else if(!puncherUse)
             Puncher.stop(brakeType::coast);
 
         if (Controller.ButtonY.pressing())
-            Angler.spin(directionType::fwd, 50, velocityUnits::pct);
+            Angler.spin(directionType::fwd, 100, velocityUnits::pct);
         else if (Controller.ButtonA.pressing())
-            Angler.spin(directionType::fwd, -50, velocityUnits::pct);
+            Angler.spin(directionType::fwd, -100, velocityUnits::pct);
         else if(!anglerUse)
             Angler.stop(brakeType::hold);
     }
@@ -142,7 +142,7 @@ void usercontrol( void )
 //Puncher.setStopping(brakeType::hold);
   //    Puncher.rotateFor(270, rotationUnits::deg, 100, velocityUnits::pct);
 
-    Puncher.setMaxTorque(2, vex::torqueUnits::Nm);
+    /*Puncher.setMaxTorque(2, vex::torqueUnits::Nm);
     Angler.setStopping(brakeType::hold);
     task driveTask(taskDrive, 1);
     task intakeTask(taskIntake, 1);
@@ -150,17 +150,72 @@ void usercontrol( void )
     task puncherTask(taskPuncher, 1);
 
     Angler.resetRotation();
-    double maxTorque = 0;
+    double maxTorque = 0;*/
+    drive.drivePID(84, 100);
     // M2: M: 115.6 68
     //aux.doubleShot(2450, 2260);
-    while (1)
+    /*while (1)
     {
         Brain.Screen.printAt(30, 30, "%.2f", Angler.rotation(rotationUnits::deg));
         if (maxTorque <  Puncher.torque(torqueUnits::Nm))
           maxTorque =  Puncher.torque(torqueUnits::Nm);
         Brain.Screen.printAt(60, 60, "%.2f", maxTorque);
         sleep(100);
-    }
+    }*/
+}
+string side = "";
+int autonNum = 0;
+bool pressed = false;
+void brainPressed()
+{
+  pressed = true;
+  fstream file("app.out", fstream::app);
+  Brain.Screen.clearScreen();
+}
+
+int sideSelect()
+{
+  Brain.Screen.clearScreen();
+  Brain.Screen.setFillColor(vex::color::red);
+  Brain.Screen.drawRectangle(1,1,200,200);
+  Brain.Screen.printAt(40, 40, false, "RED");
+  Brain.Screen.setFillColor(vex::color::blue);
+  Brain.Screen.drawRectangle(202,1,200,200);
+  Brain.Screen.printAt(242, 40, false, "BLUE");
+  while(!Brain.Screen.pressing());
+  while(Brain.Screen.pressing());
+    Brain.Screen.clearScreen();
+  pressed = false;
+  if(Brain.Screen.xPosition() < 200)
+  {
+    side = "RED";
+  }else if(Brain.Screen.xPosition() > 200)
+  {
+    side = "BLUE";
+  }
+  Brain.Screen.clearScreen();
+  Brain.Screen.setFillColor(vex::color::yellow);
+  Brain.Screen.printAt(1,40,"Hello");
+  Brain.Screen.drawRectangle(1,1,200,200);
+  Brain.Screen.setFillColor(vex::color::white);
+  Brain.Screen.drawRectangle(202,1,200,200);
+
+  while(!Brain.Screen.pressing());
+  while(Brain.Screen.pressing());
+    Brain.Screen.clearScreen();
+  if(Brain.Screen.xPosition() < 200)
+  {
+    autonNum = 1;
+  }else if(Brain.Screen.xPosition() > 200)
+  {
+    autonNum = 2;
+  }
+  Brain.Screen.clearScreen();
+  Brain.Screen.setPenColor(vex::color::red);
+  Brain.Screen.setFillColor(vex::color::black);
+  Brain.Screen.printAt(1,40, side.c_str());
+  Brain.Screen.printAt(1, 80, "%d", autonNum);
+  return 0;
 }
 
 int main()
@@ -168,7 +223,7 @@ int main()
     pre_auton();
     Competition.autonomous( autonomous );
     Competition.drivercontrol( usercontrol );
-
+  //  task side(sideSelect,1);
     while(1)
     {
         sleep(100);

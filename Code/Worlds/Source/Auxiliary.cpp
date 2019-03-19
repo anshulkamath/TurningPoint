@@ -130,7 +130,7 @@ void Auxiliary::doubleShot(int angle1, int angle2)
 {
     doubleShotOn = true;
     // Go to the first shot angle
-
+    Angler.setStopping(brakeType::hold);
     setAngle(angle2);
     double start = Puncher.rotation(rotationUnits::deg);
     //Puncher.rotateFor(60, rotationUnits::deg, 100, velocityUnits::pct, true); // shoot first shot
