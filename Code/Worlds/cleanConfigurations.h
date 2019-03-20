@@ -1,20 +1,17 @@
+#pragma once;
 vex::brain Brain;
 vex::controller Controller;
-vex::competition Competition;
 
-// Drive Motors
-vex::motor FrontRight = vex::motor(vex::PORT1, vex::gearSetting::ratio18_1, true);
-vex::motor BackRight = vex::motor(vex::PORT10, vex::gearSetting::ratio18_1, true);
-vex::motor FrontLeft = vex::motor(vex::PORT15, vex::gearSetting::ratio18_1, false);
-vex::motor BackLeft = vex::motor(vex::PORT16, vex::gearSetting::ratio18_1, false);
+vex::motor CataL = vex::motor(vex::PORT11,vex::gearSetting::ratio36_1,false);
+vex::motor CataR = vex::motor(vex::PORT12, vex::gearSetting::ratio36_1, true);
 
-// Auxiliary Motors
-vex::motor Intake = vex::motor(vex::PORT2, vex::gearSetting::ratio18_1, true);
-vex::motor Angler = vex::motor(vex::PORT3, vex::gearSetting::ratio36_1, true);
-vex::motor Puncher = vex::motor(vex::PORT20, vex::gearSetting::ratio36_1, false);
-vex::motor Scraper = vex::motor(vex::PORT9, vex::gearSetting::ratio36_1, false);
+vex::motor Intake = vex::motor(vex::PORT13, vex::gearSetting::ratio6_1, true);
 
-// Sensors
-vex::pot Poten = vex::pot(Brain.ThreeWirePort.A);
-vex::line puncherLine = vex::line(Brain.ThreeWirePort.B);
-vex::line intakeLine = vex::line(Brain.ThreeWirePort.C);
+vex::motor BackLeft = vex::motor(vex::PORT14,vex::gearSetting::ratio36_1,true);
+vex::motor FrontLeft = vex::motor(vex::PORT3,vex::gearSetting::ratio36_1,true);
+vex::motor BackRight = vex::motor(vex::PORT4,vex::gearSetting::ratio36_1,false);
+vex::motor FrontRight = vex::motor(vex::PORT5,vex::gearSetting::ratio36_1,false);
+
+vex::pot CataPot = vex::pot(Brain.ThreeWirePort.A);
+vex::gyro gyroscope = vex::gyro(Brain.ThreeWirePort.H);
+vex::gyro invertedGyro = vex::gyro(Brain.ThreeWirePort.B);

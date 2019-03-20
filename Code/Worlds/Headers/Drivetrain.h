@@ -1,7 +1,7 @@
 #pragma once
 #include <math.h>
 #include <stdlib.h>
-
+#include "generalFunctions.h"
 using namespace vex;
 
 class Drivetrain
@@ -32,9 +32,6 @@ class Drivetrain
       rightDrive = 0;
       leftDrive = 0;
     }
-
-    // Tasks
-    static int driveTask();
 
     // Setting Drive Functions
     void setDrive(int vel);

@@ -1,182 +1,14 @@
-#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/testConfigurations.h"
-#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Headers/Drivetrain.h"
-#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Headers/Auxiliary.h"
-#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Source/Drivetrain.cpp"
-#include "C:/Users/JakeFreeman/Desktop/TurningPoint/Code/Worlds/Source/Auxiliary.cpp"
+#include "vars.cpp"
+#include "../cleanConfigurations.h"
+#include "../Headers/Drivetrain.h"
+#include "Drivetrain.cpp"
+
 
 using namespace vex;
 
 Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft, gyroscope, invertedGyro);
-Auxiliary aux(Intake, Puncher, Angler, Scraper, Poten);
 
-void sleep (int time)
-{
-    task::sleep(time);
-}
 
-void doubleShot(int angle1, int angle2)
-{
-    // Go to the first shot angle
-    aux.setAngle(angle1);
-    Puncher.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true); // shoot first shot
-    Puncher.rotateFor(1, rotationUnits::rev, 50, velocityUnits::pct, false); // shoot second shot
-    Intake.spin(directionType::fwd, 100, velocityUnits::pct); // intake the next ball
-    aux.setAngle(angle2); // Set to the second angle
-    Intake.stop(brakeType::hold);
-}
-bool puncherUse = false;
-bool intakeUse = false;
-bool anglerUse = false;
-int rightSide = 0, leftSide = 0;
-int turnLimiter = 1;
-int taskDrive()
-{
-    while(true)
-    {
-        rightSide = 0;
-        leftSide = 0;
-        // Constant Straight Drive Control
-        if (Controller.ButtonR1.pressing())
-            rightSide = leftSide = 60;
-        else if (Controller.ButtonR2.pressing())
-            rightSide = leftSide = -60;
-
-        // Tank Drive Controls
-        if (abs(Controller.Axis2.value()) > 20)
-            rightSide = Controller.Axis2.value();
-        if (abs(Controller.Axis3.value()) > 20)
-            leftSide = Controller.Axis3.value();
-
-        if(abs(abs(Controller.Axis2.value()) - abs(Controller.Axis3.value())) > 20)
-        {
-            leftSide = Controller.Axis3.value();
-            rightSide = Controller.Axis2.value();
-        }
-
-        // Throttling Turns
-        if(abs(Controller.Axis2.value() - Controller.Axis3.value()) > 50)
-        {
-            leftSide *= turnLimiter;
-            rightSide *= turnLimiter;
-        }
-
-        // Sets Motor Powers
-        drive.setDrive(rightSide, leftSide);
-
-        sleep(25);
-    }
-    return 0;
-}
-
-int taskIntake()
-{
-    while (true)
-    {
-        if (!doubleShotOn)
-        {
-            // Controls intake
-            if (Controller.ButtonL1.pressing())
-                Intake.spin(directionType::fwd, 100, velocityUnits::pct);
-            else if(Controller.ButtonL2.pressing())
-                Intake.spin(directionType::rev, 100, velocityUnits::pct);
-            else
-                Intake.stop(brakeType::coast);
-        }
-
-        sleep(50);
-    }
-    return 0;
-}
-
-int taskScraper()
-{
-    while (true)
-    {
-        if (Controller.ButtonUp.pressing())
-            Scraper.spin(directionType::rev, 100, velocityUnits::pct);
-        else if (Controller.ButtonDown.pressing())
-            Scraper.spin(directionType::fwd, 100, velocityUnits::pct);
-        else
-            Scraper.stop(brakeType::hold);
-
-        sleep(50);
-    }
-}
-
-int taskPuncher()
-{
-    double error = 30;
-    while(true)
-    {
-        if (Controller.ButtonX.pressing())
-            drive.drivePID(24, 70);//*Puncher.rotateFor(360 + error, rotationUnits::deg, 100, velocityUnits::pct);*/Puncher.spin(directionType::fwd, 100, velocityUnits::pct);//
-        else if(Controller.ButtonB.pressing())
-            aux.doubleShot(50.8, 94.6);
-        else if(Controller.ButtonLeft.pressing())
-          aux.doubleShot(111.6, 143.4);
-        else if(!puncherUse)
-            Puncher.stop(brakeType::coast);
-
-        if (Controller.ButtonY.pressing())
-            Angler.spin(directionType::fwd, 100, velocityUnits::pct);
-        else if (Controller.ButtonA.pressing())
-            Angler.spin(directionType::fwd, -100, velocityUnits::pct);
-        else if(!anglerUse)
-            Angler.stop(brakeType::hold);
-    }
-    return 1;
-}
-
-void pre_auton( void )
-{
-  gyroscope.startCalibration(2);
-  invertedGyro.startCalibration(2);
-  task::sleep(6000);
-  FrontRight.resetRotation();
-  Scraper.resetRotation();
-}
-
-void autonomous( void )
-{
-
-}
-
-void usercontrol( void )
-{
-//Puncher.setStopping(brakeType::hold);
-  //    Puncher.rotateFor(270, rotationUnits::deg, 100, velocityUnits::pct);
-
-    /*Puncher.setMaxTorque(2, vex::torqueUnits::Nm);
-    Angler.setStopping(brakeType::hold);
-    task driveTask(taskDrive, 1);
-    task intakeTask(taskIntake, 1);
-    task scraperTask(taskScraper, 1);
-    task puncherTask(taskPuncher, 1);
-
-    Angler.resetRotation();
-    double maxTorque = 0;*/
-    pre_auton();
-    drive.turnTo(90, 100);
-    // M2: M: 115.6 68
-    //aux.doubleShot(2450, 2260);
-    /*while (1)
-    {
-        Brain.Screen.printAt(30, 30, "%.2f", Angler.rotation(rotationUnits::deg));
-        if (maxTorque <  Puncher.torque(torqueUnits::Nm))
-          maxTorque =  Puncher.torque(torqueUnits::Nm);
-        Brain.Screen.printAt(60, 60, "%.2f", maxTorque);
-        sleep(100);
-    }*/
-}
-string side = "";
-int autonNum = 0;
-bool pressed = false;
-void brainPressed()
-{
-  pressed = true;
-  fstream file("app.out", fstream::app);
-  Brain.Screen.clearScreen();
-}
 
 int sideSelect()
 {
@@ -223,15 +55,108 @@ int sideSelect()
   return 0;
 }
 
+
+int intakeTask()
+{
+    Intake.setStopping(brakeType::coast);
+    int intakePower = 0;
+    while(true)
+    {
+        if (Controller.ButtonL1.pressing())
+            intakePower = 100;
+        else if (Controller.ButtonL2.pressing())
+            intakePower = -100;
+        else
+            intakePower = 0;
+
+        Intake.spin(directionType::fwd, intakePower, velocityUnits::pct);
+        task::sleep(50);
+    }
+}
+
+int cataTask()
+{
+    // Cata Variables
+    int cataPower = 0;
+    int error = 0;
+    int thresh = 5;
+    double kp = 0.25;
+
+    CataL.setStopping(brakeType::hold);
+    CataR.setStopping(brakeType::hold);
+    while(true)
+    {
+        // Calculating error of catapult
+        error = CataPot.value(analogUnits::range12bit) - cataDown;
+
+        if (cataReady && (Controller.ButtonX.pressing() || cataFire))
+        {
+            CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
+            CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
+        }
+
+        // If catapult is not in position, set cataPower based on position
+        if (abs(error) > thresh)
+        {
+            cataReady = false;
+            cataPower = error * kp;
+        }
+        else // If the catapult is in position, broadcast ready and stop
+        {
+            cataReady = true;
+            cataPower = 0;
+        }
+
+        CataL.spin(directionType::fwd, cataPower, velocityUnits::pct);
+        CataR.spin(directionType::fwd, cataPower, velocityUnits::pct);
+        task::sleep(20);
+    }
+    return 0;
+}
+
+int driveTask()
+{
+    int leftSide = 0, rightSide = 0;
+    while(true)
+    {
+        leftSide = 0;
+        rightSide = 0;
+
+        if (Controller.ButtonR1.pressing())
+            rightSide = leftSide = 50;
+        else if (Controller.ButtonR2.pressing())
+            rightSide = leftSide = -50;
+
+        if (abs(Controller.Axis3.value()) > 10)
+            leftSide = Controller.Axis3.value();
+        if (abs(Controller.Axis2.value()) > 10)
+            rightSide = Controller.Axis2.value();
+
+        FrontLeft.spin(directionType::fwd, leftSide, velocityUnits::pct);
+        BackLeft.spin(directionType::fwd, leftSide, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, rightSide, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, rightSide, velocityUnits::pct);
+
+        task::sleep(20);
+    }
+    return 0;
+}
+
 int main()
 {
-    pre_auton();
-    Competition.autonomous( autonomous );
-    Competition.drivercontrol( usercontrol );
-  //  task side(sideSelect,1);
-    while(1)
+    int cataTorque = 0;
+    task taskCatapult(cataTask, 1);
+    task taskIntake(intakeTask, 1);
+    task taskDrive(driveTask, 1);
+    while (true)
     {
-        sleep(100);
-    }
+        /*if (CataL.torque(torqueUnits::Nm) > cataTorque)
+            //cataTorque = CataL.torque(torqueUnits::Nm);
+        Brain.Screen.printAt(0, 30, "Temperature: %.2f", CataL.temperature());
+        Brain.Screen.printAt(0, 60, "Torque: %.2f", cataTorque);
 
+        Brain.Screen.printAt(0, 90, "Potentiometer: %d", CataPot.value(analogUnits::range12bit));*/
+
+        task::sleep(20);
+    }
 }
