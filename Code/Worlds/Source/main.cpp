@@ -3,12 +3,9 @@
 #include "../Headers/Drivetrain.h"
 #include "Drivetrain.cpp"
 
-
 using namespace vex;
 
 Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft, gyroscope, invertedGyro);
-
-
 
 int sideSelect()
 {
