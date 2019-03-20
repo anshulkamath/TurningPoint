@@ -12,6 +12,8 @@ class Drivetrain
     motor fLeft;
     motor bRight;
     motor bLeft;
+    gyro reg;
+    gyro inverted;
 
     // Drive variables
     int rightDrive;
@@ -24,7 +26,8 @@ class Drivetrain
 
   public:
     // Creating Drivetrain class
-    Drivetrain(motor frontRight, motor frontLeft, motor backRight, motor backLeft) : fRight(frontRight), fLeft(frontLeft), bRight(backRight), bLeft(backLeft)
+    Drivetrain(motor frontRight, motor frontLeft, motor backRight, motor backLeft, gyro reg1, gyro inverted1)
+    : fRight(frontRight), fLeft(frontLeft), bRight(backRight), bLeft(backLeft), reg(reg1), inverted(inverted1)
     {
       rightDrive = 0;
       leftDrive = 0;
@@ -36,7 +39,7 @@ class Drivetrain
     // Setting Drive Functions
     void setDrive(int vel);
     void setDrive(int rightVel, int leftVel);
-    void drivePID(double distance, double speed);
+    void drivePID(double distance, double speed, int accelCap = 2);
     double getTurnLimiter();
 
     // Autonomous Functions

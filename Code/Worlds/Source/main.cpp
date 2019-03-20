@@ -6,7 +6,7 @@
 
 using namespace vex;
 
-Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft);
+Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft, gyroscope, invertedGyro);
 Auxiliary aux(Intake, Puncher, Angler, Scraper, Poten);
 
 void sleep (int time)
@@ -129,7 +129,11 @@ int taskPuncher()
 
 void pre_auton( void )
 {
-
+  gyroscope.startCalibration(2);
+  invertedGyro.startCalibration(2);
+  task::sleep(6000);
+  FrontRight.resetRotation();
+  Scraper.resetRotation();
 }
 
 void autonomous( void )
@@ -151,7 +155,8 @@ void usercontrol( void )
 
     Angler.resetRotation();
     double maxTorque = 0;*/
-    drive.drivePID(84, 100);
+    pre_auton();
+    drive.turnTo(90, 100);
     // M2: M: 115.6 68
     //aux.doubleShot(2450, 2260);
     /*while (1)

@@ -65,9 +65,59 @@ int sgn(double v)
   return v < 0 ? -1 : 1;
 }
 
-void Drivetrain::drivePID(double distance, double speed)
+double getAngle()
 {
-  double kP = .3, P = 0;
+    return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20 - 0;
+}
+
+
+void Drivetrain::turnTo(double angle, int speed)
+{
+  double kP = 1.2, P = 0;
+  double kI = .0, I = 0;
+  double kD = .0, D = 0;
+  double error = 100, lError = 0;
+  double motorPower = 0, prevMotorPower = 0;
+  double iCap = 5;
+
+
+  Controller.rumble("-.-.-");
+  FrontRight.resetRotation();
+      fstream file1(string("angle-334")  + string(".csv"), fstream::app);
+    file1<<",Target,Current,Error,P,D,I,Power"<<endl;
+    int t = 0;
+    double stblConst = 2;
+    double init = getAngle();
+  while(true)//abs(error) >= 1 || abs(lError) >= 1 || abs(motorPower) >= 10)//true)//distance > FrontRight.rotation(rotationUnits::deg))
+  {
+    t++;
+    error = angle - getAngle();
+    P = kP * error;
+    D = -kD * (error - lError);
+
+
+    if(error < 20 && I < iCap)
+      I += kI * error;
+    else if (I >= iCap) I = iCap;
+
+    motorPower = (P) + (I) - (D);
+    int signBase = sgn(motorPower);
+    motorPower = abs(motorPower);
+    if(motorPower > speed) motorPower = speed;
+
+    setDrive(-motorPower * signBase, motorPower * signBase);
+    prevMotorPower = abs(motorPower);
+    lError = error;
+    Brain.Screen.printAt(30, 30, "%.2f, %.2f,%.2f", getAngle(), angle, motorPower);
+  // file1<<t<<","<<distance<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<error<<","<<abs(P)<<","<<-abs(D)<<","<<abs(I)<<","<<sgn(error) * motorPower<<endl;
+   task::sleep(25);
+  }
+  setDrive(0);
+}
+
+void Drivetrain::drivePID(double distance, double speed, int accelCap)
+{
+  double kP = .25, P = 0;
   double kI = .001, I = 0;
   double kD = .5, D = 0;
   double error = 100, lError = 0;
@@ -78,19 +128,20 @@ void Drivetrain::drivePID(double distance, double speed)
   Controller.rumble("-.-.-");
   distance *= 360;
   FrontRight.resetRotation();
-      fstream file1(string("angle-3")  + string(".csv"), fstream::app);
+      fstream file1(string("angle-334")  + string(".csv"), fstream::app);
     file1<<",Target,Current,Error,P,D,I,Power"<<endl;
     int t = 0;
-
-  while(error >= 5 || lError >= 5)//true)//distance > FrontRight.rotation(rotationUnits::deg))
+    double stblConst = 2;
+    double init = getAngle();
+  while(abs(error) >= 1 || abs(lError) >= 1 || abs(motorPower) >= 10)//true)//distance > FrontRight.rotation(rotationUnits::deg))
   {
     t++;
     error = distance - FrontRight.rotation(rotationUnits::deg);
     P = kP * error;
-    D = kD * (error - lError);
+    D = -kD * (error - lError);
 
 
-    if(I < iCap)
+    if(error < 20 && I < iCap)
       I += kI * error;
     else if (I >= iCap) I = iCap;
 
@@ -99,18 +150,20 @@ void Drivetrain::drivePID(double distance, double speed)
     motorPower = abs(motorPower);
     if(motorPower > speed) motorPower = speed;
 
-    if(motorPower + 7 > prevMotorPower) motorPower = prevMotorPower + 7;
+    if(motorPower + accelCap > prevMotorPower) motorPower = prevMotorPower + accelCap;
 
-    if(prevMotorPower - 7 > motorPower) motorPower = prevMotorPower - 7;
+    if(prevMotorPower - accelCap > motorPower) motorPower = prevMotorPower - accelCap;
 
     if(motorPower > speed) motorPower = speed;
 
-    setDrive(motorPower * signBase);
+    double leftAdjustPwr = stblConst * (getAngle() - init);
+
+    setDrive(motorPower * signBase - leftAdjustPwr, motorPower * signBase + leftAdjustPwr);
     prevMotorPower = abs(motorPower);
     lError = error;
     Brain.Screen.printAt(30, 30, "%.2f, %.2f,%.2f", FrontRight.rotation(rotationUnits::deg), distance, motorPower);
    file1<<t<<","<<distance<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<error<<","<<abs(P)<<","<<-abs(D)<<","<<abs(I)<<","<<sgn(error) * motorPower<<endl;
-   task::sleep(10);
+   task::sleep(25);
   }
   setDrive(0);
 }
