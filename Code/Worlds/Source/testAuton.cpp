@@ -1,5 +1,5 @@
 #include "vars.cpp"
-#include "../cleanConfigurations.h"
+#include "../testConfig.h"
 #include "../Headers/Drivetrain.h"
 #include "Drivetrain.cpp"
 
@@ -86,9 +86,8 @@ int cataTask()
         // Calculating error of catapult
         error = CataPot.value(analogUnits::range12bit) - cataDown;
 
-        if (Controller.ButtonX.pressing() || cataFire)
+        if (cataReady && (Controller.ButtonX.pressing() || cataFire))
         {
-            cataFire = false;
             CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
             CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
         }
@@ -140,40 +139,25 @@ int driveTask()
     return 0;
 }
 
-int scraperTask()
-{
-  Scraper.setStopping(brakeType::hold);
-  int scraperPower = 0;
-  while (true)
-  {
-    if (Controller.ButtonUp.pressing())
-      scraperPower = 100;
-    else if (Controller.ButtonDown.pressing())
-      scraperPower = -100;
-    else
-      scraperPower = 0;
-
-    Scraper.spin(directionType::fwd, scraperPower, velocityUnits::pct);
-    task::sleep(50);
-  }
-  return 0;
-}
-
 int main()
-{
+{    gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
+    task::sleep(6000);
+    FrontRight.resetRotation();
+    Scraper.resetRotation();
     int cataTorque = 0;
-    task taskCatapult(cataTask, 1);
+    /*task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
-    task taskDrive(driveTask, 1);
-    task taskScraper(scraperTask, 1);
+    task taskDrive(driveTask, 1);*/
+    drive.turnTo(90, 100);
     while (true)
     {
         /*if (CataL.torque(torqueUnits::Nm) > cataTorque)
             //cataTorque = CataL.torque(torqueUnits::Nm);
         Brain.Screen.printAt(0, 30, "Temperature: %.2f", CataL.temperature());
-        Brain.Screen.printAt(0, 60, "Torque: %.2f", cataTorque);*/
+        Brain.Screen.printAt(0, 60, "Torque: %.2f", cataTorque);
 
-        Brain.Screen.printAt(0, 90, "Potentiometer: %d", CataPot.value(analogUnits::range12bit));
+        Brain.Screen.printAt(0, 90, "Potentiometer: %d", CataPot.value(analogUnits::range12bit));*/
 
         task::sleep(20);
     }
