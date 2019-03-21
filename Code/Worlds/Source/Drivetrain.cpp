@@ -11,7 +11,7 @@ void Drivetrain::turnTo(double angle, int speed)
 {
   double kP = 1.2, P = 0;
   double kI = .0, I = 0;
-  double kD = .0, D = 0;
+  double kD = 1.8, D = 0;
   double error = 100, lError = 0;
   double motorPower = 0, prevMotorPower = 0;
   double iCap = 5;

@@ -1,5 +1,5 @@
 #include "vars.cpp"
-#include "../cleanConfigurations.h"
+#include "../testConfig.h"
 #include "../Headers/Drivetrain.h"
 #include "Drivetrain.cpp"
 
@@ -140,11 +140,16 @@ int driveTask()
 }
 
 int main()
-{
+{    gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
+    task::sleep(6000);
+    FrontRight.resetRotation();
+    Scraper.resetRotation();
     int cataTorque = 0;
-    task taskCatapult(cataTask, 1);
+    /*task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
-    task taskDrive(driveTask, 1);
+    task taskDrive(driveTask, 1);*/
+    drive.turnTo(90, 100);
     while (true)
     {
         /*if (CataL.torque(torqueUnits::Nm) > cataTorque)
