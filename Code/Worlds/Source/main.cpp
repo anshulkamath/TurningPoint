@@ -114,16 +114,34 @@ int cataTask()
 
 int driveTask()
 {
+    int accelCap = 10;
     int leftSide = 0, rightSide = 0;
+    int prevLeft = 0, prevRight = 0; // To maintain acceleration
     while(true)
     {
         leftSide = 0;
         rightSide = 0;
 
         if (Controller.ButtonR1.pressing())
-            rightSide = leftSide = 50;
+        {
+          // First sets the motor power
+          rightSide = leftSide = 50;
+
+          // Next checks to see if the change in velocity is greater than
+          // the acceleration cap
+          if (abs(rightSide - l_RightSide) > accelCap)
+            leftSide = rightSide = prevRight + accelCap;
+        }
         else if (Controller.ButtonR2.pressing())
-            rightSide = leftSide = -50;
+        {
+          // First sets the motor power
+          rightSide = leftSide = -50;
+
+          // Next checks to see if the change in velocity is greater than
+          // the acceleration cap
+          if (abs(rightSide - l_RightSide) > accelCap)
+            leftSide = rightSide = prevRight - accelCap;
+        }
 
         if (abs(Controller.Axis3.value()) > 10)
             leftSide = Controller.Axis3.value();
@@ -135,6 +153,8 @@ int driveTask()
         FrontRight.spin(directionType::fwd, rightSide, velocityUnits::pct);
         BackRight.spin(directionType::fwd, rightSide, velocityUnits::pct);
 
+        prevLeft = leftSide;
+        prevRight = rightSide;
         task::sleep(20);
     }
     return 0;
