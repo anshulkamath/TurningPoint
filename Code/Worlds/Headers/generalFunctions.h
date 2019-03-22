@@ -1,4 +1,4 @@
-#include "../testConfig.h"
+#include "../cleanConfig.h"
 using namespace vex;
 using namespace std;
 

@@ -1,5 +1,7 @@
+#pragma once
+
 #include "vars.cpp"
-#include "../cleanConfigurations.h"
+#include "../cleanConfig.h"
 #include "../Headers/Drivetrain.h"
 #include "Drivetrain.cpp"
 
@@ -86,9 +88,9 @@ int cataTask()
         // Calculating error of catapult
         error = CataPot.value(analogUnits::range12bit) - cataDown;
 
-        if (Controller.ButtonX.pressing() || cataFire)
+        if (Controller.ButtonX.pressing() || fire)
         {
-            cataFire = false;
+            fire = false;
             CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
             CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
         }
@@ -114,39 +116,33 @@ int cataTask()
 
 int driveTask()
 {
-    int accelCap = 10;
+    const int accelCap = 10;
     int leftSide = 0, rightSide = 0;
     int prevLeft = 0, prevRight = 0; // To maintain acceleration
+    int dLeft = 0, dRight = 0;
     while(true)
     {
         leftSide = 0;
         rightSide = 0;
 
         if (Controller.ButtonR1.pressing())
-        {
-          // First sets the motor power
           rightSide = leftSide = 50;
-
-          // Next checks to see if the change in velocity is greater than
-          // the acceleration cap
-          if (abs(rightSide - l_RightSide) > accelCap)
-            leftSide = rightSide = prevRight + accelCap;
-        }
         else if (Controller.ButtonR2.pressing())
-        {
-          // First sets the motor power
           rightSide = leftSide = -50;
-
-          // Next checks to see if the change in velocity is greater than
-          // the acceleration cap
-          if (abs(rightSide - l_RightSide) > accelCap)
-            leftSide = rightSide = prevRight - accelCap;
-        }
 
         if (abs(Controller.Axis3.value()) > 10)
             leftSide = Controller.Axis3.value();
         if (abs(Controller.Axis2.value()) > 10)
             rightSide = Controller.Axis2.value();
+
+        dLeft = leftSide - prevLeft;
+        dRight = rightSide - prevRight;
+
+        // Acceleration control
+        if (abs(dLeft) > accelCap)
+          leftSide += sgn(dLeft) * accelCap;
+        else if (abs(dRight) > accelCap)
+          rightSide += sgn(dRight) * accelCap;
 
         FrontLeft.spin(directionType::fwd, leftSide, velocityUnits::pct);
         BackLeft.spin(directionType::fwd, leftSide, velocityUnits::pct);
@@ -181,19 +177,13 @@ int scraperTask()
 
 int main()
 {
-    int cataTorque = 0;
     task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);
     task taskScraper(scraperTask, 1);
     while (true)
     {
-        /*if (CataL.torque(torqueUnits::Nm) > cataTorque)
-            //cataTorque = CataL.torque(torqueUnits::Nm);
-        Brain.Screen.printAt(0, 30, "Temperature: %.2f", CataL.temperature());
-        Brain.Screen.printAt(0, 60, "Torque: %.2f", cataTorque);*/
-
-        Brain.Screen.printAt(0, 90, "Potentiometer: %d", CataPot.value(analogUnits::range12bit));
+        Brain.Screen.printAt(0, 30, "Potentiometer: %d", CataPot.value(analogUnits::range12bit));
 
         task::sleep(20);
     }
