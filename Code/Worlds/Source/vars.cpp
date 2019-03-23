@@ -1,7 +1,6 @@
 using namespace std;
 
 bool intakeUse = false;
-int rightSide = 0, leftSide = 0;
 int turnLimiter = 1;
 
 string side = "";

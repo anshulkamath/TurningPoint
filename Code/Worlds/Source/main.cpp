@@ -95,17 +95,12 @@ int cataTask()
             CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
         }
 
+        cataPower = error * kp;
         // If catapult is not in position, set cataPower based on position
         if (abs(error) > thresh)
-        {
             cataReady = false;
-            cataPower = error * kp;
-        }
         else // If the catapult is in position, broadcast ready and stop
-        {
             cataReady = true;
-            cataPower = 0;
-        }
 
         CataL.spin(directionType::fwd, cataPower, velocityUnits::pct);
         CataR.spin(directionType::fwd, cataPower, velocityUnits::pct);
@@ -114,10 +109,11 @@ int cataTask()
     return 0;
 }
 
+int leftSide = 0, rightSide = 0;
 int driveTask()
 {
     const int accelCap = 10;
-    int leftSide = 0, rightSide = 0;
+    int splitLeft = 0, splitRight = 0;
     int prevLeft = 0, prevRight = 0; // To maintain acceleration
     int dLeft = 0, dRight = 0;
     while(true)
@@ -125,29 +121,40 @@ int driveTask()
         leftSide = 0;
         rightSide = 0;
 
+        /*
+        // Split Drive Controls
+        leftSide = Controller.Axis2.value() + Controller.Axis4.value();
+        rightSide = Controller.Axis2.value() - Controller.Axis4.value();
+        */
+
         if (Controller.ButtonR1.pressing())
           rightSide = leftSide = 50;
         else if (Controller.ButtonR2.pressing())
           rightSide = leftSide = -50;
 
+
+        // Tank Drive Controls
         if (abs(Controller.Axis3.value()) > 10)
-            leftSide = Controller.Axis3.value();
+            leftSide = 127 * pow(abs((double)Controller.Axis3.value())/127.0, 9/7) * sgn(Controller.Axis3.value());
         if (abs(Controller.Axis2.value()) > 10)
-            rightSide = Controller.Axis2.value();
+            rightSide = 127 * pow(abs((double)Controller.Axis2.value())/127.0, 9/7) * sgn(Controller.Axis2.value());
 
         dLeft = leftSide - prevLeft;
         dRight = rightSide - prevRight;
 
+        /*
         // Acceleration control
-        if (abs(dLeft) > accelCap)
-          leftSide += sgn(dLeft) * accelCap;
-        else if (abs(dRight) > accelCap)
-          rightSide += sgn(dRight) * accelCap;
+        if (leftSide != 0 && abs(dLeft) > accelCap)
+          leftSide = prevLeft + sgn(dLeft) * accelCap;
+        else if (rightSide != 0 && abs(dRight) > accelCap)
+          rightSide = prevRight + sgn(dRight) * accelCap;
+          */
 
-        FrontLeft.spin(directionType::fwd, leftSide, velocityUnits::pct);
-        BackLeft.spin(directionType::fwd, leftSide, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, rightSide, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, rightSide, velocityUnits::pct);
+
+        FrontLeft.spin(directionType::fwd, (int)leftSide, velocityUnits::pct);
+        BackLeft.spin(directionType::fwd, (int)leftSide, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, (int)rightSide, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, (int)rightSide, velocityUnits::pct);
 
         prevLeft = leftSide;
         prevRight = rightSide;
