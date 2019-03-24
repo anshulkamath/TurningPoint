@@ -73,37 +73,54 @@ int intakeTask()
     }
 }
 
+void resetCata()
+{
+  // Cata Variables
+  int cataPower = 0;
+  int error = 0;
+  int thresh = 1;
+  double kp = 0.25;
+
+  do
+  {
+    error = CataPot.value(analogUnits::range12bit) - cataDown;
+    cataPower = error * kp;
+
+    CataL.spin(directionType::fwd, cataPower, velocityUnits::pct);
+    CataR.spin(directionType::fwd, cataPower, velocityUnits::pct);
+
+    task::sleep(20);
+  }
+  while (abs(error) < thresh);
+
+  CataL.stop(brakeType::brake);
+  CataR.stop(brakeType::brake);
+}
+
 int cataTask()
 {
-    // Cata Variables
-    int cataPower = 0;
-    int error = 0;
-    int thresh = 5;
-    double kp = 0.25;
+    CataL.setStopping(brakeType::brake);
+    CataR.setStopping(brakeType::brake);
 
-    CataL.setStopping(brakeType::hold);
-    CataR.setStopping(brakeType::hold);
+    resetCata();
+
     while(true)
     {
-        // Calculating error of catapult
-        error = CataPot.value(analogUnits::range12bit) - cataDown;
-
         if (Controller.ButtonX.pressing() || fire)
         {
             fire = false;
             CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
             CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
+
+            resetCata();
         }
 
-        cataPower = error * kp;
         // If catapult is not in position, set cataPower based on position
-        if (abs(error) > thresh)
+        if (abs(CataPot.value(analogUnits::range12bit) - cataDown) > 1)
             cataReady = false;
         else // If the catapult is in position, broadcast ready and stop
             cataReady = true;
 
-        CataL.spin(directionType::fwd, cataPower, velocityUnits::pct);
-        CataR.spin(directionType::fwd, cataPower, velocityUnits::pct);
         task::sleep(20);
     }
     return 0;

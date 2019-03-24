@@ -1,4 +1,4 @@
-#include "testConfig.h"
+#include "../testConfig.h"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -305,35 +305,58 @@ void drive(double inches, double speed, int cycles = 15, int timeSlice = 50, dou
 // Catapult Task
 
 // Shooter Variables
+double errorX = 0.03;
+
+// Shooter Task
+// Shooter Variables
+bool inUse = false;
 bool fire = false;
-double errorX = 0.005;
 
 // Shooter Task
 int taskShooter()
 {
-    Shooter.resetRotation();
-
     Shooter.setStopping(brakeType::hold);
     ShooterAux.setStopping(brakeType::hold);
-
+    Shooter.resetRotation();
     while(true)
     {
-        if (fire)
+        if (Controller.ButtonX.pressing() || fire)
         {
-            // Stops the intake
-            runIntake(0);
-            fire = false; // Sets catapult toggle to false
-            Shooter.setStopping(brakeType::hold);
-            ShooterAux.setStopping(brakeType::hold);
+            fire = false;
+            inUse = true;
+
             // Rotates until slip
-            Shooter.rotateFor(3 - errorX, rotationUnits::rev, 100, velocityUnits::pct, false);
-            ShooterAux.rotateFor(3 - errorX, rotationUnits::rev, 100, velocityUnits::pct, true);
+            Shooter.rotateFor(3+errorX, rotationUnits::rev, 100, velocityUnits::pct, false);
+            ShooterAux.rotateFor(3+errorX, rotationUnits::rev, 100, velocityUnits::pct, true);
 
             sleep(80);
+            inUse = false;
+        }
+        else if(Controller.ButtonB.pressing())
+        {
+            Shooter.setStopping(brakeType::brake);
+            ShooterAux.setStopping(brakeType::brake);
+            Shooter.rotateFor(3 - 0.04, rotationUnits::rev, 100, velocityUnits::pct, false);
+            ShooterAux.rotateFor(3 - 0.04, rotationUnits::rev, 100, velocityUnits::pct, true);
+            task::sleep(10);
+            Shooter.setStopping(brakeType::coast);
+            ShooterAux.setStopping(brakeType::coast);
+        }
+        else if (Controller.ButtonY.pressing())
+        {
+            Shooter.spin(directionType::fwd, 60, velocityUnits::pct);
+            ShooterAux.spin(directionType::fwd, 60, velocityUnits::pct);
+            while(Controller.ButtonY.pressing());
+            Shooter.stop(brakeType::coast);
+            ShooterAux.stop(brakeType::coast);
+        }
+        else
+        {
+            Shooter.stop(brakeType::coast);
+            ShooterAux.stop(brakeType::coast);
         }
 
-
-        sleep(50);
+        task::sleep(50);
     }
     return 0;
 }
@@ -546,6 +569,60 @@ void newSkills()
 
 }
 
+int leftSide = 0, rightSide = 0;
+int driveTask()
+{
+    const int accelCap = 10;
+    int splitLeft = 0, splitRight = 0;
+    int prevLeft = 0, prevRight = 0; // To maintain acceleration
+    int dLeft = 0, dRight = 0;
+    while(true)
+    {
+        leftSide = 0;
+        rightSide = 0;
+
+        /*
+        // Split Drive Controls
+        leftSide = Controller.Axis2.value() + Controller.Axis4.value();
+        rightSide = Controller.Axis2.value() - Controller.Axis4.value();
+        */
+
+        if (Controller.ButtonR1.pressing())
+          rightSide = leftSide = 50;
+        else if (Controller.ButtonR2.pressing())
+          rightSide = leftSide = -50;
+
+
+        // Tank Drive Controls
+        if (abs(Controller.Axis3.value()) > 10)
+            leftSide = 127 * pow(abs((double)Controller.Axis3.value())/127.0, 9/7) * sgn(Controller.Axis3.value());
+        if (abs(Controller.Axis2.value()) > 10)
+            rightSide = 127 * pow(abs((double)Controller.Axis2.value())/127.0, 9/7) * sgn(Controller.Axis2.value());
+
+        dLeft = leftSide - prevLeft;
+        dRight = rightSide - prevRight;
+
+        /*
+        // Acceleration control
+        if (leftSide != 0 && abs(dLeft) > accelCap)
+          leftSide = prevLeft + sgn(dLeft) * accelCap;
+        else if (rightSide != 0 && abs(dRight) > accelCap)
+          rightSide = prevRight + sgn(dRight) * accelCap;
+          */
+
+
+        FrontLeft.spin(directionType::fwd, (int)leftSide, velocityUnits::pct);
+        BackLeft.spin(directionType::fwd, (int)leftSide, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, (int)rightSide, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, (int)rightSide, velocityUnits::pct);
+
+        prevLeft = leftSide;
+        prevRight = rightSide;
+        task::sleep(20);
+    }
+    return 0;
+}
+
 void skills()
 {
     // PART 1 - 1 POINT
@@ -715,7 +792,7 @@ void autonomous( void )
     //turn;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;To(90);
     turnTo(0);
     drive(-36, -100);
-    runIntake(1);
+    runIntake(1);c
     drive(-6, -20);
     sleep(250);
     drive(3, 30);
@@ -737,11 +814,29 @@ void bringDown()
     Shooter.rotateFor(500, rotationUnits::deg);
 }
 
+int taskIntake()
+{
+  while (true)
+  {
+    if (Controller.ButtonL1.pressing())
+      Intake.spin(directionType::fwd, 100, velocityUnits::pct);
+    else if (Controller.ButtonL2.pressing())
+      Intake.spin(directionType::fwd, -100, velocityUnits::pct);
+    else
+      Intake.stop(brakeType::coast);
+
+      task::sleep(30);
+  }
+}
+
 void usercontrol( void )
 {
    // bringDown();
-    autonomous();
     //turnTo(90);
+    task drive(driveTask, 1);
+    task cataTask(taskShooter, 1);
+    task intakeTask(taskIntake, 1);
+    while(true) {task::sleep(1);}
 }
 
 int main()

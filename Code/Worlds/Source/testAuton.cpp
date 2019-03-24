@@ -1,7 +1,9 @@
+#pragma once;
 #include "vars.cpp"
-#include "../testConfig.h"
+#include "../cleanConfig.h"
 #include "../Headers/Drivetrain.h"
 #include "Drivetrain.cpp"
+#include "auton.cpp"
 
 using namespace vex;
 
@@ -71,45 +73,6 @@ int intakeTask()
     }
 }
 
-int cataTask()
-{
-    // Cata Variables
-    int cataPower = 0;
-    int error = 0;
-    int thresh = 5;
-    double kp = 0.25;
-
-    CataL.setStopping(brakeType::hold);
-    CataR.setStopping(brakeType::hold);
-    while(true)
-    {
-        // Calculating error of catapult
-        error = CataPot.value(analogUnits::range12bit) - cataDown;
-
-        if (cataReady && (Controller.ButtonX.pressing() || cataFire))
-        {
-            CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
-            CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
-        }
-
-        // If catapult is not in position, set cataPower based on position
-        if (abs(error) > thresh)
-        {
-            cataReady = false;
-            cataPower = error * kp;
-        }
-        else // If the catapult is in position, broadcast ready and stop
-        {
-            cataReady = true;
-            cataPower = 0;
-        }
-
-        CataL.spin(directionType::fwd, cataPower, velocityUnits::pct);
-        CataR.spin(directionType::fwd, cataPower, velocityUnits::pct);
-        task::sleep(20);
-    }
-    return 0;
-}
 
 int driveTask()
 {
@@ -139,9 +102,11 @@ int driveTask()
     return 0;
 }
 
+
+
 int main()
-{    gyroscope.startCalibration(2);
-    invertedGyro.startCalibration(2);
+{    gyroscope.startCalibration(136);
+    invertedGyro.startCalibration(141);
     task::sleep(6000);
     FrontRight.resetRotation();
     Scraper.resetRotation();
@@ -149,9 +114,10 @@ int main()
     /*task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
-    drive.turnTo(90, 100);
+    firstFrontAuton(drive);
     while (true)
     {
+          Brain.Screen.printAt(30, 30, "%d", gyroscope.value(analogUnits::range12bit));
         /*if (CataL.torque(torqueUnits::Nm) > cataTorque)
             //cataTorque = CataL.torque(torqueUnits::Nm);
         Brain.Screen.printAt(0, 30, "Temperature: %.2f", CataL.temperature());
