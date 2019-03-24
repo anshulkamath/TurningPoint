@@ -75,7 +75,7 @@ void firstFrontAuton(Drivetrain drive)
   drive.drivePID(-36, 100, 3);
   runIntake(0);
   drive.drivePID(40, 100, 3);
-  drive.turnTo(-90, 60);
+  drive.turnTo(-90, 58);
   drive.drivePID(12, 40, 4);
-  drive.turnTo(-90, 60);
+  drive.turnTo(-90, 58);
 }

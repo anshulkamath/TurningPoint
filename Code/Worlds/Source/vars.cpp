@@ -1,5 +1,11 @@
 #pragma once;
+
+#include "../Headers/Drivetrain.h"
+#include "../cleanConfig.h"
+
 using namespace std;
+
+Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft, gyroscope, invertedGyro);
 
 bool intakeUse = false;
 int turnLimiter = 1;

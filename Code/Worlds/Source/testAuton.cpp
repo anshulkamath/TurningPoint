@@ -7,8 +7,6 @@
 
 using namespace vex;
 
-Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft, gyroscope, invertedGyro);
-
 int sideSelect()
 {
   Brain.Screen.clearScreen();
@@ -105,7 +103,8 @@ int driveTask()
 
 
 int main()
-{    gyroscope.startCalibration(136);
+{
+    gyroscope.startCalibration(136);
     invertedGyro.startCalibration(141);
     task::sleep(6000);
     FrontRight.resetRotation();
@@ -114,10 +113,14 @@ int main()
     /*task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
-    firstFrontAuton(drive);
+    drive.turnTo(90, 100);
+    //Brain.resetTimer();
+    //drive.turnTo(90, 58);
+    //int time = Brain.timer(timeUnits::msec);
     while (true)
     {
-          Brain.Screen.printAt(30, 30, "%d", gyroscope.value(analogUnits::range12bit));
+        Brain.Screen.printAt(30, 30, "%.2f", getAngle());
+        Brain.Screen.printAt(30, 60, "Time: %d", time);
         /*if (CataL.torque(torqueUnits::Nm) > cataTorque)
             //cataTorque = CataL.torque(torqueUnits::Nm);
         Brain.Screen.printAt(0, 30, "Temperature: %.2f", CataL.temperature());
