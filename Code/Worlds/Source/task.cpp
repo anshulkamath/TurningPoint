@@ -112,10 +112,20 @@ int driveTask()
 
         // Tank Drive Controls
         if (abs(Controller.Axis3.value()) > 10)
+        {
             leftSide = 127 * pow(abs((double)Controller.Axis3.value())/127.0, 9/7) * sgn(Controller.Axis3.value());
-        if (abs(Controller.Axis2.value()) > 10)
-            rightSide = 127 * pow(abs((double)Controller.Axis2.value())/127.0, 9/7) * sgn(Controller.Axis2.value());
+            if(leftSide - prevLeft > accelCap) leftSide = prevLeft + accelCap;
 
+            if(leftSide - prevLeft < -accelCap) leftSide = prevLeft - accelCap;
+        }
+        if (abs(Controller.Axis2.value()) > 10)
+        {
+          if(rightSide - prevLeft > accelCap) rightSide = prevRight + accelCap;
+
+          if(rightSide - prevLeft < -accelCap) rightSide = prevRight - accelCap;
+          
+            rightSide = 127 * pow(abs((double)Controller.Axis2.value())/127.0, 9/7) * sgn(Controller.Axis2.value());
+        }
         /*
         // Acceleration control
         if (leftSide != 0 && abs(dLeft) > accelCap)

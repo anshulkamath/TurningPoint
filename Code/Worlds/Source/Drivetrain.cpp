@@ -24,9 +24,9 @@ void Drivetrain::turnTo(double angle, int speed)
     //   iThresh= 30;
     // }
 
-    double kP = .55, P = 0;
-    double kI = 0.001, I = 0;
-    double kD = 5, D = 0;
+    double kP = .7, P = 0;
+    double kI = 0.004, I = 0;
+    double kD = 7.5, D = 0;
     double iCap = 7;
     int iThresh = 15;
 
@@ -35,43 +35,56 @@ void Drivetrain::turnTo(double angle, int speed)
 
 
     FrontRight.resetRotation();
+    {
     fstream file1(string("angle-54")  + string(".csv"), fstream::app);
     char * buff = "Hello";
     //    Brain.SDcard.appendFile("filename.txt",buff,100);
     file1<<",Target,Current,Error,P,D,I,Power"<<endl;
+    file1.close();
+  }
+
     int t = 0;
     double stblConst = 0;
     double init = getAngle();
     double velly = 0;
     int maxError = 100;
-
-    while(abs(error) > 0 || abs(lError) > 0 || abs(motorPower) >= 3)
+    while(true)//abs(error) > 0 || abs(lError) > 0 || abs(motorPower) >= 3)
     {
+      fstream file1(string("angle-54")  + string(".csv"), fstream::app);
         t++;
-
+        lError = error;
         error = angle - getAngle();
 
-        if (error < maxError)
-          maxError = error;
+        if (abs(error) > 180)
+            error =  sgn(error) * (360 - abs(error));
 
-        P = kP * error;
+        P = error * kP;
         D = kD * (error - lError);
 
-        if(abs(error) < iThresh)
-            I += kI * error;
+        if (abs(error) < iThresh)
+            I += error * kI;
 
-        if (abs(I) >= iCap) I = sgn(I) * iCap;
-        motorPower = 100 - (D);
-        int signBase = sgn(motorPower);
-        motorPower = abs(motorPower);
-        if(motorPower > speed) motorPower = speed;
+        if (abs(I) > 15)
+          I = 15 * sgn(error);
 
-        setDrive(-motorPower * signBase, motorPower * signBase);
+        motorPower = P + I + D;
+
+        if(abs(error) <= 0.1 && abs(lError) <= .1) break; // Break statement
+
+        if(abs(motorPower) > abs(speed))
+            motorPower = speed * sgn(motorPower);
+
+        BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+        BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
+        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
+        FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+
         prevMotorPower = abs(motorPower);
         lError = error;
-        Brain.Screen.printAt(30, 30, "%.2f, %.2f,%.2f,%d,%d   ", getAngle(), angle, motorPower, sgn(I), maxError);
-        file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<abs(P)<<","<<-abs(D)<<","<<abs(I)<<","<<motorPower<<endl;
-        task::sleep(25);
+  //      Brain.Screen.printAt(30, 30, "%.2f, %.2f,%.2f,%d,%d   ", getAngle(), angle, motorPower, sgn(I), maxError);
+        file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<endl;
+        task::sleep(10);
+        file1.close();
     }
     setDrive(0);
 }
@@ -86,12 +99,18 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, double an
     double iCap = 5;
     distance /= (4.0*3.1415);
     distance /= 2.33333333;
-
+    {
+    fstream file1(string("angle-54")  + string(".csv"), fstream::app);
+    char * buff = "Hello";
+    //    Brain.SDcard.appendFile("filename.txt",buff,100);
+    file1<<",Target,Current,Error,P,D,I, GyroAdjust, Power"<<endl;
+    file1.close();
+  }
     Controller.rumble("-.-.-");
     distance *= 360;
     FrontRight.resetRotation();
-    fstream file1(string("angle-334")  + string(".csv"), fstream::out);
-    file1<<",Target,Current,Error,P,D,I,Power"<<endl;
+
+
     int t = 0;
     double stblConst = .6;//2.0/360.0 * 1.66;
         double init = getAngle();
@@ -99,6 +118,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, double an
       init = angler;
     while(abs(error) >= 1 || abs(lError) >= 1)// || abs(motorPower) >= 3)//true)//distance > FrontRight.rotation(rotationUnits::deg))
     {
+          fstream file1(string("angle-54")  + string(".csv"), fstream::app);
         t++;
         error = distance - FrontRight.rotation(rotationUnits::deg);
         P = kP * error;
@@ -127,8 +147,9 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, double an
         prevMotorPower = abs(motorPower);
         lError = error;
         Brain.Screen.printAt(30, 30, "%.2f, %.2f,%.2f", FrontRight.rotation(rotationUnits::deg), distance, motorPower);
-        file1<<t<<","<<distance<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<error<<","<<abs(P)<<","<<-abs(D)<<","<<abs(I)<<","<<sgn(error) * motorPower<<endl;
-        task::sleep(25);
+        file1<<t<<","<<distance<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<error<<","<<abs(P)<<","<<-abs(D)<<","<<abs(I)<<","<<leftAdjustPwr<<","<<sgn(error) * motorPower<<endl;
+        task::sleep(15);
+        file1.close();
     }
     setDrive(0);
 }
