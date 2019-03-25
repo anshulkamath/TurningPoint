@@ -72,10 +72,12 @@ void firstFrontAuton(Drivetrain drive)
 {
   task cata(cataTask, 1);
   runIntake(1);
-  drive.drivePID(-36, 100, 3);
+  drive.drivePID(-35, 100, 7, 3, 1500);
+  task::sleep(200);
+  drive.drivePID(38, 100, 7, 3, 1500);
   runIntake(0);
-  drive.drivePID(40, 100, 3);
-  drive.turnTo(-90, 58);
-  drive.drivePID(12, 40, 4);
-  drive.turnTo(-90, 58);
+  drive.turnTo(90, 100);
+  // drive.drivePID(12, 40, 4);
+  // fire = true;
+  // drive.turnTo(90, 100);
 }

@@ -106,6 +106,8 @@ int main()
 {
     gyroscope.startCalibration(136);
     invertedGyro.startCalibration(141);
+    gyroscope.startCalibration(2);
+    invertedGyro.startCalibration(2);
     task::sleep(6000);
     FrontRight.resetRotation();
     Scraper.resetRotation();
@@ -113,12 +115,14 @@ int main()
     /*task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
-    drive.drivePID(48, 100, 4);
-    task::sleep(100);
-    drive.drivePID(-48,100, 4);
-    //Brain.resetTimer();
-    //drive.turnTo(90, 58);
-    //int time = Brain.timer(timeUnits::msec);
+    Brain.resetTimer();
+    int time = Brain.timer(timeUnits::msec);
+
+    // drive.drivePID(-36, 100, 7);
+    firstFrontAuton(drive);
+
+
+
     while (true)
     {
         Brain.Screen.printAt(30, 30, "%.2f", getAngle());
