@@ -36,6 +36,7 @@ class Drivetrain
     // Setting Drive Functions
     void setDrive(int vel);
     void setDrive(int rightVel, int leftVel);
+    void turnToSlow(double angle);
     void drivePID(double distance, double speed, int accelCap = 4, int decelCap = 3, int timeComplete = 100000, double angler = -360);
     double getTurnLimiter();
     void setRightVel(double vel);

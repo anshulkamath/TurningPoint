@@ -104,8 +104,8 @@ int driveTask()
 
 int main()
 {
-    gyroscope.startCalibration(136);
-    invertedGyro.startCalibration(141);
+    gyroscope.startCalibration(150);
+    invertedGyro.startCalibration(150);
     gyroTest.startCalibration();
     task::sleep(6000);
     FrontRight.resetRotation();
@@ -116,12 +116,11 @@ int main()
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
     int time = Brain.timer(timeUnits::msec);
-
-    // drive.drivePID(-36, 100, 7);
-  //  firstFrontAuton(drive);
-
-    drive.turnTo(90, 100);
-
+  //drive.drivePID(-35, 80, 7, 7, 1500, 0);
+     //drive.turnToSlow(90);
+    firstFrontAuton(drive);
+    //drive.turnTo(90, 100);
+    Brain.Screen.clearScreen();
     while (true)
     {
        Brain.Screen.printAt(30, 30, "%.2f", getAngle());
