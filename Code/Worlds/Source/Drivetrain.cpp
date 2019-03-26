@@ -7,9 +7,9 @@ using namespace std;
 
 void Drivetrain::turnTo(double angle, int speed)
 {
-    double kP = .416, P = 0;
+    double kP = .4175, P = 0;
     double kI = 0.01, I = 0;
-    double kD = 0.25, D = 0;
+    double kD = 0.304, D = 0;
 
     int iCap = 10;
     int iThresh = 15;
@@ -50,7 +50,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
         motorPower = P + I + D;
 
-        if(abs(error) <= 0.01 && abs(lError) <= .01 && abs(motorPower) < 3) break; // Break statement
+
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
@@ -64,9 +64,11 @@ void Drivetrain::turnTo(double angle, int speed)
 
         Brain.Screen.printAt(0, 30, "Angle: %.2f", getAngle());
 
-        file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<endl;
-        task::sleep(10);
+        file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<getAngle1()<<endl;
         file1.close();
+  if(abs(error) <= 0.01 && abs(lError) <= .01 && abs(motorPower) < 3) break; // Break statement
+
+        task::sleep(10);
     }
     setDrive(0);
 }

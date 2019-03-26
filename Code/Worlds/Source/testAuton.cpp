@@ -106,8 +106,7 @@ int main()
 {
     gyroscope.startCalibration(136);
     invertedGyro.startCalibration(141);
-    gyroscope.startCalibration(2);
-    invertedGyro.startCalibration(2);
+    gyroTest.startCalibration();
     task::sleep(6000);
     FrontRight.resetRotation();
     Scraper.resetRotation();
@@ -119,13 +118,13 @@ int main()
     int time = Brain.timer(timeUnits::msec);
 
     // drive.drivePID(-36, 100, 7);
-    firstFrontAuton(drive);
+  //  firstFrontAuton(drive);
 
-
+    drive.turnTo(90, 100);
 
     while (true)
     {
-        Brain.Screen.printAt(30, 30, "%.2f", getAngle());
+       Brain.Screen.printAt(30, 30, "%.2f", getAngle());
         Brain.Screen.printAt(30, 60, "Time: %d", time);
         /*if (CataL.torque(torqueUnits::Nm) > cataTorque)
             //cataTorque = CataL.torque(torqueUnits::Nm);
@@ -134,6 +133,6 @@ int main()
 
         Brain.Screen.printAt(0, 90, "Potentiometer: %d", CataPot.value(analogUnits::range12bit));*/
 
-        task::sleep(20);
+        task::sleep(10);
     }
 }

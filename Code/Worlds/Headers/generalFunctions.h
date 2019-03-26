@@ -16,3 +16,8 @@ double getAngle()
 {
     return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20.0 - 0;
 }
+
+double getAngle1()
+{
+    return gyroTest.value(analogUnits::mV);
+}
