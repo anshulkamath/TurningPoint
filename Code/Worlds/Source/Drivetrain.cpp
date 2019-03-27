@@ -5,13 +5,27 @@
 #include <sstream>
 using namespace std;
 
+void Drivetrain::turnToSlow(double angle)
+{
+  double lastError = 0, error = 0;
+  while(true)
+  {
+      error = angle - getAngle();
+      setDrive(-4, 4);
+      task::sleep(10);
+      lastError = error;
+      if(abs(lastError) < 2 && abs(error) < 1) break;
+  }
+    setDrive(0);
+}
+
 void Drivetrain::turnTo(double angle, int speed)
 {
-    double kP = .4175, P = 0;
-    double kI = 0.01, I = 0;
-    double kD = 0.304, D = 0;
+    double kP = .416*1.025, P = 0;
+    double kI = 0.0, I = 0;
+    double kD = 0.25*1.025, D = 0;
 
-    int iCap = 10;
+    int iCap = 2;
     int iThresh = 15;
 
     double error = 100, lError = 0;
@@ -66,7 +80,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
         file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<getAngle1()<<endl;
         file1.close();
-  if(abs(error) <= 0.01 && abs(lError) <= .01 && abs(motorPower) < 3) break; // Break statement
+  //if(abs(error) <= 0.01 && abs(lError) <= .01 && abs(motorPower) < 3) break; // Break statement
 
         task::sleep(10);
     }
@@ -97,7 +111,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
 
     int t = 0;
-    double stblConst = 0.05;//2.0/360.0 * 1.66;
+    double stblConst = .5;//2.0/360.0 * 1.66;
     double init = getAngle();
     if(angler != -360)
         init = angler;
