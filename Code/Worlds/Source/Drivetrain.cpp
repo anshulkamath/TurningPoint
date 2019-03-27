@@ -68,11 +68,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
-
-        BackLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, -motorPower, velocityUnits::pct);
-        FrontLeft.spin(directionType::fwd, motorPower, velocityUnits::pct);
+        setDrive(-motorPower, motorPower);
 
         lError = error;
 
@@ -80,7 +76,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
         file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<getAngle1()<<endl;
         file1.close();
-  //if(abs(error) <= 0.01 && abs(lError) <= .01 && abs(motorPower) < 3) break; // Break statement
+        if(abs(error) <= 0.00 && abs(lError) <= .00 && abs(motorPower) < 3) break; // Break statement
 
         task::sleep(10);
     }
@@ -111,7 +107,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
 
     int t = 0;
-    double stblConst = .5;//2.0/360.0 * 1.66;
+    double stblConst = .35;//2.0/360.0 * 1.66;
     double init = getAngle();
     if(angler != -360)
         init = angler;
@@ -144,7 +140,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
         double leftAdjustPwr = -stblConst * (getAngle() - init);
 
-        setDrive(motorPower * signBase - leftAdjustPwr, motorPower * signBase + leftAdjustPwr);
+        setDrive(motorPower * signBase, motorPower * signBase + leftAdjustPwr);
         prevMotorPower = abs(motorPower);
         lError = error;
         Brain.Screen.printAt(30, 30, "%.2f, %.2f,%.2f", getRotationFront(), distance, motorPower);
@@ -152,7 +148,11 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         task::sleep(25);
         file1.close();
     }
-    setDrive(0);
+    fRight.stop(brakeType::hold);
+    fLeft.stop(brakeType::hold);
+    bRight.stop(brakeType::hold);
+    bLeft.stop(brakeType::hold);
+    task::sleep(20);
 }
 
 void Drivetrain::setDrive(int rightVel, int leftVel)

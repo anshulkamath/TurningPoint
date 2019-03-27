@@ -60,6 +60,24 @@ int cataTask()
     }
     return 0;
 }
+void setBrakeMode(vex::brakeType brake)
+{
+    FrontLeft.setStopping(brake);
+    FrontRight.setStopping(brake);
+    BackLeft.setStopping(brake);
+    BackRight.setStopping(brake);
+}
+
+void turnRight(double degrees)
+{
+    setBrakeMode(vex::brakeType::hold);
+    double rots = (degrees/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
+    rots /= 2.33333333;
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, true);
+}
 
 // 1 is forward, 0 is stop, -1 is backward
 void runIntake(int num)
@@ -95,17 +113,23 @@ void firstFrontAuton(Drivetrain drive)
 {
   task cata(cataTask, 1);
   runIntake(1);
-  drive.drivePID(-35, 80, 7, 7, 1500, 0);
+  drive.drivePID(-35, 80, 20, 20, 1500, 0);
   task::sleep(200);
-  drive.drivePID(38, 80, 7, 7, 1500, 0);
+  drive.drivePID(38, 80, 20, 20, 1500, 0);
   runIntake(0);
-  drive.turnToSlow(101);//, 100);
-  drive.drivePID(12, 40, 7, 7, 1500);
-   fire = true;
-   drive.drivePID(40, 80, 7, 7, 1500);
-   drive.turnToSlow(101);
+  turnRight(90);
+  task::sleep(500);
+  drive.drivePID(15, 45, 50, 50, 1500);
+  fire = true;
+  //drive.turnTo(92, 100);//, 100);
+  /*task::sleep(100);
 
-   drive.drivePID(-48, 80, 7, 7, 1500);
+   fire = true;
+task::sleep(500);
+   /*drive.drivePID(40, 80, 7, 7, 1500);
+   drive.turnTo(92, 100);*/
+
+  // drive.drivePID(-12, 30, 15, 7, 1500);
   // drive.turnTo(90, 100);
 }
 void firstBackAuton(Drivetrain drive)
