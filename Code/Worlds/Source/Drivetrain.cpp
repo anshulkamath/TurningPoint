@@ -74,7 +74,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
         Brain.Screen.printAt(0, 30, "Angle: %.2f", getAngle());
 
-        file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<getAngle1()<<endl;
+        // file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<getAngle1()<<endl;
         file1.close();
         if(abs(error) <= 0.00 && abs(lError) <= .00 && abs(motorPower) < 3) break; // Break statement
 

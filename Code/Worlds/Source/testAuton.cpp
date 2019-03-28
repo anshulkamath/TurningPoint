@@ -123,14 +123,8 @@ int main()
     while (true)
     {
        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
-        Brain.Screen.printAt(30, 60, "Time: %d", time);
-        /*if (CataL.torque(torqueUnits::Nm) > cataTorque)
-            //cataTorque = CataL.torque(torqueUnits::Nm);
-        Brain.Screen.printAt(0, 30, "Temperature: %.2f", CataL.temperature());
-        Brain.Screen.printAt(0, 60, "Torque: %.2f", cataTorque);
-
-        Brain.Screen.printAt(0, 90, "Potentiometer: %d", CataPot.value(analogUnits::range12bit));*/
-
-        task::sleep(10);
+       Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
+       Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
+      task::sleep(69);
     }
 }

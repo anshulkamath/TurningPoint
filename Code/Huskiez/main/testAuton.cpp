@@ -52,11 +52,35 @@ int sideSelect()
   return 0;
 }
 
+void turnLeft(double degrees)
+{
+    double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86 * 92.5/90;
+
+    FrontLeft.rotateFor(-rots, rotationUnits::rev, 35, velocityUnits::pct, false);
+    BackLeft.rotateFor(-rots, rotationUnits::rev, 35, velocityUnits::pct, false);
+    FrontRight.rotateFor(rots, rotationUnits::rev, 35, velocityUnits::pct, false);
+    BackRight.rotateFor(rots, rotationUnits::rev, 35, velocityUnits::pct, true);
+
+    setBrakeMode(brakeType::coast);
+}
+
+void turnRight(double degrees)
+{
+    setBrakeMode(brakeType::hold);
+    double rots = (degrees/360) * ((wheelBaseLength*PI)/(wheelDiameter*PI)) * 90/86 * 92.5/90;
+
+    FrontLeft.rotateFor(rots, rotationUnits::rev, 35, velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, rotationUnits::rev, 35, velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, rotationUnits::rev, 35, velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, rotationUnits::rev, 35, velocityUnits::pct, true);
+
+    setBrakeMode(brakeType::coast);
+}
+
 int main()
 {
     gyroscope.startCalibration(150);
     invertedGyro.startCalibration(150);
-    gyroTest.startCalibration();
     task::sleep(6000);
     FrontRight.resetRotation();
     Scraper.resetRotation();

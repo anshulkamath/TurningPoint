@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../headers/Drivetrain.h"
 #include "../include/cleanConfig.h"
 #include "vars.cpp"

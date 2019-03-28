@@ -204,3 +204,11 @@ double Drivetrain::getRotationFront()
 {
 return (fRight.rotation(rotationUnits::deg) + fLeft.rotation(rotationUnits::deg)) / 2;
 }
+
+void Drivetrain::setBrakeMode(vex::brakeType type)
+{
+  FrontRight.setStopping(type);
+  BackLeft.setStopping(type);
+  BackRight.setStopping(type);
+  FrontLeft.setStopping(type);
+}
