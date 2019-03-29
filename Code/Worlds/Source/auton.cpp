@@ -77,6 +77,29 @@ void turnRight(double degrees)
     BackLeft.rotateFor(rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
     BackRight.rotateFor(-rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, true);
+    double error = 100, lError = 100;
+    double smallPowerConst = 3, smallPower;
+    while(true)
+    {
+      smallPower = smallPowerConst;
+      error = degrees -   getAngle();
+      if(abs(error) <= .75 && abs(lError) <= .75) break;
+      if(error < 0) smallPower *= -1;
+
+      Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
+      Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
+      Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
+      FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+      FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+      BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+          BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+      lError = error;
+      task::sleep(20);
+    }
+    FrontLeft.stop(brake);
+    FrontRight.stop(brake);
+    BackLeft.stop(brake);
+    BackRight.stop(brake);
 }
 
 // 1 is forward, 0 is stop, -1 is backward

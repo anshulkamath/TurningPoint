@@ -104,8 +104,8 @@ int driveTask()
 
 int main()
 {
-    gyroscope.startCalibration(125);//133);
-    invertedGyro.startCalibration(140);//136);
+    gyroscope.startCalibration(137);//133);
+    invertedGyro.startCalibration(137);//136);
     task::sleep(6000);
     FrontRight.resetRotation();
     Scraper.resetRotation();
@@ -114,17 +114,24 @@ int main()
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
-    int time = Brain.timer(timeUnits::msec);
-  //drive.drivePID(-35, 80, 7, 7, 1500, 0);
+    drive.slipAdjust(false, true);
+/*    drive.drivePID(12, 40, 20, 20, 1500, 0);
+    task::sleep(100);
+    drive.drivePID(36, 80, 20, 20, 1500, 0);
+task::sleep(100);
+    drive.drivePID(-48, 100, 20, 20, 1500, 0);*/
      //drive.turnToSlow(90);
-  //  firstFrontAuton(drive);
-    //drive.turnTo(92, 100);
+
+    //firstFrontAuton(drive);
+//  turnRight(45);
+    //drive.turnTo(90, 100);
+    int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)
     {
        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
-       Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
+       Brain.Screen.printAt(30, 90, "%d           ", time);
       task::sleep(69);
     }
 }

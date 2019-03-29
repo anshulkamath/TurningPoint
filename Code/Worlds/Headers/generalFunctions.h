@@ -14,5 +14,5 @@ int sgn(double v)
 
 double getAngle()
 {
-    return (gyroscope.value(analogUnits::range12bit) - invertedGyro.value(analogUnits::range12bit))/20.0 - 0;
+    return (/*gyroscope.value(analogUnits::range12bit)*/ - invertedGyro.value(analogUnits::range12bit))/10.0 - 0;
 }

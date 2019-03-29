@@ -1,4 +1,5 @@
 #pragma once;
+#include "C:/Users/RaviChahil/Documents/vexcode-projects/MyProject86756/include/vex.h"
 
 vex::brain Brain;
 vex::controller Controller;
@@ -15,5 +16,5 @@ vex::motor BackRight = vex::motor(vex::PORT4,vex::gearSetting::ratio36_1,false);
 vex::motor FrontRight = vex::motor(vex::PORT5,vex::gearSetting::ratio36_1,false);
 
 vex::pot CataPot = vex::pot(Brain.ThreeWirePort.A);
-vex::gyro gyroscope = vex::gyro(Brain.ThreeWirePort.H);
-vex::gyro invertedGyro = vex::gyro(Brain.ThreeWirePort.G);
+vex::gyro gyroscope = vex::gyro(Brain.ThreeWirePort.G);
+vex::gyro invertedGyro = vex::gyro(Brain.ThreeWirePort.H);

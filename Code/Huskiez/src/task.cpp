@@ -1,7 +1,5 @@
-#pragma once
-
-#include "../headers/Drivetrain.h"
-#include "../include/cleanConfig.h"
+#include "../Headers/Drivetrain.h"
+#include "../cleanConfig.h"
 #include "vars.cpp"
 
 int intakeTask()
@@ -85,9 +83,9 @@ int leftSide = 0, rightSide = 0;
 int driveTask()
 {
     const int accelCap = 30;
-    // int splitLeft = 0, splitRight = 0;
+    int splitLeft = 0, splitRight = 0;
     int prevLeft = 0, prevRight = 0; // To maintain acceleration
-    // int dLeft = 0, dRight = 0;
+    int dLeft = 0, dRight = 0;
     while(true)
     {
         leftSide = 0;
@@ -115,7 +113,7 @@ int driveTask()
         // Tank Drive Controls
         if (abs(Controller.Axis3.value()) > 10)
         {
-            leftSide = 127 * pow(fabs((double)Controller.Axis3.value())/127.0, 9/7) * sgn(Controller.Axis3.value());
+            leftSide = 127 * pow(abs((double)Controller.Axis3.value())/127.0, 9/7) * sgn(Controller.Axis3.value());
             if(leftSide - prevLeft > accelCap) leftSide = prevLeft + accelCap;
 
             if(leftSide - prevLeft < -accelCap) leftSide = prevLeft - accelCap;
@@ -125,8 +123,8 @@ int driveTask()
           if(rightSide - prevLeft > accelCap) rightSide = prevRight + accelCap;
 
           if(rightSide - prevLeft < -accelCap) rightSide = prevRight - accelCap;
-          
-            rightSide = 127 * pow(fabs((double)Controller.Axis2.value())/127.0, 9/7) * sgn(Controller.Axis2.value());
+
+            rightSide = 127 * pow(abs((double)Controller.Axis2.value())/127.0, 9/7) * sgn(Controller.Axis2.value());
         }
         /*
         // Acceleration control

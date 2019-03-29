@@ -88,7 +88,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
     // distance *= 36/40;
     double kP = .4175, P = 0;
     double kI = 0.03, I = 0;
-    double kD = 2.5, D = 0;
+    double kD = 3.2, D = 0;
     double error = 100, lError = 0;
     double motorPower = 0, prevMotorPower = 0;
     double iCap = 5;
@@ -107,7 +107,9 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
 
     int t = 0;
-    double stblConst = .35;//2.0/360.0 * 1.66;
+    double stblConst = 4;//2.0/360.0 * 1.66;
+    double percentDone = 0;
+
     double init = getAngle();
     if(angler != -360)
         init = angler;
@@ -118,6 +120,8 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         fstream file1(string("drivePID")  + string(".csv"), fstream::app);
         t++;
         error = distance - getRotationFront();
+        percentDone = abs(1 - getRotationFront()/distance);
+
         P = kP * error;
         D = -kD * (error - lError);
 
@@ -139,6 +143,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         if(motorPower > speed) motorPower = speed;
 
         double leftAdjustPwr = -stblConst * (getAngle() - init);
+        leftAdjustPwr *= percentDone;
 
         setDrive(motorPower * signBase, motorPower * signBase + leftAdjustPwr);
         prevMotorPower = abs(motorPower);
@@ -147,6 +152,24 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         file1<<t<<","<<distance<<","<<getRotationFront()<<","<<error<<","<<abs(P)<<","<<-abs(D)<<","<<abs(I)<<","<<leftAdjustPwr<<","<<sgn(error) * motorPower<<endl;
         task::sleep(25);
         file1.close();
+    }
+    double smallPowerConst = 3, smallPower;
+    while(true)
+    {
+      smallPower = smallPowerConst;
+      error = init -   getAngle();
+      if(abs(error) <= .75 && abs(lError) <= .75) break;
+      if(error < 0) smallPower *= -1;
+
+      Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
+      Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
+      Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
+      FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+      FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+      BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+          BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+      lError = error;
+      task::sleep(20);
     }
     fRight.stop(brakeType::hold);
     fLeft.stop(brakeType::hold);

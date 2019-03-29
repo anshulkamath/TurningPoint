@@ -44,6 +44,37 @@ class Drivetrain
     double getRightReal();
     double getLeftReal();
 
+    void slipAdjust(bool right, bool left)
+    {
+      bool fR = false, fL = false, bL = false, bR = false;
+      double thresh = 0.18;
+      setDrive((right == 0 ? -1 : 1) * 100, (left == 0 ? -1 : 1) * 100);
+      while(!fR || !fL || !bL || !bR)
+      {
+        if(fabs(fRight.torque(torqueUnits::Nm)) >= thresh)
+        {
+          fR = true;
+          fRight.stop();
+        }
+        if(fabs(fLeft.torque(torqueUnits::Nm)) >= thresh)
+        {
+          fL = true;
+          fLeft.stop();
+        }
+        if(fabs(bLeft.torque(torqueUnits::Nm)) >= thresh)
+        {
+          bL = true;
+          bLeft.stop();
+        }
+        if(fabs(bRight.torque(torqueUnits::Nm)) >= thresh)
+        {
+          bR = true;
+          bRight.stop();
+        }
+      }
+
+    }
+
     double getRotationFront();
 
 

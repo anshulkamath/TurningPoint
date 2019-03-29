@@ -1,7 +1,7 @@
-#pragma once
+#pragma once;
 
-#include "../headers/Drivetrain.h"
-#include "../include/cleanConfig.h"
+#include "../Headers/Drivetrain.h"
+#include "../cleanConfig.h"
 
 using namespace std;
 
