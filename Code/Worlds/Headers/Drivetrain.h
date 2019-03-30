@@ -44,7 +44,7 @@ class Drivetrain
     double getRightReal();
     double getLeftReal();
 
-    void slipAdjust(bool right, bool left)
+    void slipAdjust(bool right, bool left, double speedLeft = 100, double speedRight = 100)
     {
       bool fR = false, fL = false, bL = false, bR = false;
       double thresh = 0.18;

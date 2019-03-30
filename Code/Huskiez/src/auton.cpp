@@ -71,6 +71,7 @@ void setBrakeMode(vex::brakeType brake)
 void turnRight(double degrees)
 {
     setBrakeMode(vex::brakeType::hold);
+    degrees -= 10;
     double rots = (degrees/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
     rots /= 2.33333333;
     FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);

@@ -86,6 +86,8 @@ int driveTask()
     int splitLeft = 0, splitRight = 0;
     int prevLeft = 0, prevRight = 0; // To maintain acceleration
     int dLeft = 0, dRight = 0;
+    const int tenTwenty = 10;
+    const int twenty50 = 35;
     while(true)
     {
         leftSide = 0;
@@ -113,18 +115,28 @@ int driveTask()
         // Tank Drive Controls
         if (abs(Controller.Axis3.value()) > 10)
         {
-            leftSide = 127 * pow(abs((double)Controller.Axis3.value())/127.0, 9/7) * sgn(Controller.Axis3.value());
-            if(leftSide - prevLeft > accelCap) leftSide = prevLeft + accelCap;
+          /*if(abs(Controller.Axis3.value()) < 20) leftSide = tenTwenty * sgn(Controller.Axis3.value());
+          else if(abs(Controller.Axis3.value()) < 50) leftSide = twenty50 * sgn(Controller.Axis3.value());
+          else*/
+          {
+            leftSide = Controller.Axis3.value();
+          }
+            //if(leftSide - prevLeft > accelCap) leftSide = prevLeft + accelCap;
 
-            if(leftSide - prevLeft < -accelCap) leftSide = prevLeft - accelCap;
+            //if(leftSide - prevLeft < -accelCap) leftSide = prevLeft - accelCap;
         }
         if (abs(Controller.Axis2.value()) > 10)
         {
-          if(rightSide - prevLeft > accelCap) rightSide = prevRight + accelCap;
+          /*if(abs(Controller.Axis2.value()) < 20) rightSide = tenTwenty * sgn(Controller.Axis3.value());
+          else if(abs(Controller.Axis2.value()) < 50) rightSide = twenty50 * sgn(Controller.Axis2.value());
+          else*/ {
+            rightSide = Controller.Axis2.value();
+          }
+          //if(rightSide - prevLeft > accelCap) rightSide = prevRight + accelCap;
 
-          if(rightSide - prevLeft < -accelCap) rightSide = prevRight - accelCap;
-          
-            rightSide = 127 * pow(abs((double)Controller.Axis2.value())/127.0, 9/7) * sgn(Controller.Axis2.value());
+          //if(rightSide - prevLeft < -accelCap) rightSide = prevRight - accelCap;
+
+        //    rightSide = 100 * pow(abs((double)Controller.Axis2.value())/100.0, 9/7) * sgn(Controller.Axis2.value());
         }
         /*
         // Acceleration control

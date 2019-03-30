@@ -16,6 +16,6 @@ vex::motor FrontLeft = vex::motor(vex::PORT3,vex::gearSetting::ratio36_1,true);
 vex::motor BackRight = vex::motor(vex::PORT4,vex::gearSetting::ratio36_1,false);
 vex::motor FrontRight = vex::motor(vex::PORT5,vex::gearSetting::ratio36_1,false);
 
-vex::pot CataPot = vex::pot(Brain.ThreeWirePort.A);
-vex::gyro gyroscope = vex::gyro(Brain.ThreeWirePort.G);
-vex::gyro invertedGyro = vex::gyro(Brain.ThreeWirePort.H);
+vex::pot CataPot = vex::pot(Brain.ThreeWirePort.H);
+vex::gyro gyroscope = vex::gyro(Brain.ThreeWirePort.D);
+vex::gyro invertedGyro = vex::gyro(Brain.ThreeWirePort.E);

@@ -71,6 +71,6 @@ int main()
         Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
         Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
         Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
-        task::sleep(69);
+        task::sleep(100);
     }
 }

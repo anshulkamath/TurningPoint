@@ -105,8 +105,8 @@ int driveTask()
 int main()
 {
     int gyroScale = 140;
-    int invertGyroScale = 137;
-    gyroscope.startCalibration(gyroScale);//133);
+    int invertGyroScale = 140;
+    gyroscope.startCalibration(invertGyroScale);//133);
     invertedGyro.startCalibration(invertGyroScale);//136);
     task::sleep(6000);
     FrontRight.resetRotation();
@@ -123,8 +123,8 @@ int main()
 task::sleep(100);
     drive.drivePID(-48, 100, 20, 20, 1500, 0);*/
      //drive.turnToSlow(90);
-
-    firstFrontAuton(drive);
+     //turnRight(90);
+  //  firstFrontAuton(drive);
     // turnRight(90);
     //drive.turnTo(90, 100);
     int time = Brain.timer(timeUnits::msec);
@@ -134,6 +134,6 @@ task::sleep(100);
        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
-      task::sleep(69);
+       task::sleep(69);
     }
 }

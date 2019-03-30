@@ -71,6 +71,7 @@ void setBrakeMode(vex::brakeType brake)
 void turnRight(double degrees)
 {
     setBrakeMode(vex::brakeType::hold);
+
     double rots = ((degrees - 10)/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
     rots /= 2.33333333;
     FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
@@ -142,10 +143,13 @@ void firstFrontAuton(Drivetrain drive)
   drive.drivePID(38, 80, 20, 20, 1500, 0);
   runIntake(0);
   drive.slipAdjust(false, true);
-  turnRight(100);
-  drive.slipAdjust(true, true);
-  task::sleep(500);
+  turnRight(90);
+  task::sleep(10);
+  drive.slipAdjust(true, true, 0, 100);
+  task::sleep(100);
+  runIntake(1);
   drive.drivePID(15, 45, 50, 50, 1500);
+  runIntake(0);  
   fire = true;
   //drive.turnTo(92, 100);//, 100);
   /*task::sleep(100);

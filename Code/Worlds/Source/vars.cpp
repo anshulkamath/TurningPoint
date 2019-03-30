@@ -2,7 +2,8 @@
 
 #include "../Headers/Drivetrain.h"
 #include "../cleanConfig.h"
-
+#include <vector>
+#include <iostream>
 using namespace std;
 
 Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft, gyroscope, invertedGyro);
