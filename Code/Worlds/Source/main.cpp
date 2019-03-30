@@ -56,6 +56,11 @@ int sideSelect()
 
 int main()
 {
+    int gyroScale = 140;
+    int invertGyroScale = 137;
+    gyroscope.startCalibration(gyroScale);//133);
+    invertedGyro.startCalibration(invertGyroScale);//136);
+    task::sleep(6000);
     task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);
@@ -63,8 +68,9 @@ int main()
 
     while (true)
     {
-        Brain.Screen.printAt(0, 30, "RightVel: %.2f", FrontRight.velocity(velocityUnits::rpm));
-
-        task::sleep(20);
+        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
+        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
+        Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
+        task::sleep(69);
     }
 }

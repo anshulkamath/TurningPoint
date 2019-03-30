@@ -71,18 +71,18 @@ void setBrakeMode(vex::brakeType brake)
 void turnRight(double degrees)
 {
     setBrakeMode(vex::brakeType::hold);
-    double rots = (degrees/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
+    double rots = ((degrees - 10)/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
     rots /= 2.33333333;
-    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, true);
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, true);
     double error = 100, lError = 100;
     double smallPowerConst = 3, smallPower;
     while(true)
     {
       smallPower = smallPowerConst;
-      error = degrees -   getAngle();
+      error = degrees - getAngle();
       if(abs(error) <= .75 && abs(lError) <= .75) break;
       if(error < 0) smallPower *= -1;
 
@@ -137,10 +137,13 @@ void firstFrontAuton(Drivetrain drive)
   task cata(cataTask, 1);
   runIntake(1);
   drive.drivePID(-35, 80, 20, 20, 1500, 0);
+  drive.slipAdjust(true, true);
   task::sleep(200);
   drive.drivePID(38, 80, 20, 20, 1500, 0);
   runIntake(0);
-  turnRight(90);
+  drive.slipAdjust(false, true);
+  turnRight(100);
+  drive.slipAdjust(true, true);
   task::sleep(500);
   drive.drivePID(15, 45, 50, 50, 1500);
   fire = true;
