@@ -21,9 +21,17 @@ void Drivetrain::turnToSlow(double angle)
 
 void Drivetrain::turnTo(double angle, int speed)
 {
-    double kP =.385, P = 0;
-    double kI = 0.002, I = 0;
-    double kD =0.3, D = 0;
+  double kP = 0.4175, P = 0;
+  double kI = 0.008, I = 0;
+  double kD = .15, D = 0;
+  if (abs(angle - getAngle()) <= 100)
+  {
+    kP = 0.385;
+    kI = 0.02;
+    kD = .05;
+  }
+
+  double kD1 = 50;
 
     int iCap =102;
     int iThresh = 25;
@@ -35,10 +43,10 @@ void Drivetrain::turnTo(double angle, int speed)
 
     // File stuff
     {
-        fstream file1(string("angle-54")  + string(".csv"), fstream::app);
+        fstream file1(string("angle")  + string(".csv"), fstream::app);
         char * buff = "Hello";
         //    Brain.SDcard.appendFile("filename.txt",buff,100);
-        file1<<",Target,Current,Error,P,D,I,Power"<<endl;
+        file1<<",Target,Current,Error,P,D,I,Power,Velocity"<<endl;
         file1.close();
     }
 
@@ -52,7 +60,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
     while(true)//abs(error) > 0 || abs(lError) > 0 || abs(motorPower) >= 3)
     {
-        fstream file1(string("angle-54")  + string(".csv"), fstream::app);
+        fstream file1(string("angle")  + string(".csv"), fstream::app);
         t++;
         lError = error;
         error = angle - getAngle();
@@ -64,10 +72,11 @@ void Drivetrain::turnTo(double angle, int speed)
 
         if (abs(I) > iCap)
             I = sgn(I) * iCap;
+
         if(error / initialError <= .75)
           motorPower = P + I + D;
         else
-          motorPower = speed * sgn(error);
+          motorPower = (speed += (D * kD1)) * sgn(error);
 
 
         if(abs(motorPower) > abs(speed))
@@ -78,7 +87,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
         Brain.Screen.printAt(0, 30, "Angle: %.2f", getAngle());
 
-         file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<endl;
+         file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.velocity(velocityUnits::rpm)<<endl;
         file1.close();
         if(abs(error) <= 0.00 && abs(lError) <= .00 && abs(motorPower) < 3) break; // Break statement
 
@@ -91,8 +100,8 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 {
     // distance *= 36/40;
     double kP = .4175, P = 0;
-    double kI = 0.03, I = 0;
-    double kD = 3.2, D = 0;
+    double kI = 0.015, I = 0;
+    double kD = 3.3, D = 0;
     double error = 100, lError = 0;
     double motorPower = 0, prevMotorPower = 0;
     double iCap = 5;

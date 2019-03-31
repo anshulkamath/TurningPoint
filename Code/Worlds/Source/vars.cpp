@@ -24,5 +24,5 @@ double getAngle()
 {
   return angle;
 }
-double scraperReadyHeight = -400;
-double scraperScrapHeight = -640;
+double scraperReady = -400;
+double scraperHeight = -640;
