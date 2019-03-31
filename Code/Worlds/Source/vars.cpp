@@ -20,3 +20,7 @@ int cataDown = 1350;
 bool cataReady = false;
 bool fire = false;
 double angle = 0;
+double getAngle()
+{
+  return angle;
+}

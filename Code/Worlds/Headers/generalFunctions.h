@@ -16,7 +16,3 @@ int sgn(double v)
 {
   return v < 0 ? -1 : 1;
 }
-double getAngle()
-{
-  return angle;
-}

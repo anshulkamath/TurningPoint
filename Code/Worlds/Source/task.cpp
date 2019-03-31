@@ -188,7 +188,7 @@ int angleMonitor()
     currentAngle = -invertedGyro.value(analogUnits::range12bit)/10.0;
     if(fabs(currentAngle - prevAngle) > threshold)
       angle += currentAngle - prevAngle;
-    prevAngle = currAngle;
+    prevAngle = currentAngle;
     task::sleep(100);
   }
 }
