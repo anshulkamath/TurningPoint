@@ -1,3 +1,4 @@
+#pragma once;
 #include "../Headers/Drivetrain.h"
 #include "../cleanConfig.h"
 #include "vars.cpp"
@@ -180,15 +181,43 @@ int scraperTask()
 
 int angleMonitor()
 {
+  double iprevAngle = 0;
+  double icurrentAngle = 0;
   double prevAngle = 0;
   double currentAngle = 0;
-  double threshold = .1;
+  double ithreshold = .15;
+  double rthreshold = .2;
+  double threshold = .15;
+  double iAngle = 0;
+  double rAngle = 0;
+
+  double anglePrev = 0;
+  // File stuff
+  {
+      fstream file1(string("filter")  + string(".csv"), fstream::app);
+      file1<<"Prev,"<<",Current"<< ",Angle"<<",iPrev"<<",iCurrent"<< ",iAngle"<<",tAngle"<<endl;
+      file1.close();
+  }
+
   while(true)
   {
-    currentAngle = -invertedGyro.value(analogUnits::range12bit)/10.0;
-    if(fabs(currentAngle - prevAngle) > threshold)
-      angle += currentAngle - prevAngle;
+    fstream file1(string("filter")  + string(".csv"), fstream::app);
+    icurrentAngle = (-invertedGyro.value(analogUnits::range12bit)/10.0);
+    currentAngle = (gyroscope.value(analogUnits::range12bit)/10.0);
+    if(fabs(icurrentAngle - iprevAngle) > ithreshold)
+      iAngle += icurrentAngle - iprevAngle;
+    if(fabs(currentAngle - prevAngle) > rthreshold )
+      rAngle += currentAngle - prevAngle;
+
+    double angleTemp = (rAngle + iAngle)/2;
+    if(fabs(anglePrev - angleTemp) > threshold)
+      angle += angleTemp - anglePrev;
+
+    anglePrev = angle;
+    iprevAngle = icurrentAngle;
     prevAngle = currentAngle;
-    task::sleep(100);
+    file1<<","<<anglePrev<<","<<currentAngle<<","<<rAngle<<","<<iprevAngle<<","<<icurrentAngle<<","<<iAngle<<","<<angle<<endl;
+   file1.close();
+    task::sleep(50);
   }
 }

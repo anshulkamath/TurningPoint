@@ -56,7 +56,7 @@ int sideSelect()
 
 int main()
 {
-    int gyroScale = 140;
+    int gyroScale = 140 * 90.0/87.7;
     int invertGyroScale = 137;
     gyroscope.startCalibration(gyroScale);//133);
     invertedGyro.startCalibration(invertGyroScale);//136);
@@ -65,6 +65,7 @@ int main()
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);
     task taskScraper(scraperTask, 1);
+    task taskGyro(angleMonitor, 1);
 
     while (true)
     {

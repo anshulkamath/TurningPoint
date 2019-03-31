@@ -117,7 +117,8 @@ int main()
     //drive.drivePID(-35, 80, 7, 7, 1500, 0);
      //drive.turnToSlow(90);
     //firstFrontAuton(drive);
-  turnRight(45);
+    drive.slipAdjust(false, true);
+    turnRight(45);
     //drive.turnTo(90, 100);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();

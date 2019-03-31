@@ -4,6 +4,7 @@
 #include "../Headers/Drivetrain.h"
 #include "Drivetrain.cpp"
 #include "auton.cpp"
+#include "task.cpp"
 
 using namespace vex;
 
@@ -53,53 +54,6 @@ int sideSelect()
 }
 
 
-int intakeTask()
-{
-    Intake.setStopping(brakeType::coast);
-    int intakePower = 0;
-    while(true)
-    {
-        if (Controller.ButtonL1.pressing())
-            intakePower = 100;
-        else if (Controller.ButtonL2.pressing())
-            intakePower = -100;
-        else
-            intakePower = 0;
-
-        Intake.spin(directionType::fwd, intakePower, velocityUnits::pct);
-        task::sleep(50);
-    }
-}
-
-
-int driveTask()
-{
-    int leftSide = 0, rightSide = 0;
-    while(true)
-    {
-        leftSide = 0;
-        rightSide = 0;
-
-        if (Controller.ButtonR1.pressing())
-            rightSide = leftSide = 50;
-        else if (Controller.ButtonR2.pressing())
-            rightSide = leftSide = -50;
-
-        if (abs(Controller.Axis3.value()) > 10)
-            leftSide = Controller.Axis3.value();
-        if (abs(Controller.Axis2.value()) > 10)
-            rightSide = Controller.Axis2.value();
-
-        FrontLeft.spin(directionType::fwd, leftSide, velocityUnits::pct);
-        BackLeft.spin(directionType::fwd, leftSide, velocityUnits::pct);
-        FrontRight.spin(directionType::fwd, rightSide, velocityUnits::pct);
-        BackRight.spin(directionType::fwd, rightSide, velocityUnits::pct);
-
-        task::sleep(20);
-    }
-    return 0;
-}
-
 
 
 int main()
@@ -112,21 +66,25 @@ int main()
     FrontRight.resetRotation();
     Scraper.resetRotation();
     int cataTorque = 0;
+    task c(angleMonitor, 1);
     /*task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
-    //drive.slipAdjust(false, true);
-/*    drive.drivePID(12, 40, 20, 20, 1500, 0);
+    /*drive.slipAdjust(true, true);
+    drive.drivePID(12, 40, 20, 20, 1500, 0);
     task::sleep(100);
     drive.drivePID(36, 80, 20, 20, 1500, 0);
 task::sleep(100);
+    drive.slipAdjust(false, false);
     drive.drivePID(-48, 100, 20, 20, 1500, 0);*/
-     //drive.turnToSlow(90);
+    //drive.slipAdjust(true, false);
+     //turnRight(90);
      //turnRight(90);
   //  firstFrontAuton(drive);
     // turnRight(90);
-    //drive.turnTo(90, 100);
+    drive.turnTo(90, 100);
+  //  scrapFunction(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)
@@ -134,6 +92,7 @@ task::sleep(100);
        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
+       Brain.Screen.printAt(30, 120, "%d           ", time);
        task::sleep(69);
     }
 }

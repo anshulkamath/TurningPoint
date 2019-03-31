@@ -21,12 +21,12 @@ void Drivetrain::turnToSlow(double angle)
 
 void Drivetrain::turnTo(double angle, int speed)
 {
-    double kP = .416*1.025, P = 0;
-    double kI = 0.0, I = 0;
-    double kD = 0.25*1.025, D = 0;
+    double kP =.385, P = 0;
+    double kI = 0.002, I = 0;
+    double kD =0.3, D = 0;
 
-    int iCap = 2;
-    int iThresh = 15;
+    int iCap =102;
+    int iThresh = 25;
 
     double error = 100, lError = 0;
     double motorPower = 0;
@@ -47,6 +47,9 @@ void Drivetrain::turnTo(double angle, int speed)
     double init = getAngle();
     double velly = 0;
     int maxError = 100;
+
+    double initialError = angle - init;
+
     while(true)//abs(error) > 0 || abs(lError) > 0 || abs(motorPower) >= 3)
     {
         fstream file1(string("angle-54")  + string(".csv"), fstream::app);
@@ -61,9 +64,10 @@ void Drivetrain::turnTo(double angle, int speed)
 
         if (abs(I) > iCap)
             I = sgn(I) * iCap;
-
-        motorPower = P + I + D;
-
+        if(error / initialError <= .75)
+          motorPower = P + I + D;
+        else
+          motorPower = speed * sgn(error);
 
 
         if(abs(motorPower) > abs(speed))
@@ -74,11 +78,11 @@ void Drivetrain::turnTo(double angle, int speed)
 
         Brain.Screen.printAt(0, 30, "Angle: %.2f", getAngle());
 
-        // file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<getAngle1()<<endl;
+         file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<endl;
         file1.close();
         if(abs(error) <= 0.00 && abs(lError) <= .00 && abs(motorPower) < 3) break; // Break statement
 
-        task::sleep(10);
+        task::sleep(50);
     }
     setDrive(0);
 }
