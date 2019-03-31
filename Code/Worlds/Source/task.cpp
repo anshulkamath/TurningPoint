@@ -177,3 +177,18 @@ int scraperTask()
   }
   return 0;
 }
+
+int angleMonitor()
+{
+  double prevAngle = 0;
+  double currentAngle = 0;
+  double threshold = .1;
+  while(true)
+  {
+    currentAngle = -invertedGyro.value(analogUnits::range12bit)/10.0;
+    if(fabs(currentAngle - prevAngle) > threshold)
+      angle += currentAngle - prevAngle;
+    prevAngle = currAngle;
+    task::sleep(100);
+  }
+}
