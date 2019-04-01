@@ -97,8 +97,8 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 {
     // distance *= 36/40;
     double kP = .4175, P = 0;
-    double kI = 0.03, I = 0;
-    double kD = 3.2, D = 0;
+    double kI = 0.015, I = 0;
+    double kD = 3.3, D = 0;
     double error = 100, lError = 0;
     double motorPower = 0, prevMotorPower = 0;
     double iCap = 5;
@@ -146,9 +146,13 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         motorPower = abs(motorPower);
         if(motorPower > speed) motorPower = speed;
 
-        if(motorPower + accelCap > prevMotorPower) motorPower = prevMotorPower + accelCap;
+        if(speed > 40)
+        {
 
-        if(prevMotorPower - decelCap > motorPower) motorPower = prevMotorPower - decelCap;
+          if(motorPower + accelCap > prevMotorPower) motorPower = prevMotorPower + accelCap;
+
+          if(prevMotorPower - decelCap > motorPower) motorPower = prevMotorPower - decelCap;
+        }
 
         if(motorPower > speed) motorPower = speed;
 
@@ -163,7 +167,8 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         task::sleep(25);
         file1.close();
     }
-    double smallPowerConst = 3, smallPower;
+    double smallPowerConst = 6, smallPower;
+    /*
     while(true)
     {
       smallPower = smallPowerConst;
@@ -180,7 +185,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
           BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
       lError = error;
       task::sleep(20);
-    }
+    }*/
     fRight.stop(brakeType::hold);
     fLeft.stop(brakeType::hold);
     bRight.stop(brakeType::hold);
@@ -215,7 +220,41 @@ void Drivetrain::setDrive(int vel)
     bRight.spin(directionType::fwd, vel, velocityUnits::pct);
     bLeft.spin(directionType::fwd, vel, velocityUnits::pct);
 }
+void Drivetrain::straightDrive(double distance, double speed, double init)
+{
+  distance /= (4.0*3.1415);
+  distance /= 2.33333333;
+  distance *= 360;
+  FrontRight.resetRotation();
+  FrontLeft.resetRotation();
 
+  fRight.rotateFor(distance, rotationUnits::deg, speed, velocityUnits::pct, false);
+  fLeft.rotateFor(distance, rotationUnits::deg, speed, velocityUnits::pct, false);
+  bLeft.rotateFor(distance, rotationUnits::deg, speed, velocityUnits::pct, false);
+  bRight.rotateFor(distance, rotationUnits::deg, speed, velocityUnits::pct, true);
+  double error = 100, lError = 0;
+  double motorPower = 0, prevMotorPower = 0;
+  double smallPowerConst = 6, smallPower;
+  while(true)
+  {
+    smallPower = smallPowerConst;
+    error = init -   angle;
+    if(abs(error) <= .75 && abs(lError) <= .75) break;
+    if(error < 0) smallPower *= -1;
+
+    FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+    FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+    BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+        BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+    lError = error;
+    task::sleep(20);
+  }
+  fRight.stop(brakeType::hold);
+  fLeft.stop(brakeType::hold);
+  bRight.stop(brakeType::hold);
+  bLeft.stop(brakeType::hold);
+  task::sleep(20);
+}
 
 void Drivetrain::setRightVel(double vel)
 {

@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "generalFunctions.h"
+#include "../Source/vars.cpp"
 using namespace vex;
 
 class Drivetrain
@@ -43,6 +44,8 @@ class Drivetrain
     void setLeftVel(double vel);
     double getRightReal();
     double getLeftReal();
+
+    void straightDrive(double distance, double speed, double init);
 
     void brake(double power = 400)
     {

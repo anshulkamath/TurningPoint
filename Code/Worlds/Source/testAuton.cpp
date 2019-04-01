@@ -83,9 +83,13 @@ task::sleep(100);
      //turnRight(90);
      //turnRight(90);
   //  firstFrontAuton(drive);
-    // turnRight(90);
+     turnRight(90);
   //  scrapFunction(drive);
-    turnRight(90);
+  //drive.slipAdjust(true, true, 0, 100);
+  //task::sleep(100);
+  //runIntake(1);
+  //drive.drivePID(10, 40, 40, 40, 1500, 0);
+//  drive.slipAdjust(true, true, 0, 100);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)
