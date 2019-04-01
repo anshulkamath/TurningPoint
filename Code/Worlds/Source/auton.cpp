@@ -25,7 +25,7 @@ void turnRight(double degrees)
     FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 25, vex::velocityUnits::pct, false);
     BackRight.rotateFor(-rots, vex::rotationUnits::rev, 25, vex::velocityUnits::pct, true);
     double error = 100, lError = 100;
-    double smallPowerConst = 40, smallPower;
+    double smallPowerConst = 20, smallPower;
     double kp = .65;
     drive.brake();
     while(true)
