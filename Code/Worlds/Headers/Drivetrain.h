@@ -44,6 +44,15 @@ class Drivetrain
     double getRightReal();
     double getLeftReal();
 
+    void brake(double power = 400)
+    {
+      int leftSgn = sgn(fLeft.velocity(velocityUnits::pct));
+        int rightSgn = -sgn(fRight.velocity(velocityUnits::pct));
+        setDrive(power*rightSgn, leftSgn*power);
+        task::sleep(20);
+        setDrive(0, 0);
+    }
+
     void slipAdjust(bool right, bool left, double speedLeft = 100, double speedRight = 100)
     {
       bool fR = false, fL = false, bL = false, bR = false;

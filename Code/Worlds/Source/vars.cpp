@@ -26,3 +26,7 @@ double getAngle()
 }
 double scraperReadyHeight = -400;
 double scraperScrapHeight = -640;
+int FRVel = 0;
+int FLVel = 0;
+int BRVel = 0;
+int BLVel = 0;

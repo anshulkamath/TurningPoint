@@ -221,3 +221,26 @@ int angleMonitor()
     task::sleep(50);
   }
 }
+
+
+int wheelVelocity()
+{
+  {
+      fstream file1(string("filter")  + string(".csv"), fstream::app);
+      file1<<"currVel,velocity"<<endl;
+      file1.close();
+  }
+  double error = 0;
+  double kp = 1;
+  FrontRight.spin(directionType::fwd);
+  FrontRight.setStopping(brakeType::hold);
+  while(true)
+  {
+    // Front Right
+    error = FRVel - FrontRight.velocity(velocityUnits::pct);
+    FrontRight.setVelocity(FRVel, velocityUnits::pct);
+      fstream file1(string("wheel")  + string(".csv"), fstream::app);
+      file1<<FRVel<<","<<FrontRight.velocity(velocityUnits::pct)<<endl;
+      file1.close();
+  }
+}

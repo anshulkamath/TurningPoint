@@ -22,8 +22,8 @@ void Drivetrain::turnToSlow(double angle)
 void Drivetrain::turnTo(double angle, int speed)
 {
     double kP =.385, P = 0;
-    double kI = 0.002, I = 0;
-    double kD =0.3, D = 0;
+    double kI = 0.006, I = 0;
+    double kD =.4, D = 0;
 
     int iCap =102;
     int iThresh = 25;
@@ -49,7 +49,7 @@ void Drivetrain::turnTo(double angle, int speed)
     int maxError = 100;
 
     double initialError = angle - init;
-
+    bool first = true;
     while(true)//abs(error) > 0 || abs(lError) > 0 || abs(motorPower) >= 3)
     {
         fstream file1(string("angle-54")  + string(".csv"), fstream::app);
@@ -65,7 +65,12 @@ void Drivetrain::turnTo(double angle, int speed)
         if (abs(I) > iCap)
             I = sgn(I) * iCap;
         if(error / initialError <= .75)
+        {
           motorPower = P + I + D;
+          if(first)
+            brake();
+          first = false;
+        }
         else
           motorPower = speed * sgn(error);
 
@@ -84,6 +89,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
         task::sleep(50);
     }
+  //brake();
     setDrive(0);
 }
 

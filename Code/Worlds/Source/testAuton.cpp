@@ -67,6 +67,7 @@ int main()
     Scraper.resetRotation();
     int cataTorque = 0;
     task c(angleMonitor, 1);
+  //  task d(wheelVelocity, 1);
     /*task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
@@ -83,8 +84,8 @@ task::sleep(100);
      //turnRight(90);
   //  firstFrontAuton(drive);
     // turnRight(90);
-    drive.turnTo(90, 100);
   //  scrapFunction(drive);
+    turnRight(90);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)

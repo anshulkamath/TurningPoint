@@ -2,6 +2,7 @@
 
 #include "Drivetrain.cpp"
 #include "task.cpp"
+#include "vars.cpp"
 void setBrakeMode(vex::brakeType brake)
 {
     FrontLeft.setStopping(brake);
@@ -12,21 +13,26 @@ void setBrakeMode(vex::brakeType brake)
 
 void turnRight(double degrees)
 {
+  drive.slipAdjust(true, false);
     setBrakeMode(vex::brakeType::hold);
     double trueDegs = degrees - getAngle();
-    double rots = ((trueDegs - 10)/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
+    double rots = ((trueDegs - 30)/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
     rots /= 2.33333333;
-    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, true);
+    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
+    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
+    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, false);
+    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 100, vex::velocityUnits::pct, true);
     double error = 100, lError = 100;
-    double smallPowerConst = 2, smallPower;
+    double smallPowerConst = 40, smallPower;
+    double kp = .65;
+    drive.brake();
     while(true)
     {
       smallPower = smallPowerConst;
       error = degrees - getAngle();
-      if(abs(error) <= .75 && abs(lError) <= .75) break;
+      smallPower  = fabs(error * kp);
+     if(fabs(error) <= .75 && fabs(lError) <= .75) break;
+      if(smallPower < 4) smallPower = 2;
       if(error < 0) smallPower *= -1;
 
       FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
@@ -36,10 +42,10 @@ void turnRight(double degrees)
       lError = error;
       task::sleep(20);
     }
-    FrontLeft.stop(brake);
-    FrontRight.stop(brake);
-    BackLeft.stop(brake);
-    BackRight.stop(brake);
+    FrontLeft.stop(hold);
+    FrontRight.stop(hold);
+    BackLeft.stop(hold);
+    BackRight.stop(hold);
 }
 
 void turnLeft(double degrees)
@@ -54,7 +60,7 @@ void turnLeft(double degrees)
     BackRight.rotateFor(rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, true);
     double error = 100, lError = 100;
     double smallPowerConst = 2, smallPower;
-    
+
     while(true)
     {
       smallPower = smallPowerConst;
