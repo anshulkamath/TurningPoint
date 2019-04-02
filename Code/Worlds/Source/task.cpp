@@ -115,38 +115,16 @@ int driveTask()
 
         // Tank Drive Controls
         if (abs(Controller.Axis3.value()) > 10)
-        {
-          /*if(abs(Controller.Axis3.value()) < 20) leftSide = tenTwenty * sgn(Controller.Axis3.value());
-          else if(abs(Controller.Axis3.value()) < 50) leftSide = twenty50 * sgn(Controller.Axis3.value());
-          else*/
-          {
             leftSide = Controller.Axis3.value();
-          }
-            //if(leftSide - prevLeft > accelCap) leftSide = prevLeft + accelCap;
-
-            //if(leftSide - prevLeft < -accelCap) leftSide = prevLeft - accelCap;
-        }
         if (abs(Controller.Axis2.value()) > 10)
-        {
-          /*if(abs(Controller.Axis2.value()) < 20) rightSide = tenTwenty * sgn(Controller.Axis3.value());
-          else if(abs(Controller.Axis2.value()) < 50) rightSide = twenty50 * sgn(Controller.Axis2.value());
-          else*/ {
             rightSide = Controller.Axis2.value();
-          }
-          //if(rightSide - prevLeft > accelCap) rightSide = prevRight + accelCap;
-
-          //if(rightSide - prevLeft < -accelCap) rightSide = prevRight - accelCap;
-
-        //    rightSide = 100 * pow(abs((double)Controller.Axis2.value())/100.0, 9/7) * sgn(Controller.Axis2.value());
-        }
         /*
         // Acceleration control
         if (leftSide != 0 && abs(dLeft) > accelCap)
           leftSide = prevLeft + sgn(dLeft) * accelCap;
         else if (rightSide != 0 && abs(dRight) > accelCap)
           rightSide = prevRight + sgn(dRight) * accelCap;
-          */
-
+          */      
 
         FrontLeft.spin(directionType::fwd, (int)leftSide, velocityUnits::pct);
         BackLeft.spin(directionType::fwd, (int)leftSide, velocityUnits::pct);

@@ -72,24 +72,7 @@ int main()
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
-    /*drive.slipAdjust(true, true);
-    drive.drivePID(12, 40, 20, 20, 1500, 0);
-    task::sleep(100);
-    drive.drivePID(36, 80, 20, 20, 1500, 0);
-task::sleep(100);
-    drive.slipAdjust(false, false);
-    drive.drivePID(-48, 100, 20, 20, 1500, 0);*/
-    //drive.slipAdjust(true, false);
-     //turnRight(90);
-     //turnRight(90);
-  //  firstFrontAuton(drive);
-     turnRight(90);
-  //  scrapFunction(drive);
-  //drive.slipAdjust(true, true, 0, 100);
-  //task::sleep(100);
-  //runIntake(1);
-  //drive.drivePID(10, 40, 40, 40, 1500, 0);
-//  drive.slipAdjust(true, true, 0, 100);
+    firstFrontAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)

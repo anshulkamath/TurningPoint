@@ -56,11 +56,6 @@ int sideSelect()
 
 int main()
 {
-    int gyroScale = 140 * 90.0/87.7;
-    int invertGyroScale = 137;
-    gyroscope.startCalibration(gyroScale);//133);
-    invertedGyro.startCalibration(invertGyroScale);//136);
-    task::sleep(6000);
     task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);

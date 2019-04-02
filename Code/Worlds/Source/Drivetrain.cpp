@@ -21,11 +21,31 @@ void Drivetrain::turnToSlow(double angle)
 
 void Drivetrain::turnTo(double angle, int speed)
 {
-    double kP =.385, P = 0;
-    double kI = 0.006, I = 0;
-    double kD =.4, D = 0;
+    // for 90
+    double P = 0, I = 0, D = 0;
+    double kP, kI, kD;
+    int PDCap = 5;
+    if (fabs(angle - getAngle()) <= 45)
+    {
+      kP = .4;
+      kI = 0.0005;
+      kD = .37;
+      int PDCap = 10;
+    }
+    else if (fabs(angle - getAngle()) <= 90)
+    {
+      kP = .41;
+      kI = 0.01;
+      kD = .3;
+    }
+    else
+    {
+      kP = .5;
+      kI = 0.005;
+      kD = .5;
+    }
 
-    int iCap =102;
+    int iCap = 102;
     int iThresh = 25;
 
     double error = 100, lError = 0;
@@ -35,15 +55,12 @@ void Drivetrain::turnTo(double angle, int speed)
 
     // File stuff
     {
-        fstream file1(string("angle-54")  + string(".csv"), fstream::app);
-        char * buff = "Hello";
-        //    Brain.SDcard.appendFile("filename.txt",buff,100);
+        fstream file1(string("angle")  + string(".csv"), fstream::app);
         file1<<",Target,Current,Error,P,D,I,Power"<<endl;
         file1.close();
     }
 
     int t = 0;
-    double stblConst = 0;
     double init = getAngle();
     double velly = 0;
     int maxError = 100;
@@ -52,7 +69,7 @@ void Drivetrain::turnTo(double angle, int speed)
     bool first = true;
     while(true)//abs(error) > 0 || abs(lError) > 0 || abs(motorPower) >= 3)
     {
-        fstream file1(string("angle-54")  + string(".csv"), fstream::app);
+        fstream file1(string("angle")  + string(".csv"), fstream::app);
         t++;
         lError = error;
         error = angle - getAngle();
@@ -62,21 +79,22 @@ void Drivetrain::turnTo(double angle, int speed)
             I += error * kI;
         D = kD * (error - lError);
 
-        if (abs(I) > iCap)
-            I = sgn(I) * iCap;
-        if(error / initialError <= .75)
-        {
-          motorPower = P + I + D;
-          if(first)
-            brake();
-          first = false;
-        }
-        else
-          motorPower = speed * sgn(error);
+        motorPower = P + I + D;
+
+        // if (fabs(error) < PDCap)
+        // {
+        //   if (first)
+        //   {
+        //     brake(10);
+        //     first = false;
+        //   }
+        //   else motorPower = I;
+        // }
 
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
+
         setDrive(-motorPower, motorPower);
 
         lError = error;
@@ -85,11 +103,11 @@ void Drivetrain::turnTo(double angle, int speed)
 
          file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<endl;
         file1.close();
-        if(abs(error) <= 0.00 && abs(lError) <= .00 && abs(motorPower) < 3) break; // Break statement
+        if(abs(error) <= 1 && abs(lError) <= 1 && fabs(motorPower) <= 1) break; // Break statement
 
         task::sleep(50);
     }
-  //brake();
+    brake(40);
     setDrive(0);
 }
 
