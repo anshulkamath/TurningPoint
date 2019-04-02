@@ -53,9 +53,6 @@ int sideSelect()
   return 0;
 }
 
-
-
-
 int main()
 {
     int gyroScale = 140;

@@ -27,22 +27,28 @@ void Drivetrain::turnTo(double angle, int speed)
     int PDCap = 5;
     if (fabs(angle - getAngle()) <= 45)
     {
-      kP = .4;
-      kI = 0.0005;
-      kD = .37;
-      int PDCap = 10;
+      kP = .335;
+      kI = 0.004;
+      kD = .3;
+      PDCap = 10;
     }
     else if (fabs(angle - getAngle()) <= 90)
     {
-      kP = .41;
+      kP = .45;
       kI = 0.01;
-      kD = .3;
+      kD = .42;
+    }
+    else if (angle  <= 135)
+    {
+      kP = .57;
+      kI = 0.015;
+      kD = .55;
     }
     else
     {
-      kP = .5;
-      kI = 0.005;
-      kD = .5;
+      kP = .55;
+      kI = 0.01;
+      kD = 1;
     }
 
     int iCap = 102;
@@ -107,7 +113,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
         task::sleep(50);
     }
-    brake(40);
+    brake(speed);
     setDrive(0);
 }
 

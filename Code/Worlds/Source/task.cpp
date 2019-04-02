@@ -80,15 +80,58 @@ int cataTask()
     return 0;
 }
 
+int FRCount = 0, BRCount = 0, FLCount = 0, BLCount = 0;
+void setAutoBrake()
+{
+  const int timeCheck = 50;
+
+  if (FrontRight.velocity(velocityUnits::rpm))
+    FRCount++;
+  else
+    FRCount = 0;
+
+  if (BackRight.velocity(velocityUnits::rpm))
+    BRCount++;
+  else
+    BRCount = 0;
+
+  if (FrontLeft.velocity(velocityUnits::rpm))
+    FLCount++;
+  else
+    FLCount = 0;
+
+  if (BackLeft.velocity(velocityUnits::rpm))
+    BLCount++;
+  else
+    BLCount = 0;
+
+  if (FRCount > timeCheck)
+    FrontRight.setStopping(brakeType::hold);
+  else
+    FrontRight.setStopping(brakeType::coast);
+
+  if (BRCount > timeCheck)
+    BackRight.setStopping(brakeType::hold);
+  else
+    BackRight.setStopping(brakeType::coast);
+
+  if (FLCount > timeCheck)
+    FrontLeft.setStopping(brakeType::hold);
+  else
+    FrontLeft.setStopping(brakeType::coast);
+
+  if (BLCount > timeCheck)
+    BackLeft.setStopping(brakeType::hold);
+  else
+    BackLeft.setStopping(brakeType::coast);
+}
+
 int leftSide = 0, rightSide = 0;
 int driveTask()
 {
     const int accelCap = 30;
-    int splitLeft = 0, splitRight = 0;
-    int prevLeft = 0, prevRight = 0; // To maintain acceleration
-    int dLeft = 0, dRight = 0;
-    const int tenTwenty = 10;
-    const int twenty50 = 35;
+    int prevLeft = 0, prevRight = 0;
+
     while(true)
     {
         leftSide = 0;
@@ -118,13 +161,16 @@ int driveTask()
             leftSide = Controller.Axis3.value();
         if (abs(Controller.Axis2.value()) > 10)
             rightSide = Controller.Axis2.value();
+
+        //setAutoBrake();
+
         /*
         // Acceleration control
         if (leftSide != 0 && abs(dLeft) > accelCap)
           leftSide = prevLeft + sgn(dLeft) * accelCap;
         else if (rightSide != 0 && abs(dRight) > accelCap)
           rightSide = prevRight + sgn(dRight) * accelCap;
-          */      
+          */
 
         FrontLeft.spin(directionType::fwd, (int)leftSide, velocityUnits::pct);
         BackLeft.spin(directionType::fwd, (int)leftSide, velocityUnits::pct);
