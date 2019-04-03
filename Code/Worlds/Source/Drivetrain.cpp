@@ -19,7 +19,7 @@ void Drivetrain::turnToSlow(double angle)
     setDrive(0);
 }
 
-void Drivetrain::turnTo(double angle, int speed)
+void Drivetrain::turnTo(double angle, int speed, int timeComplete)
 {
     // for 90
     double P = 0, I = 0, D = 0;
@@ -73,6 +73,7 @@ void Drivetrain::turnTo(double angle, int speed)
 
     double initialError = angle - init;
     bool first = true;
+    Brain.resetTimer();
     while(true)//abs(error) > 0 || abs(lError) > 0 || abs(motorPower) >= 3)
     {
         fstream file1(string("angle")  + string(".csv"), fstream::app);
@@ -111,6 +112,8 @@ void Drivetrain::turnTo(double angle, int speed)
         file1.close();
         if(abs(error) <= 1 && abs(lError) <= 1 && fabs(motorPower) <= 1) break; // Break statement
 
+
+        if(Brain.timer(timeUnits::msec) > timeComplete) break;
         task::sleep(50);
     }
     brake(speed);
@@ -141,7 +144,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
 
     int t = 0;
-    double stblConst = 4;//2.0/360.0 * 1.66;
+    double stblConst = 4.8;//2.0/360.0 * 1.66;
     double percentDone = 0;
 
     double init = getAngle();

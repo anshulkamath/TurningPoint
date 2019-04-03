@@ -19,13 +19,15 @@ int cataUp = 2525;
 int cataDown = 1350;
 bool cataReady = false;
 bool fire = false;
+bool autonFire = false;
+double autonFireRotation = 0;
 double angle = 0;
 double getAngle()
 {
   return angle;
 }
 double scraperReady = -400;
-double scraperHeight = -840;
+double scraperHeight = -740;
 int FRVel = 0;
 int FLVel = 0;
 int BRVel = 0;

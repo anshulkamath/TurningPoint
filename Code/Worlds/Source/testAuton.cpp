@@ -65,11 +65,15 @@ int main()
     int cataTorque = 0;
     task c(angleMonitor, 1);
   //  task d(wheelVelocity, 1);
-    /*task taskCatapult(cataTask, 1);
+    task taskCatapult(cataTask, 1);
+    /*
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
-    firstFrontAuton(drive);
+    //task drive = task(drivey, 1);
+    //firstFrontAuton(drive);
+    frontDefense(drive);
+    //Controller.rumble("-.-.-");
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)

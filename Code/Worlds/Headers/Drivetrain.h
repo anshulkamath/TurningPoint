@@ -94,5 +94,5 @@ class Drivetrain
     void drive(double inches, int speed);
     void turnToRight(double deg, int speed);
     void turnToLeft(double deg, int speed);
-    void turnTo(double deg, int speed);
+    void turnTo(double deg, int speed, int timeComplete = 1500);
 };

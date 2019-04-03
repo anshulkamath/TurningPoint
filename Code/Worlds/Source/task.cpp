@@ -52,16 +52,17 @@ int cataTask()
 {
     CataL.setStopping(brakeType::hold);
     CataR.setStopping(brakeType::hold);
-
+    Controller.rumble("...");
     resetCata();
 
     while(true)
     {
-        if (Controller.ButtonX.pressing() || fire)
+        if (Controller.ButtonX.pressing() || fire || (autonFire && autonFireRotation <= FrontRight.rotation(rotationUnits::rev)))
         {
             fire = false;
             CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
             CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
+            autonFire = false;
 
             resetCata();
         }
