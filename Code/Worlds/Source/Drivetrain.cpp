@@ -38,17 +38,18 @@ void Drivetrain::turnTo(double angle, int speed, int timeComplete)
       kI = 0.01;
       kD = .42;
     }
-    else if (angle  <= 135)
+    else if (fabs(angle - getAngle())  <= 135)
     {
-      kP = .57;
-      kI = 0.015;
-      kD = .55;
+      kP = .5;
+      kI = 0.011;
+      kD = 1.1;
     }
     else
     {
-      kP = .55;
-      kI = 0.01;
-      kD = 1;
+      kP = .46;
+      kI = 0.041;
+      kD = 1.1;
+      Controller.rumble("-.-.-");
     }
 
     int iCap = 102;
@@ -110,7 +111,7 @@ void Drivetrain::turnTo(double angle, int speed, int timeComplete)
 
          file1<<t<<","<<angle<<","<<getAngle()<<","<<error<<","<<(P)<<","<<(D)<<","<<(I)<<","<<motorPower<<","<<FrontRight.rotation(rotationUnits::deg)<<","<<FrontRight.torque(torqueUnits::Nm)<<","<<endl;
         file1.close();
-        if(abs(error) <= 1 && abs(lError) <= 1 && fabs(motorPower) <= 1) break; // Break statement
+        if(abs(error) <= 1 && abs(lError) <= 1 && fabs(motorPower) <= 2) break; // Break statement
 
 
         if(Brain.timer(timeUnits::msec) > timeComplete) break;
@@ -173,13 +174,13 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         motorPower = abs(motorPower);
         if(motorPower > speed) motorPower = speed;
 
-        if(speed > 40)
-        {
-
-          if(motorPower + accelCap > prevMotorPower) motorPower = prevMotorPower + accelCap;
-
-          if(prevMotorPower - decelCap > motorPower) motorPower = prevMotorPower - decelCap;
-        }
+        // if(speed > 40)
+        // {
+        //
+        //   if(motorPower + accelCap > prevMotorPower) motorPower = prevMotorPower + accelCap;
+        // 
+        //   if(prevMotorPower - decelCap > motorPower) motorPower = prevMotorPower - decelCap;
+        // }
 
         if(motorPower > speed) motorPower = speed;
 

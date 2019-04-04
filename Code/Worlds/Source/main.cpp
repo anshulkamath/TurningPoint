@@ -56,18 +56,20 @@ int sideSelect()
 
 int main()
 {
-    task taskCatapult(cataTask, 1);
+    //task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);
     task taskScraper(scraperTask, 1);
     task taskGyro(angleMonitor, 1);
-
+    int minPotenVal = 2000;
     while (true)
     {
+      if (CataPot.value(analogUnits::range12bit) < minPotenVal)
+        minPotenVal = CataPot.value(analogUnits::range12bit);
         Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
         Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
-        Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
-        Brain.Screen.printAt(30, 120, "%.2f           ", FrontRight.velocity(velocityUnits::pct));
+        Brain.Screen.printAt(30, 90, "%.2f           ", Scraper.rotation(rotationUnits::deg));
+        //Brain.Screen.printAt(30, 120, "Pot: %d           ", minPotenVal);
         task::sleep(100);
     }
 }

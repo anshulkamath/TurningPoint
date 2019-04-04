@@ -65,14 +65,15 @@ int main()
     int cataTorque = 0;
     task c(angleMonitor, 1);
   //  task d(wheelVelocity, 1);
-    task taskCatapult(cataTask, 1);
+    //task taskCatapult(cataTask, 1);
     /*
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
     //task drive = task(drivey, 1);
     //firstFrontAuton(drive);
-    frontDefense(drive);
+  //  drive.turnTo(180, 40, 4000);
+    backDefense(drive);
     //Controller.rumble("-.-.-");
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
@@ -81,7 +82,7 @@ int main()
        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
-       Brain.Screen.printAt(30, 120, "%d           ", time);
+       Brain.Screen.printAt(30, 120, "%.2f           ", Scraper.rotation(rotationUnits::deg));
        task::sleep(69);
     }
 }
