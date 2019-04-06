@@ -40,13 +40,13 @@ void Drivetrain::turnTo(double angle, int speed, int timeComplete)
     }
     else if (fabs(angle - getAngle())  <= 135)
     {
-      kP = .5;
+      kP = .55;
       kI = 0.011;
       kD = 1.1;
     }
     else
     {
-      kP = .46;
+      kP = .45;
       kI = 0.041;
       kD = 1.1;
       Controller.rumble("-.-.-");
@@ -178,7 +178,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         // {
         //
         //   if(motorPower + accelCap > prevMotorPower) motorPower = prevMotorPower + accelCap;
-        // 
+        //
         //   if(prevMotorPower - decelCap > motorPower) motorPower = prevMotorPower - decelCap;
         // }
 
