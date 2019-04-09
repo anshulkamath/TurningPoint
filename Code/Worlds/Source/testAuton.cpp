@@ -71,7 +71,7 @@ int main()
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
     //task drive = task(drivey, 1);
-    firstFrontAuton(drive);
+    frontDefense(drive);
     //drive.turnTo(180, 70, 4000);
     //backDefense(drive);
     //Controller.rumble("-.-.-");

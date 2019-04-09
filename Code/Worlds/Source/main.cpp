@@ -56,7 +56,7 @@ int sideSelect()
 
 int main()
 {
-    //task taskCatapult(cataTask, 1);
+    task taskCatapult(cataTask, 1);
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);
     task taskScraper(scraperTask, 1);

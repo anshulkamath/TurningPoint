@@ -6,7 +6,7 @@
 int intakeTask()
 {
   CataL.setStopping(brakeType::hold);
-  CataR.setStopping(brakeType::hold);  
+  CataR.setStopping(brakeType::hold);
     Intake.setStopping(brakeType::coast);
     int intakePower = 0;
     while(true)
@@ -18,13 +18,7 @@ int intakeTask()
         else
             intakePower = 0;
         double cataPower = 0;
-        if(Controller.ButtonX.pressing())
-        {
-            cataPower = 100;
-        }
-        CataL.spin(directionType::fwd, cataPower, velocityUnits::pct);
-        CataR.spin(directionType::fwd, cataPower, velocityUnits::pct);
-        Intake.spin(directionType::fwd, intakePower, velocityUnits::pct);
+              Intake.spin(directionType::fwd, intakePower, velocityUnits::pct);
         task::sleep(50);
     }
 }
