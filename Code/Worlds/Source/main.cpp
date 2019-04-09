@@ -68,7 +68,7 @@ int main()
         minPotenVal = CataPot.value(analogUnits::range12bit);
         Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
         Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
-        Brain.Screen.printAt(30, 90, "%.2f           ", Scraper.rotation(rotationUnits::deg));
+        Brain.Screen.printAt(30, 90, "%d           ", CataPot.value(analogUnits::range12bit));
         //Brain.Screen.printAt(30, 120, "Pot: %d           ", minPotenVal);
         task::sleep(100);
     }

@@ -70,11 +70,7 @@ int main()
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
-    //task drive = task(drivey, 1);
-    frontDefense(drive);
-    //drive.turnTo(180, 70, 4000);
-    //backDefense(drive);
-    //Controller.rumble("-.-.-");
+    firstFrontAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)

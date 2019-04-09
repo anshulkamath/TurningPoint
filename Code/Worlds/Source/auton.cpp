@@ -123,7 +123,7 @@ void scrapeFunction(Drivetrain drive)
 
   task::sleep(50);
   Scraper.rotateTo(0,  rotationUnits::deg, 100, velocityUnits::pct);
-  drive.turnTo(135, 35, 4300);
+  drive.turnTo(135, 35, 2000);
   drive.slipAdjust(true, true);
   FrontRight.resetRotation();
 
@@ -141,18 +141,18 @@ void firstFrontAuton(Drivetrain drive)
 {
   task cata(cataTask, 1);
     runIntake(1);
-    drive.drivePID(-35, 100, 101, 101, 1500, 0);
+    drive.drivePID(-35, 70, 101, 101, 1500, 0);
     // drive.slipAdjust(true, true);
-    drive.drivePID(35.5, 100, 101, 101, 1500, 0);
+    drive.drivePID(35.5, 70, 101, 101, 1500, 0);
     runIntake(0);
     drive.slipAdjust(false, true, 30, 30);
-    drive.turnTo(90, 30, 1500);
+    drive.turnTo(92, 35, 1500);
     //drive.turnTo(90, 100);
     task::sleep(100);
-    drive.slipAdjust(true, true, 25, 100);
+    drive.slipAdjust(true, true, 25, 90);
     task::sleep(100);
     runIntake(1);
-    drive.straightDrive(10, 30, 90);
+    drive.straightDrive(10, 30, 92);
     runIntake(0);
     fire = true;
     task::sleep(20);
@@ -164,6 +164,7 @@ void firstFrontAuton(Drivetrain drive)
     drive.turnTo(-38, 25, 2300);
     drive.straightDrive(-10.25, 40, -38);
     scrapeFunction(drive);
+    runIntake(0);
     return;
 }
 
@@ -296,6 +297,21 @@ void frontDefense(Drivetrain drive)
   Scraper.rotateTo(-100, rotationUnits::deg, 1000, velocityUnits::pct, true);
   drive.turnTo(90, 30, 1500);
 }
+
+void defenseFunc()
+{
+  runIntake(1);
+  //FrontRight.resetRotation();
+  //task driv(drivey, 1);
+  Scraper.rotateTo(-830, rotationUnits::deg, 1000, velocityUnits::pct, false);
+  task::sleep(100);
+  drive.drivePID(-51, 100, 101, 101, 1600, 0);
+  drive.setDrive(0, 0);
+  task::sleep(1000);
+  Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
+  runIntake(0);
+}
+
 void firstBackAuton(Drivetrain drive)
 {
   task cata(cataTask, 1);
@@ -324,4 +340,15 @@ void testTurn()
   drive.turnTo(90, 32);
   drive.turnTo(-45, 40);
   drive.turnTo(0, 30);
+}
+void thirdFrontAuton(Drivetrain drive)
+{
+  task cata(cataTask, 1);
+  defenseFunc();
+  drive.straightDrive(6, 40, 0);
+  drive.turnTo(97, 40);
+  drive.straightDrive(18, 40, 97);
+  fire = true;
+  drive.straightDrive(6, 30, 90);
+  drive.turnTo(180, 40);
 }
