@@ -70,7 +70,7 @@ int main()
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
     Brain.resetTimer();
-    firstFrontAuton(drive);
+    firstFrontAutonBlue(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)
