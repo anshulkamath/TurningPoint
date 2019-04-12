@@ -49,7 +49,6 @@ void Drivetrain::turnTo(double angle, int speed, int timeComplete)
       kP = .45;
       kI = 0.041;
       kD = 1.1;
-      Controller.rumble("-.-.-");
     }
 
     int iCap = 102;
@@ -103,7 +102,10 @@ void Drivetrain::turnTo(double angle, int speed, int timeComplete)
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
 
-        setDrive(-motorPower, motorPower);
+        if (side != "RED")
+          setDrive(motorPower, -motorPower);
+        else
+          setDrive(-motorPower, motorPower);
 
         lError = error;
 
@@ -134,7 +136,6 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
     distance /= 2.33333333;
     {
         fstream file1(string("drivePID")  + string(".csv"), fstream::app);
-        char * buff = "Hello";
         //    Brain.SDcard.appendFile("filename.txt",buff,100);
         file1<<",Target,Current,Error,P,D,I, GyroAdjust, Power"<<endl;
         file1.close();
@@ -195,25 +196,6 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
         task::sleep(25);
         file1.close();
     }
-    double smallPowerConst = 6, smallPower;
-    /*
-    while(true)
-    {
-      smallPower = smallPowerConst;
-      error = init -   getAngle();
-      if(abs(error) <= .75 && abs(lError) <= .75) break;
-      if(error < 0) smallPower *= -1;
-
-      Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
-      Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
-      Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
-      FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
-      FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
-      BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
-          BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
-      lError = error;
-      task::sleep(20);
-    }*/
     fRight.stop(brakeType::hold);
     fLeft.stop(brakeType::hold);
     bRight.stop(brakeType::hold);
@@ -261,19 +243,20 @@ void Drivetrain::straightDrive(double distance, double speed, double init)
   bLeft.rotateFor(distance, rotationUnits::deg, speed, velocityUnits::pct, false);
   bRight.rotateFor(distance, rotationUnits::deg, speed, velocityUnits::pct, true);
   double error = 100, lError = 0;
-  double motorPower = 0, prevMotorPower = 0;
-  double smallPowerConst = 6, smallPower;
+  double motorPower = 0;
+  double smallPowerConst = 6;
   while(true)
   {
-    smallPower = smallPowerConst;
-    error = init -   angle;
+    motorPower = smallPowerConst;
+    error = init - getAngle();
     if(abs(error) <= .75 && abs(lError) <= .75) break;
-    if(error < 0) smallPower *= -1;
+    if(error < 0) motorPower *= -1;
 
-    FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
-    FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
-    BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
-        BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+    if (side != "RED")
+      setDrive(motorPower, -motorPower);
+    else
+      setDrive(-motorPower, motorPower);
+
     lError = error;
     task::sleep(20);
   }

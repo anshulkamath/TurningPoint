@@ -118,12 +118,12 @@ void scrapeFunction(Drivetrain drive)
   Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100, velocityUnits::pct);
   runIntake(1);
   drive.slipAdjust(true, true);
-  drive.straightDrive(4.5, 40, -39);
+  drive.straightDrive(4, 20, -39);
   //Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100, velocityUnits::pct);
 
   task::sleep(50);
   Scraper.rotateTo(0,  rotationUnits::deg, 100, velocityUnits::pct);
-  drive.turnTo(135, 35, 2000);
+  drive.turnTo(138, 100, 1600);
   drive.slipAdjust(true, true);
   FrontRight.resetRotation();
 
@@ -146,7 +146,7 @@ void firstFrontAuton(Drivetrain drive)
     drive.drivePID(35.5, 70, 101, 101, 1500, 0);
     runIntake(0);
     drive.slipAdjust(false, true, 30, 30);
-    drive.turnTo(92, 25, 1500);
+    drive.turnTo(92, 32, 1500);
     //drive.turnTo(90, 100);
     task::sleep(100);
     drive.slipAdjust(true, true, 25, 90);
@@ -162,7 +162,7 @@ void firstFrontAuton(Drivetrain drive)
     task::sleep(50);
     drive.slipAdjust(true, false, 40, 40);
     drive.turnTo(-42, 25, 2300);
-    drive.straightDrive(-10.25, 40, -42);
+    drive.straightDrive(-11, 40, -42);
     scrapeFunction(drive);
     runIntake(0);
     return;
@@ -251,44 +251,30 @@ void secondFrontAuton(Drivetrain drive)
   //   //  drive.turnTo(90, 25, 1800);
   //   return;
   task cata(cataTask, 1);
-    runIntake(1);
-    drive.drivePID(-35, 70, 101, 101, 1500, 0);
-    // drive.slipAdjust(true, true);
-    drive.drivePID(36.5, 70, 101, 101, 1500, 0);
-    runIntake(0);
-    //drive.slipAdjust(false, true, 30, 30);
-    drive.turnTo(93, 25, 1200);
-    //drive.turnTo(90, 100);
-    task::sleep(100);
-    drive.slipAdjust(true, true, 25, 90);
-    //task::sleep(100);
-    runIntake(1);
-    drive.straightDrive(10, 30, 92);
-    runIntake(0);
-    fire = true;
-//task::sleep(30);
-    drive.turnTo(88, 25, 450);
-    drive.drivePID(42, 100, 100, 100, 2000, 90);
-    drive.drivePID(-12, 100, 100, 100, 1500, 90);
-        Scraper.rotateTo(-1000,  rotationUnits::deg, 100, velocityUnits::pct, false);
-    drive.turnTo(37, 30, 1500);
-    //drive.slipAdjust(true, true);
-  //  while(Scraper.rotation(rotationUnits::deg) > -740);
-//  while(Scraper.isSpinning());
-      drive.slipAdjust(false, false);
-    FrontRight.resetRotation();
-    //task scrap(taskScraper1, 1);
-    //drive.straightDrive(-10, 40, getAngle());
-    Scraper.rotateTo(0,  rotationUnits::deg, 50, velocityUnits::pct, false);
-    drive.drivePID(-90, 100, 100, 100, 1000, getAngle());
-  //  drive.turnTo(-90, 20, 1500);
-  //drive.turnTo(-140, 80, 1500);
-    drive.turnTo(-90, 40, 1200);
+  runIntake(1);
+  drive.drivePID(-35, 70, 101, 101, 1500, 0);
+  drive.drivePID(side == "RED" ? 36.5 : 40, 70, 101, 101, 1500, 0);
+  runIntake(0);
+  drive.turnTo(93, 25, 1200);
+  task::sleep(100);
+  drive.slipAdjust(true, true, 25, 90);
+  runIntake(1);
+  drive.straightDrive(10, 30, 92);
+  runIntake(0);
+  fire = true;
+  drive.turnTo(88, 25, 1000);
+  drive.drivePID(43, 100, 100, 100, 1500, 90);
+  Scraper.rotateTo(-850,  rotationUnits::deg, 80, velocityUnits::pct, false);
+  drive.drivePID(-12, 100, 100, 100, 1500, 90);
+  drive.turnTo(37, 30, 1500);
+  drive.slipAdjust(false, false);
+  FrontRight.resetRotation();
+  Scraper.rotateTo(0,  rotationUnits::deg, 40, velocityUnits::pct, false);
+  drive.drivePID(side == "RED" ? -90 : -93, 100, 100, 100, 1000, getAngle());
+  drive.turnTo(-90, 40, 1200);
 
-  //  drive.slipAdjust(true, true);
-
-    drive.drivePID(72, 100, 100, 100, 3000, -90);
-    return;
+  drive.drivePID(66, 100, 100, 100, 3000, -90);
+  return;
 }
 
 void secondBackAuton(Drivetrain drive)
@@ -297,11 +283,14 @@ void secondBackAuton(Drivetrain drive)
     runIntake(1);
     drive.drivePID(-35, 100, 100, 100, 1500, 0);
     drive.slipAdjust(true, true);
-    drive.straightDrive(8, 50, 0);
+    drive.drivePID(12, 50, 100, 100, 800, 0);
     drive.turnTo(102, 30, 3000);
     drive.slipAdjust(false, false);
-    drive.straightDrive(-15, 50, 102);
+    drive.drivePID(-27, 70, 100, 100, 1000, 102);
+    task::sleep(400);
     fire = true;
+    runIntake(0);
+    return;
     task::sleep(500);
     drive.straightDrive(-3, 50, 102);
     drive.turnTo(0, 30);
@@ -314,10 +303,31 @@ void secondBackAuton(Drivetrain drive)
     Scraper.rotateTo(0,  rotationUnits::deg, 100, velocityUnits::pct, true);
 
     drive.turnTo(110, 20);
-        drive.slipAdjust(true, true);
+    drive.slipAdjust(true, true);
     drive.drivePID(50, 100, 100, 100, 3000, 110);
+    return;
   //  drive.turnTo(90, 30, 500);
     //drive.drivePID(40, 100, 100, 100, 1500, 90);
+}
+
+void thirdBackAuton(Drivetrain drive)
+{
+  task cata(cataTask, 1);
+    runIntake(1);
+    drive.drivePID(-35, 100, 100, 100, 1500, 0);
+    drive.slipAdjust(true, true);
+    drive.turnTo(-45, 40, 2000);
+    Scraper.rotateTo(-730, rotationUnits::deg, 100, velocityUnits::pct, false);
+    drive.drivePID(18, 100, 100, 100, 1500, 0);
+    drive.turnTo(27, 25, 2000);
+    runIntake(0);
+    drive.drivePID(-34, 75, 100, 100, 1000, getAngle());
+    task::sleep(500);
+    Scraper.rotateTo(0, rotationUnits::rev, 100, velocityUnits::pct);
+    drive.drivePID(15, 100, 100, 100, 1000, getAngle());
+    drive.turnTo(90, 30, 3000);
+    drive.drivePID(60, 100, 100, 100, 2000, 90);
+    return;
 }
 
 int drivey() {
@@ -365,8 +375,6 @@ void frontDefense(Drivetrain drive)
 {
   task cata(cataTask, 1);
   runIntake(1);
-  //FrontRight.resetRotation();
-  //task driv(drivey, 1);
   Scraper.rotateTo(-720, rotationUnits::deg, 97, velocityUnits::pct, false);
   drive.drivePID(-50.5, 100, 101, 101, 1600, 0);
 
@@ -381,7 +389,7 @@ void frontDefense(Drivetrain drive)
 void firstBackAuton(Drivetrain drive)
 {
   task cata(cataTask, 1);
-  drive.drivePID(30, 80, 7, 7, 1500);
+  drive.drivePID(-30, 80, 7, 7, 1500);
   drive.turnToSlow(108);
   fire = true;
   task::sleep(400);
@@ -400,21 +408,10 @@ void firstBackAuton(Drivetrain drive)
   drive.drivePID(40, 100, 7, 7, 3000);
 }
 
-
-void testTurn()
-{
-  drive.turnTo(90, 32);
-  drive.turnTo(-45, 40);
-  drive.turnTo(0, 30);
-}
-
 void defenseFunc()
 {
   runIntake(1);
-  //FrontRight.resetRotation();
-  //task driv(drivey, 1);
   Scraper.rotateTo(-565, rotationUnits::deg, 1000, velocityUnits::pct, false);
-  //task::sleep(200);
   drive.drivePID(-52.5, 100, 101, 101, 1600, 0);
   drive.setDrive(0, 0);
   Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
@@ -432,4 +429,18 @@ void thirdFrontAuton(Drivetrain drive)
   fire = true;
   drive.straightDrive(6, 30, 90);
   drive.turnTo(180, 40);
+}
+
+void superMetaAuton(Drivetrain drive)
+{
+    task cata(cataTask, 1);
+    runIntake(1);
+    drive.drivePID(-45, 100, 101, 101, 2500, 0);
+    drive.turnTo(90, 40, 1500);
+    drive.drivePID(56, 100, 100, 100, 2000, 90);
+    drive.straightDrive(-12, 40, 90);
+    runIntake(0);
+    task::sleep(100);
+    drive.turnTo(135, 30, 2000);
+
 }

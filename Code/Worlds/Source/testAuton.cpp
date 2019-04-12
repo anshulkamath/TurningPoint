@@ -69,8 +69,9 @@ int main()
     /*
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
+    side = "RED";
     Brain.resetTimer();
-    defenseFunc();
+    superMetaAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)
@@ -78,7 +79,8 @@ int main()
        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
-       Brain.Screen.printAt(30, 120, "%.2f           ", Scraper.rotation(rotationUnits::deg));
+       Brain.Screen.printAt(30, 120, "%d            ", time);
+       Brain.Screen.printAt(30, 150,side.c_str());
        task::sleep(69);
     }
 }

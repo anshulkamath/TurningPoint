@@ -54,7 +54,6 @@ int cataTask()
 {
     CataL.setStopping(brakeType::hold);
     CataR.setStopping(brakeType::hold);
-    Controller.rumble("...");
     resetCata();
 
     while(true)

@@ -11,8 +11,9 @@ Drivetrain drive(FrontRight, FrontLeft, BackRight, BackLeft, gyroscope, inverted
 bool intakeUse = false;
 int turnLimiter = 1;
 
-string side = "";
+string side = "BLUE";
 int autonNum = 0;
+int turnVal = 0;
 bool pressed = false;
 
 int cataUp = 2525;
@@ -24,7 +25,7 @@ double autonFireRotation = 0;
 double angle = 0;
 double getAngle()
 {
-  return angle;
+  return side == "RED" ? angle : -angle;
 }
 double scraperReady = -400;
 double scraperHeight = -840;
