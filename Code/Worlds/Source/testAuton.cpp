@@ -71,7 +71,7 @@ int main()
     task taskDrive(driveTask, 1);*/
     side = "RED";
     Brain.resetTimer();
-    firstFrontAuton(drive);
+    superMetaAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)

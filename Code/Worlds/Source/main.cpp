@@ -72,7 +72,7 @@ void autonomous( void )
 {
    side = "RED";
     task c(angleMonitor, 1);
-    backDefense(drive);
+    superMetaAuton(drive);
   // drive.straightDrive(24, 100, 90);
   //drive.turnTo(90, 30, 1500);
   //backDefense(drive);
