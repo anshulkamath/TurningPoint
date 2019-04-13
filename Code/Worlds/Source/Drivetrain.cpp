@@ -1,5 +1,6 @@
 #pragma once;
 #include "../Headers/Drivetrain.h"
+#include "vars.cpp"
 #include <math.h>
 #include <fstream>
 #include <sstream>
@@ -101,7 +102,7 @@ void Drivetrain::turnTo(double angle, int speed, int timeComplete)
 
         if(abs(motorPower) > abs(speed))
             motorPower = speed * sgn(motorPower);
-
+        //motorPower *= -1;
         if (side != "RED")
           setDrive(motorPower, -motorPower);
         else
@@ -146,7 +147,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
 
     int t = 0;
-    double stblConst = 4.8;//2.0/360.0 * 1.66;
+    double kG = 1.2;//2.0/360.0 * 1.66;
     double percentDone = 0;
 
     double init = getAngle();
@@ -185,8 +186,9 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
         if(motorPower > speed) motorPower = speed;
 
-        double leftAdjustPwr = -stblConst * (getAngle() - init);
-        leftAdjustPwr *= percentDone;
+        double leftAdjustPwr = -kG * (getAngle() - init);
+        if (abs(leftAdjustPwr) > 10) leftAdjustPwr = 10 * sgn(leftAdjustPwr);
+        // leftAdjustPwr *= percentDone;
 
         setDrive(motorPower * signBase, motorPower * signBase + leftAdjustPwr);
         prevMotorPower = abs(motorPower);
@@ -249,21 +251,21 @@ void Drivetrain::straightDrive(double distance, double speed, double init)
   {
     motorPower = smallPowerConst;
     error = init - getAngle();
-    if(abs(error) <= .75 && abs(lError) <= .75) break;
+    if(abs(error) <= 1 && abs(lError) <= 1) break;
     if(error < 0) motorPower *= -1;
-
+  //  motorPower *= -1;
     if (side != "RED")
       setDrive(motorPower, -motorPower);
     else
       setDrive(-motorPower, motorPower);
-
+    Brain.Screen.printAt(30, 150, "%.2f    %.2f", getAngle(), error);
     lError = error;
     task::sleep(20);
   }
-  fRight.stop(brakeType::hold);
-  fLeft.stop(brakeType::hold);
-  bRight.stop(brakeType::hold);
-  bLeft.stop(brakeType::hold);
+  FrontRight.stop(brakeType::hold);
+  FrontLeft.stop(brakeType::hold);
+  BackRight.stop(brakeType::hold);
+  BackLeft.stop(brakeType::hold);
   task::sleep(20);
 }
 

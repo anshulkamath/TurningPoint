@@ -4,6 +4,7 @@
 
 vex::brain Brain;
 vex::controller Controller;
+vex::competition    Competition;
 
 vex::motor CataL = vex::motor(vex::PORT11,vex::gearSetting::ratio36_1,false);
 vex::motor CataR = vex::motor(vex::PORT12, vex::gearSetting::ratio36_1, true);

@@ -5,6 +5,7 @@
 #include "../Headers/Drivetrain.h"
 #include "Drivetrain.cpp"
 #include "task.cpp"
+#include "auton.cpp"
 
 using namespace vex;
 
@@ -49,27 +50,73 @@ int sideSelect()
     Brain.Screen.setPenColor(vex::color::red);
     Brain.Screen.setFillColor(vex::color::black);
     Brain.Screen.printAt(1,40, side.c_str());
-    Brain.Screen.printAt(1, 80, "%d", autonNum);
+    Brain.Screen.printAt(1, 80, "%.2f", getAngle());
     return 0;
 }
 
-
-int main()
+void pre_auton( void )
 {
-    task taskCatapult(cataTask, 1);
-    task taskIntake(intakeTask, 1);
-    task taskDrive(driveTask, 1);
-    task taskScraper(scraperTask, 1);
-    task taskGyro(angleMonitor, 1);
-    int minPotenVal = 2000;
-    while (true)
-    {
-      if (CataPot.value(analogUnits::range12bit) < minPotenVal)
-        minPotenVal = CataPot.value(analogUnits::range12bit);
-        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
-        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
-        Brain.Screen.printAt(30, 90, "%d           ", CataPot.value(analogUnits::range12bit));
-        //Brain.Screen.printAt(30, 120, "Pot: %d           ", minPotenVal);
-        task::sleep(100);
+  int gyroScale = 140;
+  int invertGyroScale = 140;
+  gyroscope.startCalibration(invertGyroScale);//133);
+  invertedGyro.startCalibration(invertGyroScale);//136);
+  Brain.Screen.printAt(0, 30, "GYRO CALIBRATING...");
+  task::sleep(6000);
+  Brain.Screen.clearScreen();
+  FrontRight.resetRotation();
+  Scraper.resetRotation();
+}
+
+int autoNum = 0;
+void autonomous( void )
+{
+   side = "RED";
+    task c(angleMonitor, 1);
+    backDefense(drive);
+  // drive.straightDrive(24, 100, 90);
+  //drive.turnTo(90, 30, 1500);
+  //backDefense(drive);
+}
+
+void usercontrol( void )
+{
+  //pre_auton();
+  FrontRight.stop(brakeType::coast);
+  FrontLeft.stop(brakeType::coast);
+  BackRight.stop(brakeType::coast);
+  BackLeft.stop(brakeType::coast);
+  task taskCatapult(cataTask, 1);
+  task taskIntake(intakeTask, 1);
+  task taskDrive(driveTask, 1);
+  task taskScraper(scraperTask, 1);
+  task taskGyro(angleMonitor, 1);
+  int minPotenVal = 2000;
+  //side == "RED";
+  while (true)
+  {
+    if (CataPot.value(analogUnits::range12bit) < minPotenVal)
+      minPotenVal = CataPot.value(analogUnits::range12bit);
+      Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
+      Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
+      Brain.Screen.printAt(1, 80, "%.2f", getAngle());
+      Brain.Screen.printAt(1, 100, side.c_str());
+      //Brain.Screen.printAt(30, 120, "Pot: %d           ", minPotenVal);
+      task::sleep(100);
+  }
+}
+
+int main() {
+
+    //Run the pre-autonomous function.
+    pre_auton();
+
+    //Set up callbacks for autonomous and driver control periods.
+    Competition.autonomous( autonomous );
+    Competition.drivercontrol( usercontrol );
+
+    //Prevent main from exiting with an infinite loop.
+    while(1) {
+      vex::task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.
     }
+
 }
