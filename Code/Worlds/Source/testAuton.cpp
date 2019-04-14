@@ -69,7 +69,7 @@ int main()
     /*
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
-    side = "RED";
+    side = "BLUE";
     Brain.resetTimer();
     superMetaAuton(drive);
     int time = Brain.timer(timeUnits::msec);

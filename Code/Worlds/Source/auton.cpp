@@ -471,35 +471,40 @@ void superMetaAuton(Drivetrain drive)
     runIntake(0);
     drive.straightDrive(-4.5, 20, 90);
     runIntake(0);
-    drive.setDrive(0, 40);
+    if (side == "RED") drive.setDrive(0, 40);
+    else drive.setDrive(40, 0);
     while(getAngle() < 110) {task::sleep(10);}
     drive.turnTo(135, 30, 1000);
     runIntake(1);
 
-    Scraper.rotateTo(-700, rotationUnits::deg, 55, velocityUnits::pct, false);
+    if (side == "RED") Scraper.rotateTo(-700, rotationUnits::deg, 55, velocityUnits::pct, false);
+    else Scraper.rotateTo(-700, rotationUnits::deg, 47, velocityUnits::pct, false);
+
     FrontRight.resetRotation();
 
     //autonFireRotation = .9 * 38 /(4*3.1415*2.333);
   //  autonFire = true;
     drive.drivePID(-24, 80, 100, 100, 1000, 135);
     fire = true;
-    drive.drivePID(-5, 40, 100, 100, 400, 135);
+    drive.straightDrive(-5, 40, 135);
     task::sleep(100);
     drive.straightDrive(8, 20, 135);
+    task::sleep(600);
     runIntake(1, 100);
     Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
   //  drive.straightDrive(24, 20, 135);
     runIntake(1, 100);
 
     drive.drivePID(-54.5, 80, 100, 100, 1000, 135);
-        task::sleep(150);
+    task::sleep(150);
     drive.turnTo(81, 30, 2000);
-
     fire = true;
     task::sleep(30);
-    drive.setDrive(100, 85);
-    task::sleep(30000);
+    if (side == "RED") drive.setDrive(100, 75);
+    else drive.setDrive(70, 100);
+    task::sleep(4000);
     drive.setDrive(0);
+    runIntake(0);
     //return;
 
 }

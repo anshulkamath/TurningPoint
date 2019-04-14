@@ -147,7 +147,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
 
     int t = 0;
-    double kG = 1.2;//2.0/360.0 * 1.66;
+    double kG = side == "RED" ? -1.2 : 1.2;//2.0/360.0 * 1.66;
     double percentDone = 0;
 
     double init = getAngle();
@@ -186,7 +186,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
         if(motorPower > speed) motorPower = speed;
 
-        double leftAdjustPwr = -kG * (getAngle() - init);
+        double leftAdjustPwr = kG * (getAngle() - init);
         if (abs(leftAdjustPwr) > 10) leftAdjustPwr = 10 * sgn(leftAdjustPwr);
         // leftAdjustPwr *= percentDone;
 
