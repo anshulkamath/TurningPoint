@@ -69,9 +69,15 @@ int main()
     /*
     task taskIntake(intakeTask, 1);
     task taskDrive(driveTask, 1);*/
-    side = "BLUE";
+    side = "RED";
     Brain.resetTimer();
-    superMetaAuton(drive);
+  //  runIntake(-1, 100);
+//    drive.drivePID(-38, 100, 100, 100, 1500, 0);
+  //drive.setDrive(100, 0);
+  //task::sleep(250);
+  //drive.setDrive(0);
+    //superMetaAuton(drive);
+    thirdBackAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)

@@ -69,7 +69,7 @@ int cataTask()
         }
 
         // If catapult is not in position, set cataPower based on position
-        if (abs(CataPot.value(analogUnits::range12bit) - cataDown) > 1)
+        if (abs(CataPot.value(analogUnits::range12bit) - cataDown) > 100)
             cataReady = false;
         else // If the catapult is in position, broadcast ready and stop
             cataReady = true;
