@@ -45,7 +45,7 @@ class Drivetrain
     double getRightReal();
     double getLeftReal();
 
-    void straightDrive(double distance, double speed, double init);
+    void straightDrive(double distance, double speed, double init, double speed2 = 6);
 
     void brake(double power = 400)
     {

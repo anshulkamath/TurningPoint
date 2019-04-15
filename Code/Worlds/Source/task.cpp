@@ -2,7 +2,7 @@
 #include "../Headers/Drivetrain.h"
 #include "../cleanConfig.h"
 #include "vars.cpp"
-
+bool cataReady1 = false;
 int intakeTask()
 {
   Intake.setStopping(brakeType::coast);
@@ -44,7 +44,10 @@ void resetCata()
 
     CataL.spin(directionType::fwd, cataPower, velocityUnits::pct);
     CataR.spin(directionType::fwd, cataPower, velocityUnits::pct);
-
+    if (abs(CataPot.value(analogUnits::range12bit) - cataDown) > 200)
+        cataReady1 = false;
+    else // If the catapult is in position, broadcast ready and stop
+        cataReady1 = true;
     lError = error;
     task::sleep(20);
   }

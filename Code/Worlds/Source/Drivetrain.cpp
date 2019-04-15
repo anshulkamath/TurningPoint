@@ -232,7 +232,7 @@ void Drivetrain::setDrive(int vel)
     bRight.spin(directionType::fwd, vel, velocityUnits::pct);
     bLeft.spin(directionType::fwd, vel, velocityUnits::pct);
 }
-void Drivetrain::straightDrive(double distance, double speed, double init)
+void Drivetrain::straightDrive(double distance, double speed, double init, double speed2)
 {
   distance /= (4.0*3.1415);
   distance /= 2.33333333;
@@ -246,7 +246,7 @@ void Drivetrain::straightDrive(double distance, double speed, double init)
   bRight.rotateFor(distance, rotationUnits::deg, speed, velocityUnits::pct, true);
   double error = 100, lError = 0;
   double motorPower = 0;
-  double smallPowerConst = 6;
+  double smallPowerConst = speed2;
   while(true)
   {
     motorPower = smallPowerConst;
