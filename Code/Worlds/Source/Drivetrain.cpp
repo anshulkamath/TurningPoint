@@ -147,7 +147,7 @@ void Drivetrain::drivePID(double distance, double speed, int accelCap, int decel
 
 
     int t = 0;
-    double kG = side == "RED" ? -1.2 : 1.2;//2.0/360.0 * 1.66;
+    double kG = side == "RED" ? -1.1 : 1.1;//2.0/360.0 * 1.66;
     double percentDone = 0;
 
     double init = getAngle();

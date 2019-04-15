@@ -317,22 +317,25 @@ void thirdBackAuton(Drivetrain drive)
     drive.drivePID(24, 80, 100, 100, 1500, 0);
 
     drive.turnTo(30, 40, 2000);
-    runIntake(-1);
+    runIntake(-1, 100);
     //Scraper.rotateTo(-730, rotationUnits::deg, 100, velocityUnits::pct, false);
     drive.drivePID(-38, 100, 100, 100, 1500, getAngle());
 //    drive.turnTo(27, 25, 2000);
-    runIntake(-1);
     drive.turnTo(getAngle() + 5, 20, 1500);
     drive.drivePID(30, 75, 100, 100, 1600, getAngle());
+    runIntake(0);
 
       //task::sleep(500);
     //Scraper.rotateTo(0, rotationUnits::rev, 100, velocityUnits::pct);
   //  drive.drivePID(35, 100, 100, 100, 1000, getAngle());
-    drive.turnTo(130, 30, 3500);
-    drive.straightDrive(-3, 40, 130);
+    drive.turnTo(125, 30, 3500);
+    drive.straightDrive(-3, 20, 125);
+    task::sleep(100);
     fire = true;
-
-    //drive.drivePID(60, 100, 100, 100, 2000, 90);
+    drive.turnTo(150, 30, 1000);
+    drive.drivePID(22, 50, 100, 100, 1000, 90);
+    drive.turnTo(90, 30, 1000);
+    drive.drivePID(46, 70, 100, 100, 5000, 90);
     return;
 }
 

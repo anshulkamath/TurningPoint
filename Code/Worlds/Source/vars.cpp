@@ -18,7 +18,7 @@ bool pressed = false;
 
 int cataUp = 2525;
 int cataDown = 1350;
-bool cataReady = false;
+bool intakeActive = false;
 bool fire = false;
 bool autonFire = false;
 double autonFireRotation = 0;

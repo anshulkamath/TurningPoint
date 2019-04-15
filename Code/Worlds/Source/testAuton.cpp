@@ -77,7 +77,7 @@ int main()
   //task::sleep(250);
   //drive.setDrive(0);
     //superMetaAuton(drive);
-    thirdBackAuton(drive);
+    superMetaAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
     while (true)

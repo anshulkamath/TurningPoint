@@ -5,22 +5,26 @@
 
 int intakeTask()
 {
-  CataL.setStopping(brakeType::hold);
-  CataR.setStopping(brakeType::hold);
-    Intake.setStopping(brakeType::coast);
-    int intakePower = 0;
-    while(true)
-    {
-        if (Controller.ButtonL1.pressing())
-            intakePower = 100;
-        else if (Controller.ButtonL2.pressing())
-            intakePower = -100;
-        else
-            intakePower = 0;
-        double cataPower = 0;
-              Intake.spin(directionType::fwd, intakePower, velocityUnits::pct);
-        task::sleep(50);
-    }
+  Intake.setStopping(brakeType::coast);
+  int intakePower = 0;
+  while(true)
+  {
+      if (Controller.ButtonL1.pressing() && intakeActive)
+          intakePower = 70;
+      else if (Controller.ButtonL2.pressing())
+          intakePower = -70;
+      else
+          intakePower = 0;
+
+      // If catapult is not in position, set cataPower based on position
+      if (abs(CataPot.value(analogUnits::range12bit) - cataDown) > 200)
+          intakeActive = false;
+      else // If the catapult is in position, broadcast ready and stop
+          intakeActive = true;
+
+      Intake.spin(directionType::fwd, intakePower, velocityUnits::pct);
+      task::sleep(50);
+  }
 }
 
 void resetCata()
@@ -60,19 +64,13 @@ int cataTask()
     {
         if (Controller.ButtonX.pressing() || fire || (autonFire && autonFireRotation <= abs(FrontRight.rotation(rotationUnits::rev))))
         {
-            fire = false;
-            CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
-            CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
-            autonFire = false;
+          fire = false;
+          CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
+          CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
+          autonFire = false;
 
-            resetCata();
+          resetCata();
         }
-
-        // If catapult is not in position, set cataPower based on position
-        if (abs(CataPot.value(analogUnits::range12bit) - cataDown) > 100)
-            cataReady = false;
-        else // If the catapult is in position, broadcast ready and stop
-            cataReady = true;
 
         CataL.spin(directionType::fwd, 0, velocityUnits::pct);
         CataR.spin(directionType::fwd, 0, velocityUnits::pct);

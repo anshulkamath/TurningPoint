@@ -99,7 +99,6 @@ void usercontrol( void )
       Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
       Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
       Brain.Screen.printAt(1, 80, "%.2f", getAngle());
-      Brain.Screen.printAt(1, 100, side.c_str());
       //Brain.Screen.printAt(30, 120, "Pot: %d           ", minPotenVal);
       task::sleep(100);
   }
