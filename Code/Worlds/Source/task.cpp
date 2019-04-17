@@ -61,16 +61,20 @@ int cataTask()
 {
     CataL.setStopping(brakeType::hold);
     CataR.setStopping(brakeType::hold);
+
+    // if (Competition.isAutonomous()) resetCata();
+    // while (Competition.isDriverControl() && !Controller.ButtonX.pressing()){ task::sleep(100); }
     resetCata();
 
     while(true)
     {
-        if (Controller.ButtonX.pressing() || fire || (autonFire && autonFireRotation <= abs(FrontRight.rotation(rotationUnits::rev))))
+        if (Controller.ButtonX.pressing() || fire || (autonFire && fabs(autonFireRotation) <= fabs(FrontRight.rotation(rotationUnits::rev))))
         {
           fire = false;
+                    autonFire = false;
           CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
           CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
-          autonFire = false;
+
 
           resetCata();
         }

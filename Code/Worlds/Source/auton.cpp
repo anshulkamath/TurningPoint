@@ -3,232 +3,236 @@
 #include "Drivetrain.cpp"
 #include "task.cpp"
 #include "vars.cpp"
-void setBrakeMode(vex::brakeType brake)
-{
-    FrontLeft.setStopping(brake);
-    FrontRight.setStopping(brake);
-    BackLeft.setStopping(brake);
-    BackRight.setStopping(brake);
+void setBrakeMode(vex::brakeType brake) {
+  FrontLeft.setStopping(brake);
+  FrontRight.setStopping(brake);
+  BackLeft.setStopping(brake);
+  BackRight.setStopping(brake);
 }
 
-void turnRight(double degrees)
-{
+void turnRight(double degrees) {
   drive.slipAdjust(true, false);
-    setBrakeMode(vex::brakeType::hold);
-    double trueDegs = degrees - getAngle();
-    if(sgn(trueDegs) < 0) trueDegs += 30;
-    else trueDegs -= 30;
-    double rots = ((trueDegs)/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
-    rots /= 2.33333333;
-    FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 25, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(rots, vex::rotationUnits::rev, 25, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 25, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(-rots, vex::rotationUnits::rev, 25, vex::velocityUnits::pct, true);
-    double error = 100, lError = 100;
-    double smallPowerConst = 20, smallPower;
-    double kp = .65;
-    drive.brake();
-    while(true)
-    {
-      smallPower = smallPowerConst;
-      error = degrees - getAngle();
-      smallPower  = fabs(error * kp);
-     if(fabs(error) <= .75 && fabs(lError) <= .75) break;
-      if(smallPower < 4) smallPower = 2;
-      if(error < 0) smallPower *= -1;
+  setBrakeMode(vex::brakeType::hold);
+  double trueDegs = degrees - getAngle();
+  if (sgn(trueDegs) < 0)
+    trueDegs += 30;
+  else
+    trueDegs -= 30;
+  double rots =
+      ((trueDegs) / 360) * ((13 * 3.1415) / (4 * 3.1415)) * .703125 * 1.09756;
+  rots /= 2.33333333;
+  FrontLeft.rotateFor(rots, vex::rotationUnits::rev, 25,
+                      vex::velocityUnits::pct, false);
+  BackLeft.rotateFor(rots, vex::rotationUnits::rev, 25, vex::velocityUnits::pct,
+                     false);
+  FrontRight.rotateFor(-rots, vex::rotationUnits::rev, 25,
+                       vex::velocityUnits::pct, false);
+  BackRight.rotateFor(-rots, vex::rotationUnits::rev, 25,
+                      vex::velocityUnits::pct, true);
+  double error = 100, lError = 100;
+  double smallPowerConst = 20, smallPower;
+  double kp = .65;
+  drive.brake();
+  while (true) {
+    smallPower = smallPowerConst;
+    error = degrees - getAngle();
+    smallPower = fabs(error * kp);
+    if (fabs(error) <= .75 && fabs(lError) <= .75)
+      break;
+    if (smallPower < 4)
+      smallPower = 2;
+    if (error < 0)
+      smallPower *= -1;
 
-      FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
-      FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
-      BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
-          BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
-      lError = error;
-      task::sleep(20);
-    }
-    FrontLeft.stop(hold);
-    FrontRight.stop(hold);
-    BackLeft.stop(hold);
-    BackRight.stop(hold);
+    FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+    FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+    BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+    BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+    lError = error;
+    task::sleep(20);
+  }
+  FrontLeft.stop(hold);
+  FrontRight.stop(hold);
+  BackLeft.stop(hold);
+  BackRight.stop(hold);
 }
 
-void turnLeft(double degrees)
-{
-    setBrakeMode(vex::brakeType::hold);
-    double trueDegs = degrees;
-    double rots = ((trueDegs - 2)/360) * ((13*3.1415)/(4*3.1415)) * .703125*1.09756;
-    rots /= 2.33333333;
-    FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    BackLeft.rotateFor(-rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    FrontRight.rotateFor(rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, false);
-    BackRight.rotateFor(rots, vex::rotationUnits::rev, 50, vex::velocityUnits::pct, true);
-    double error = 100, lError = 100;
-    double smallPowerConst = 2, smallPower;
+void turnLeft(double degrees) {
+  setBrakeMode(vex::brakeType::hold);
+  double trueDegs = degrees;
+  double rots = ((trueDegs - 2) / 360) * ((13 * 3.1415) / (4 * 3.1415)) *
+                .703125 * 1.09756;
+  rots /= 2.33333333;
+  FrontLeft.rotateFor(-rots, vex::rotationUnits::rev, 50,
+                      vex::velocityUnits::pct, false);
+  BackLeft.rotateFor(-rots, vex::rotationUnits::rev, 50,
+                     vex::velocityUnits::pct, false);
+  FrontRight.rotateFor(rots, vex::rotationUnits::rev, 50,
+                       vex::velocityUnits::pct, false);
+  BackRight.rotateFor(rots, vex::rotationUnits::rev, 50,
+                      vex::velocityUnits::pct, true);
+  double error = 100, lError = 100;
+  double smallPowerConst = 2, smallPower;
 
-    while(true)
-    {
-      smallPower = smallPowerConst;
-      error = degrees - getAngle();
-      if(abs(error) <= .75 && abs(lError) <= .75) break;
-      if(error < 0) smallPower *= -1;
+  while (true) {
+    smallPower = smallPowerConst;
+    error = degrees - getAngle();
+    if (abs(error) <= .75 && abs(lError) <= .75)
+      break;
+    if (error < 0)
+      smallPower *= -1;
 
-      FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
-      FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
-      BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
-          BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
-      lError = error;
-      task::sleep(20);
-    }
-    FrontLeft.stop(brake);
-    FrontRight.stop(brake);
-    BackLeft.stop(brake);
-    BackRight.stop(brake);
+    FrontRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+    FrontLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+    BackLeft.spin(directionType::fwd, smallPower, vex::velocityUnits::pct);
+    BackRight.spin(directionType::fwd, -smallPower, vex::velocityUnits::pct);
+    lError = error;
+    task::sleep(20);
+  }
+  FrontLeft.stop(brake);
+  FrontRight.stop(brake);
+  BackLeft.stop(brake);
+  BackRight.stop(brake);
 }
 
 // 1 is forward, 0 is stop, -1 is backward
-void runIntake(int num, double speed = 70)
-{
-    switch(num)
-    {
-        case -1:
-            Intake.spin(directionType::rev, speed, velocityUnits::pct);
-            break;
-        case 0:
-            Intake.stop(brakeType::coast);
-            break;
-        case 1:
-            Intake.spin(directionType::fwd, speed, velocityUnits::pct);
-            break;
-        default:
-            Intake.stop(brakeType::coast);
-            break;
-    }
+void runIntake(int num, double speed = 70) {
+  switch (num) {
+  case -1:
+    Intake.spin(directionType::rev, speed, velocityUnits::pct);
+    break;
+  case 0:
+    Intake.stop(brakeType::coast);
+    break;
+  case 1:
+    Intake.spin(directionType::fwd, speed, velocityUnits::pct);
+    break;
+  default:
+    Intake.stop(brakeType::coast);
+    break;
+  }
 }
 
 int scraperTarget = 0;
-int taskScraper()
-{
-    while(true)
-    {
-        Scraper.rotateTo(scraperTarget, rotationUnits::deg, 100, velocityUnits::pct);
-    }
-    return 0;
+int taskScraper() {
+  while (true) {
+    Scraper.rotateTo(scraperTarget, rotationUnits::deg, 100,
+                     velocityUnits::pct);
+  }
+  return 0;
 }
 
-void scrapeFunction(Drivetrain drive)
-{
-  Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100, velocityUnits::pct);
+void scrapeFunction(Drivetrain drive) {
+  Scraper.rotateTo(scraperHeight, rotationUnits::deg, 100, velocityUnits::pct);
   runIntake(1);
   drive.slipAdjust(true, true);
   drive.straightDrive(4, 20, -39);
-  //Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100, velocityUnits::pct);
+  // Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100,
+  // velocityUnits::pct);
 
   task::sleep(50);
-  Scraper.rotateTo(0,  rotationUnits::deg, 100, velocityUnits::pct);
+  Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
   drive.turnTo(138, 100, 1600);
   drive.slipAdjust(true, true);
   FrontRight.resetRotation();
 
   autonFireRotation = .482;
   autonFire = true;
-//  drive.drivePID(20, 50, 50, 50, 1500, 125);
-//  fire = true;
-//  runIntake(0);
-  //task::sleep(200);
+  //  drive.drivePID(20, 50, 50, 50, 1500, 125);
+  //  fire = true;
+  //  runIntake(0);
+  // task::sleep(200);
   drive.drivePID(76, 100, 100, 100, 1500, 135);
-
 }
 
-void firstFrontAuton(Drivetrain drive)
-{
+void firstFrontAuton(Drivetrain drive) {
   task cata(cataTask, 1);
-    runIntake(1);
-    drive.drivePID(-35, 70, 101, 101, 1500, 0);
-    // drive.slipAdjust(true, true);
-    drive.drivePID(35.5, 70, 101, 101, 1500, 0);
-    runIntake(0);
-    drive.slipAdjust(false, true, 30, 30);
-    drive.turnTo(92, 32, 1500);
-    //drive.turnTo(90, 100);
-    task::sleep(100);
-    drive.slipAdjust(true, true, 25, 90);
-    task::sleep(100);
-    runIntake(1);
-    drive.straightDrive(10, 30, 92);
-    runIntake(0);
-    fire = true;
-    task::sleep(20);
-    drive.turnTo(90, 20, 1500);
-    drive.slipAdjust(false, false);
-    drive.straightDrive(-5, 30, 90);
-    task::sleep(50);
-    drive.slipAdjust(true, false, 40, 40);
-    drive.turnTo(-42, 25, 2300);
-    drive.straightDrive(-11, 40, -42);
-    scrapeFunction(drive);
-    runIntake(0);
-    return;
+  runIntake(1);
+  drive.drivePID(-35, 70, 101, 101, 1500, 0);
+  // drive.slipAdjust(true, true);
+  drive.drivePID(35.5, 70, 101, 101, 1500, 0);
+  runIntake(0);
+  drive.slipAdjust(false, true, 30, 30);
+  drive.turnTo(92, 32, 1500);
+  // drive.turnTo(90, 100);
+  task::sleep(100);
+  drive.slipAdjust(true, true, 25, 90);
+  task::sleep(100);
+  runIntake(1);
+  drive.straightDrive(10, 30, 92);
+  runIntake(0);
+  fire = true;
+  task::sleep(20);
+  drive.turnTo(90, 20, 1500);
+  drive.slipAdjust(false, false);
+  drive.straightDrive(-5, 30, 90);
+  task::sleep(50);
+  drive.slipAdjust(true, false, 40, 40);
+  drive.turnTo(-42, 25, 2300);
+  drive.straightDrive(-11, 40, -42);
+  scrapeFunction(drive);
+  runIntake(0);
+  return;
 }
 
-void scrapeFunctionBlue(Drivetrain drive)
-{
-  Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100, velocityUnits::pct);
+void scrapeFunctionBlue(Drivetrain drive) {
+  Scraper.rotateTo(scraperHeight, rotationUnits::deg, 100, velocityUnits::pct);
   runIntake(1);
   drive.slipAdjust(true, true);
   drive.straightDrive(4.5, 40, 39);
-  //Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100, velocityUnits::pct);
+  // Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100,
+  // velocityUnits::pct);
 
   task::sleep(50);
-  Scraper.rotateTo(0,  rotationUnits::deg, 100, velocityUnits::pct);
+  Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
   drive.turnTo(-135, 35, 2000);
   drive.slipAdjust(true, true);
   FrontRight.resetRotation();
 
   autonFireRotation = .482;
   autonFire = true;
-//  drive.drivePID(20, 50, 50, 50, 1500, 125);
-//  fire = true;
-//  runIntake(0);
-  //task::sleep(200);
+  //  drive.drivePID(20, 50, 50, 50, 1500, 125);
+  //  fire = true;
+  //  runIntake(0);
+  // task::sleep(200);
   drive.drivePID(72, 100, 100, 100, 1500, -135);
-
 }
 
-void firstFrontAutonBlue(Drivetrain drive)
-{
+void firstFrontAutonBlue(Drivetrain drive) {
   task cata(cataTask, 1);
-    runIntake(1);
-    drive.drivePID(-35, 70, 101, 101, 1500, 0);
-    // drive.slipAdjust(true, true);
-    drive.drivePID(35.5, 70, 101, 101, 1500, 0);
-    runIntake(0);
-    //drive.slipAdjust(false, true, 30, 30);
-    drive.turnTo(-92, 25, 1500);
-    //drive.turnTo(90, 100);
-    runIntake(1);
-    drive.straightDrive(10, 30, -92);
-    runIntake(0);
-    fire = true;
-    task::sleep(20);
-    drive.turnTo(-90, 20, 1500);
-    drive.slipAdjust(false, false);
-    drive.straightDrive(-5, 30, -90);
-    task::sleep(50);
+  runIntake(1);
+  drive.drivePID(-35, 70, 101, 101, 1500, 0);
+  // drive.slipAdjust(true, true);
+  drive.drivePID(35.5, 70, 101, 101, 1500, 0);
+  runIntake(0);
+  // drive.slipAdjust(false, true, 30, 30);
+  drive.turnTo(-92, 25, 1500);
+  // drive.turnTo(90, 100);
+  runIntake(1);
+  drive.straightDrive(10, 30, -92);
+  runIntake(0);
+  fire = true;
+  task::sleep(20);
+  drive.turnTo(-90, 20, 1500);
+  drive.slipAdjust(false, false);
+  drive.straightDrive(-5, 30, -90);
+  task::sleep(50);
   //  drive.slipAdjust(true, false, 40, 40);
-    drive.turnTo(42, 25, 2300);
-    drive.straightDrive(-10.25, 40, 42);
-    scrapeFunctionBlue(drive);
-    runIntake(0);
-    return;
+  drive.turnTo(42, 25, 2300);
+  drive.straightDrive(-10.25, 40, 42);
+  scrapeFunctionBlue(drive);
+  runIntake(0);
+  return;
 }
 double degTarget = 0;
-int taskScraper1()
-{
-  while(FrontRight.rotation(rotationUnits::rev) < degTarget);
-    Scraper.rotateTo(0,  rotationUnits::deg, 75, velocityUnits::pct);
+int taskScraper1() {
+  while (FrontRight.rotation(rotationUnits::rev) < degTarget)
+    ;
+  Scraper.rotateTo(0, rotationUnits::deg, 75, velocityUnits::pct);
   return 0;
 }
 
-void secondFrontAuton(Drivetrain drive)
-{
+void secondFrontAuton(Drivetrain drive) {
   // task cata(cataTask, 1);
   //   runIntake(1);
   //   drive.drivePID(-35, 100, 100, 100, 1500, 0);
@@ -253,7 +257,7 @@ void secondFrontAuton(Drivetrain drive)
   drive.drivePID(side == "RED" ? 36.5 : 40, 70, 101, 101, 1500, 0);
   runIntake(0);
   drive.turnTo(93, 25, 1200);
-  //task::sleep(100);
+  // task::sleep(100);
   drive.slipAdjust(true, true, 25, 90);
   runIntake(1);
   drive.straightDrive(10, 30, 93);
@@ -261,12 +265,12 @@ void secondFrontAuton(Drivetrain drive)
   fire = true;
   drive.turnTo(88, 25, 1000);
   drive.drivePID(43, 100, 100, 100, 1500, 90);
-  Scraper.rotateTo(-850,  rotationUnits::deg, 80, velocityUnits::pct, false);
+  Scraper.rotateTo(-850, rotationUnits::deg, 80, velocityUnits::pct, false);
   drive.drivePID(-12, 100, 100, 100, 1500, 90);
   drive.turnTo(37, 30, 1400);
   drive.slipAdjust(false, false);
   FrontRight.resetRotation();
-  Scraper.rotateTo(0,  rotationUnits::deg, 40, velocityUnits::pct, false);
+  Scraper.rotateTo(0, rotationUnits::deg, 40, velocityUnits::pct, false);
   runIntake(1, 50);
   drive.drivePID(side == "RED" ? -96 : -93, 100, 100, 100, 1000, getAngle());
   drive.turnTo(-90, 40, 1200);
@@ -275,73 +279,70 @@ void secondFrontAuton(Drivetrain drive)
   return;
 }
 
-void secondBackAuton(Drivetrain drive)
-{
+void secondBackAuton(Drivetrain drive) {
   task cata(cataTask, 1);
-    runIntake(1);
-    drive.drivePID(-35, 100, 100, 100, 1500, 0);
-    drive.slipAdjust(true, true);
-    drive.drivePID(12, 50, 100, 100, 800, 0);
-    drive.turnTo(102, 30, 3000);
-    drive.slipAdjust(false, false);
-    drive.drivePID(-27, 70, 100, 100, 1000, 102);
-    task::sleep(400);
-    fire = true;
-    runIntake(0);
-    return;
-    task::sleep(500);
-    drive.straightDrive(-3, 50, 102);
-    drive.turnTo(0, 30);
-    drive.slipAdjust(false, false);
-    drive.straightDrive(-6.5, 30, 15);
-    Scraper.rotateTo(scraperHeight,  rotationUnits::deg, 100, velocityUnits::pct);
-    runIntake(1);
-    drive.slipAdjust(true, true);
-    drive.straightDrive(5.5, 40, 15);
-    Scraper.rotateTo(0,  rotationUnits::deg, 100, velocityUnits::pct, true);
+  runIntake(1);
+  drive.drivePID(-35, 100, 100, 100, 1500, 0);
+  drive.slipAdjust(true, true);
+  drive.drivePID(12, 50, 100, 100, 800, 0);
+  drive.turnTo(102, 30, 3000);
+  drive.slipAdjust(false, false);
+  drive.drivePID(-27, 70, 100, 100, 1000, 102);
+  task::sleep(400);
+  fire = true;
+  runIntake(0);
+  return;
+  task::sleep(500);
+  drive.straightDrive(-3, 50, 102);
+  drive.turnTo(0, 30);
+  drive.slipAdjust(false, false);
+  drive.straightDrive(-6.5, 30, 15);
+  Scraper.rotateTo(scraperHeight, rotationUnits::deg, 100, velocityUnits::pct);
+  runIntake(1);
+  drive.slipAdjust(true, true);
+  drive.straightDrive(5.5, 40, 15);
+  Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct, true);
 
-    drive.turnTo(110, 20);
-    drive.slipAdjust(true, true);
-    drive.drivePID(50, 100, 100, 100, 3000, 110);
-    return;
+  drive.turnTo(110, 20);
+  drive.slipAdjust(true, true);
+  drive.drivePID(50, 100, 100, 100, 3000, 110);
+  return;
   //  drive.turnTo(90, 30, 500);
-    //drive.drivePID(40, 100, 100, 100, 1500, 90);
+  // drive.drivePID(40, 100, 100, 100, 1500, 90);
 }
 
-void thirdBackAuton(Drivetrain drive)
-{
+void thirdBackAuton(Drivetrain drive) {
   task cata(cataTask, 1);
-    runIntake(1, 76);
-    drive.drivePID(-36, 70, 100, 100, 1500, 0);
-    drive.slipAdjust(true, true);
-    drive.drivePID(24, 80, 100, 100, 1500, 0);
+  runIntake(1, 76);
+  drive.drivePID(-36, 70, 100, 100, 1500, 0);
+  drive.slipAdjust(true, true);
+  drive.drivePID(24, 80, 100, 100, 1500, 0);
 
-    drive.turnTo(30, 40, 2000);
-    runIntake(-1, 100);
-    //Scraper.rotateTo(-730, rotationUnits::deg, 100, velocityUnits::pct, false);
-    drive.drivePID(-38, 100, 100, 100, 1500, getAngle());
-//    drive.turnTo(27, 25, 2000);
-    drive.turnTo(getAngle() + 5, 20, 1500);
-    drive.drivePID(30, 75, 100, 100, 1600, getAngle());
-    runIntake(0);
+  drive.turnTo(30, 40, 2000);
+  runIntake(-1, 100);
+  // Scraper.rotateTo(-730, rotationUnits::deg, 100, velocityUnits::pct, false);
+  drive.drivePID(-38, 100, 100, 100, 1500, getAngle());
+  //    drive.turnTo(27, 25, 2000);
+  drive.turnTo(getAngle() + 5, 20, 1500);
+  drive.drivePID(30, 75, 100, 100, 1600, getAngle());
+  runIntake(0);
 
-      //task::sleep(500);
-    //Scraper.rotateTo(0, rotationUnits::rev, 100, velocityUnits::pct);
+  // task::sleep(500);
+  // Scraper.rotateTo(0, rotationUnits::rev, 100, velocityUnits::pct);
   //  drive.drivePID(35, 100, 100, 100, 1000, getAngle());
-    drive.turnTo(125, 30, 3500);
-    drive.straightDrive(-3, 20, 125);
-    task::sleep(100);
-    fire = true;
-    drive.turnTo(150, 30, 1000);
-    drive.drivePID(22, 50, 100, 100, 1000, 90);
-    drive.turnTo(90, 30, 1000);
-    drive.drivePID(46, 70, 100, 100, 5000, 90);
-    return;
+  drive.turnTo(125, 30, 3500);
+  drive.straightDrive(-3, 20, 125);
+  task::sleep(100);
+  fire = true;
+  drive.turnTo(150, 30, 1000);
+  drive.drivePID(22, 50, 100, 100, 1000, 90);
+  drive.turnTo(90, 30, 1000);
+  drive.drivePID(46, 70, 100, 100, 5000, 90);
+  return;
 }
 
 int drivey() {
-  while(true)
-  {
+  while (true) {
     Controller.rumble("-.-.-");
     drive.drivePID(-52, 100, 20, 20, 1500, 0);
     return 0;
@@ -349,12 +350,11 @@ int drivey() {
   return 1;
 }
 
-void backDefense(Drivetrain drive)
-{
+void backDefense(Drivetrain drive) {
   task cata(cataTask, 1);
   runIntake(1);
-  //FrontRight.resetRotation();
-  //task driv(drivey, 1);
+  // FrontRight.resetRotation();
+  // task driv(drivey, 1);
   Scraper.rotateTo(-730, rotationUnits::deg, 1000, velocityUnits::pct, false);
   drive.drivePID(-51, 100, 101, 101, 1600, 0);
   runIntake(0);
@@ -362,7 +362,7 @@ void backDefense(Drivetrain drive)
   Scraper.rotateTo(-730, rotationUnits::deg, 1000, velocityUnits::pct, true);
   drive.setDrive(0, 0);
   task::sleep(3000);
-  //while(FrontRight.rotation(rotationUnits::deg) < 36.0/(4.0*3.14*2.33333));
+  // while(FrontRight.rotation(rotationUnits::deg) < 36.0/(4.0*3.14*2.33333));
   Scraper.rotateTo(-100, rotationUnits::deg, 1000, velocityUnits::pct, true);
   drive.turnTo(100, 40);
   drive.slipAdjust(true, true);
@@ -376,13 +376,9 @@ void backDefense(Drivetrain drive)
   drive.turnTo(35, 40);
   drive.straightDrive(18, 60, 60);
   drive.drivePID(30, 100, 100, 100, 1600, 90);
-
 }
 
-
-
-void frontDefense(Drivetrain drive)
-{
+void frontDefense(Drivetrain drive) {
   task cata(cataTask, 1);
   runIntake(1);
   Scraper.rotateTo(-720, rotationUnits::deg, 97, velocityUnits::pct, false);
@@ -391,13 +387,12 @@ void frontDefense(Drivetrain drive)
   Scraper.rotateTo(-100, rotationUnits::deg, 1000, velocityUnits::pct, true);
   drive.setDrive(0, 0);
   runIntake(0);
-    //while(FrontRight.rotation(rotationUnits::deg) < 36.0/(4.0*3.14*2.33333));
+  // while(FrontRight.rotation(rotationUnits::deg) < 36.0/(4.0*3.14*2.33333));
   Scraper.rotateTo(-100, rotationUnits::deg, 1000, velocityUnits::pct, true);
   drive.turnTo(90, 30, 1500);
 }
 
-void firstBackAuton(Drivetrain drive)
-{
+void firstBackAuton(Drivetrain drive) {
   task cata(cataTask, 1);
   drive.drivePID(-30, 80, 7, 7, 1500);
   drive.turnToSlow(108);
@@ -418,8 +413,7 @@ void firstBackAuton(Drivetrain drive)
   drive.drivePID(40, 100, 7, 7, 3000);
 }
 
-void defenseFunc()
-{
+void defenseFunc() {
   runIntake(1);
   Scraper.rotateTo(-565, rotationUnits::deg, 1000, velocityUnits::pct, false);
   drive.drivePID(-52.5, 100, 101, 101, 1600, 0);
@@ -429,8 +423,7 @@ void defenseFunc()
   runIntake(0);
 }
 
-void thirdFrontAuton(Drivetrain drive)
-{
+void thirdFrontAuton(Drivetrain drive) {
   task cata(cataTask, 1);
   defenseFunc();
   drive.straightDrive(6, 40, 0);
@@ -441,18 +434,17 @@ void thirdFrontAuton(Drivetrain drive)
   drive.turnTo(180, 40);
 }
 
-void scrapAndShoot()
-{
-    task cata(cataTask, 1);
-task::sleep(500);
+void scrapAndShoot() {
+  task cata(cataTask, 1);
+  task::sleep(500);
 
   runIntake(1);
 
   Scraper.rotateTo(-650, rotationUnits::deg, 70, velocityUnits::pct, false);
   FrontRight.resetRotation();
 
-  //autonFireRotation = .9 * 38 /(4*3.1415*2.333);
-//  autonFire = true;
+  // autonFireRotation = .9 * 38 /(4*3.1415*2.333);
+  //  autonFire = true;
   drive.drivePID(-18, 80, 100, 100, 1000, 0);
   fire = true;
   drive.drivePID(-5, 40, 100, 100, 400, 0);
@@ -460,83 +452,68 @@ task::sleep(500);
   drive.straightDrive(8, 20, 0);
   runIntake(1);
   Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
-//  drive.straightDrive(24, 20, 135);
+  //  drive.straightDrive(24, 20, 135);
   runIntake(1);
   drive.drivePID(-48, 80, 100, 100, 1000, 0);
   runIntake(0);
 }
 
-void superMetaAuton(Drivetrain drive)
-{
-    task cata(cataTask, 1);
-      runIntake(1, 75);
-    drive.drivePID(-34.5, 100, 101, 101, 2500, 0);
+void superMetaAuton(Drivetrain drive) {
+  task cata(cataTask, 1);
+  runIntake(1, 75);
+  drive.drivePID(side == "RED" ? -34 : -32.5, 100, 100, 100, 1900, 0);
 
-  //  drive.straightDrive(-6.9, 30, 0);//9
-  //  drive.setDrive(-5, 5);
-    //task::sleep(50);
-        runIntake(1);
-    drive.turnTo(98, 35, 1600);
-runIntake(0);
-    //task::sleep(200);
-    drive.drivePID(52, 100, 100, 100, 1900, 106);
-
-
-
-    drive.straightDrive(-7.3, 20, 135, 13);
-
-    runIntake(0);
-    runIntake(0);
-    //return;
-    if (side == "RED") Scraper.rotateTo(-730, rotationUnits::deg, 70, velocityUnits::pct, false);
-    else Scraper.rotateTo(-700, rotationUnits::deg, 47, velocityUnits::pct, false);
-
-    FrontRight.resetRotation();
-
-    //autonFireRotation = .9 * 38 /(4*3.1415*2.333);
-  //  autonFire = true;
-    drive.drivePID(-21, 80, 100, 100, 1000, 135);
-fire = true;
-    task::sleep(700);
-    //return;
-
-    //task::sleep(30);
-    runIntake(1, 100);
-    drive.straightDrive(8, 30, 135);
-
-//    task::sleep(100);
+  runIntake(1, 60);
+  drive.turnTo(side == "RED" ? 98 : 96, 27, 1600);
+  runIntake(0);
+  drive.drivePID(side == "RED" ? 52 : 53, 100, 100, 100, 1900, 106);
+  if(side == "RED")
+    drive.straightDrive(-7.3, 20, 135, 8);
+  else
+    drive.straightDrive(-10.3, 20, 135, 8);
 //return;
 
+  runIntake(0);
+  Scraper.rotateTo(-740, rotationUnits::deg, 70, velocityUnits::pct, false);
+  FrontRight.resetRotation();
 
+  autonFireRotation = .9*17.5 /(4*3.1415*2.333);
+  autonFire = true;
 
-    //task::sleep(600);
+  if(side == "RED") drive.drivePID(-21, 80, 100, 100, 1000, 135);
+  else drive.drivePID(-21, 80, 100, 100, 1000, 135);  //return;
 
-
-    while(!cataReady1) task::sleep(1);
-        runIntake(1, 100);
-
-  //    runIntake(1, 100);
-    Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct, false);
-    task::sleep(300);
-  // drive.straightDrive(24, 20, 135);
-
-  //  runIntake(1, 100);
-  //  task::sleep(400);
-runIntake(-1, 75);
-//  return;
-    drive.drivePID(-43, 100, 100, 100, 1700, 135);
-
-  //  task::sleep(150);
-
-    drive.turnTo(76, 30, 2000);
-    fire = true;
-    runIntake(0);
-    drive.setDrive(0);
-    drive.setDrive(100, 100);
-
-    task::sleep(1000);
-    drive.setDrive(0);
-
+  task::sleep(500); // Sleep for intake to not jam cata
+  runIntake(1, 100);
+  drive.drivePID(8, 80, 100, 100, 1200, 135);
+  runIntake(1, 60);
+  Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct, false);
+  task::sleep(1800);
+  while (!cataReady1)
+    task::sleep(1);
+  runIntake(-1, 40);
     //return;
+  drive.drivePID(-42, 100, 6, 100, 1700, 135);
+  if(side == "RED")
+  drive.turnTo(84, 30, 1000);
+  else
+  drive.turnTo(82, 30, 1100);
+  //fire = true;
+//  return;
+  runIntake(0);
 
+  FrontRight.resetRotation();
+  autonFireRotation = side == "RED" ? 0 : 1.75/(4*3.1415*2.3333);
+  autonFire = true;
+
+  drive.setDrive(100, 100);
+  while(autonFire) task::sleep(10);
+  task::sleep(150);
+  if(side == "RED") drive.setDrive(20, 0);
+  else drive.setDrive(0,20);
+  task::sleep(18);
+  drive.setDrive(100, 100);
+  task::sleep(1000);
+  drive.setDrive(0);
+  return;
 }

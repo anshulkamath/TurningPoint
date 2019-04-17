@@ -59,25 +59,14 @@ int main()
     int invertGyroScale = 140;
     gyroscope.startCalibration(invertGyroScale);//133);
     invertedGyro.startCalibration(invertGyroScale);//136);
+
     task::sleep(6000);
     FrontRight.resetRotation();
     Scraper.resetRotation();
-    int cataTorque = 0;
-    task c(angleMonitor, 1);
-  //  task d(wheelVelocity, 1);
-    //task taskCatapult(cataTask, 1);
-    /*
-    task taskIntake(intakeTask, 1);
-    task taskDrive(driveTask, 1);*/
+
+    task angleFilter(angleMonitor, 1);
     side = "RED";
     Brain.resetTimer();
-  //  runIntake(-1, 100);
-//    drive.drivePID(-38, 100, 100, 100, 1500, 0);
-  //drive.setDrive(100, 0);
-  //task::sleep(250);
-  //drive.setDrive(0);
-    //superMetaAuton(drive);
-
     superMetaAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
@@ -87,6 +76,8 @@ int main()
        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
        Brain.Screen.printAt(30, 120, "%.2f            ", Scraper.rotation(rotationUnits::deg));
+       Brain.Screen.printAt(30, 150, "%.2f          ", Brain.Battery)
+
        Brain.Screen.printAt(30, 150,side.c_str());
        task::sleep(69);
     }
