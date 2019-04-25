@@ -460,42 +460,39 @@ void scrapAndShoot() {
 
 void superMetaAuton(Drivetrain drive) {
   task cata(cataTask, 1);
-  runIntake(1, 75);
-  drive.drivePID(side == "RED" ? -34 : -32.5, 100, 100, 100, 1900, 0);
+  runIntake(1, 100);
+  drive.drivePID(side == "RED" ? -34 : -37, 100, 100, 100, 2300, 0);
 
-  runIntake(1, 60);
-  drive.turnTo(side == "RED" ? 98 : 96, 27, 1600);
-  runIntake(0);
-  drive.drivePID(side == "RED" ? 52 : 53, 100, 100, 100, 1900, 106);
+  runIntake(1, 80);
+  drive.turnTo(side == "RED" ? 98 : 100, 25, 2100);
+
+  FrontRight.resetRotation();
+  autonFireRotation = .9 * 8.5 /(4*3.1415*2.333);
+  autonFire = true;
+  task::sleep(40);
+  drive.drivePID(side == "RED" ? 53.5 : 53, 100, 100, 100, 1900, side == "RED" ? 98 : 100);
   if(side == "RED")
-    drive.straightDrive(-7.3, 20, 135, 8);
+    drive.straightDrive(-5.3, 20, 135, 8);
   else
-    drive.straightDrive(-10.3, 20, 135, 8);
-//return;
+    drive.straightDrive(-5.3, 20, 135, 8);
 
   runIntake(0);
   Scraper.rotateTo(-740, rotationUnits::deg, 70, velocityUnits::pct, false);
-  FrontRight.resetRotation();
-
-  autonFireRotation = .9*17.5 /(4*3.1415*2.333);
-  autonFire = true;
 
   if(side == "RED") drive.drivePID(-21, 80, 100, 100, 1000, 135);
   else drive.drivePID(-21, 80, 100, 100, 1000, 135);  //return;
-
-  task::sleep(500); // Sleep for intake to not jam cata
   runIntake(1, 100);
   drive.drivePID(8, 80, 100, 100, 1200, 135);
   runIntake(1, 60);
   Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct, false);
-  task::sleep(1800);
+  task::sleep(1500);
   while (!cataReady1)
     task::sleep(1);
   runIntake(-1, 40);
     //return;
   drive.drivePID(-42, 100, 6, 100, 1700, 135);
   if(side == "RED")
-  drive.turnTo(84, 30, 1000);
+  drive.turnTo(85, 30, 1000);
   else
   drive.turnTo(82, 30, 1100);
   //fire = true;

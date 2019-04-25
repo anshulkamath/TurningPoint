@@ -65,18 +65,23 @@ int main()
     Scraper.resetRotation();
 
     task angleFilter(angleMonitor, 1);
-    side = "RED";
+    side = "BLUE";
     Brain.resetTimer();
     superMetaAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
+    FrontRight.stop(brakeType::coast);
+    FrontLeft.stop(brakeType::coast);
+    BackRight.stop(brakeType::coast);
+    BackLeft.stop(brakeType::coast);
     while (true)
     {
+      runIntake(0);
+
        Brain.Screen.printAt(30, 30, "%d             ", gyroscope.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 60, "%d             ", invertedGyro.value(analogUnits::range12bit));
        Brain.Screen.printAt(30, 90, "%.2f           ", getAngle());
        Brain.Screen.printAt(30, 120, "%.2f            ", Scraper.rotation(rotationUnits::deg));
-       Brain.Screen.printAt(30, 150, "%.2f          ", Brain.Battery)
 
        Brain.Screen.printAt(30, 150,side.c_str());
        task::sleep(69);

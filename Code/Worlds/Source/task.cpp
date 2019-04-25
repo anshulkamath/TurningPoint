@@ -71,7 +71,7 @@ int cataTask()
         if (Controller.ButtonX.pressing() || fire || (autonFire && fabs(autonFireRotation) <= fabs(FrontRight.rotation(rotationUnits::rev))))
         {
           fire = false;
-                    autonFire = false;
+          autonFire = false;
           CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
           CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
 
