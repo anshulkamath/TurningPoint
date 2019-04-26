@@ -65,15 +65,12 @@ int main()
     Scraper.resetRotation();
 
     task angleFilter(angleMonitor, 1);
-    side = "BLUE";
+    side = "RED";
     Brain.resetTimer();
     superMetaAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
-    FrontRight.stop(brakeType::coast);
-    FrontLeft.stop(brakeType::coast);
-    BackRight.stop(brakeType::coast);
-    BackLeft.stop(brakeType::coast);
+
     while (true)
     {
       runIntake(0);

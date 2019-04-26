@@ -30,11 +30,12 @@ int sideSelect()
         side = "BLUE";
     }
     Brain.Screen.clearScreen();
-    Brain.Screen.setFillColor(vex::color::yellow);
-    Brain.Screen.printAt(1,40,"Hello");
-    Brain.Screen.drawRectangle(1,1,200,200);
     Brain.Screen.setFillColor(vex::color::white);
+    Brain.Screen.drawRectangle(1,1,200,200);
+    Brain.Screen.printAt(40, 40, false, "Front");
+    Brain.Screen.setFillColor(vex::color::orange);
     Brain.Screen.drawRectangle(202,1,200,200);
+    Brain.Screen.printAt(242, 40, false, "Back");
 
     while(!Brain.Screen.pressing());
     while(Brain.Screen.pressing());
@@ -46,7 +47,49 @@ int sideSelect()
     {
         autonNum = 2;
     }
+
     Brain.Screen.clearScreen();
+    Brain.Screen.setFillColor(vex::color::red);
+    Brain.Screen.drawRectangle(1,1,200,200);
+    Brain.Screen.printAt(40, 40, false, "Park");
+    Brain.Screen.setFillColor(vex::color::blue);
+    Brain.Screen.drawRectangle(202,1,200,200);
+    Brain.Screen.printAt(242, 40, false, "No Park");
+
+    while(!Brain.Screen.pressing());
+    while(Brain.Screen.pressing());
+    Brain.Screen.clearScreen();
+    if(Brain.Screen.xPosition() < 200)
+    {
+        parking = true;
+    }else if(Brain.Screen.xPosition() > 200)
+    {
+        parking = false;
+    }
+  Brain.Screen.clearScreen();
+  Brain.Screen.setFillColor(vex::color::blue);
+  Brain.Screen.drawRectangle(1,1,200,200);
+  if(autonNum == 2)
+    Brain.Screen.printAt(40, 40, false, "Defensive");
+  else
+    Brain.Screen.printAt(40, 40, false, "Regular");
+  Brain.Screen.setFillColor(vex::color::yellow);
+  Brain.Screen.drawRectangle(202,1,200,200);
+  if(autonNum == 2)
+    Brain.Screen.printAt(242, 40, false, "Non Defensive");
+  else
+    Brain.Screen.printAt(242, 40, false, "Super Meta");
+  while(!Brain.Screen.pressing());
+  while(Brain.Screen.pressing());
+  Brain.Screen.clearScreen();
+  if(Brain.Screen.xPosition() < 200)
+  {
+      isDefensive = true;
+  }else if(Brain.Screen.xPosition() > 200)
+  {
+      isDefensive = false;
+  }
+  Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(vex::color::red);
     Brain.Screen.setFillColor(vex::color::black);
     Brain.Screen.printAt(1,40, side.c_str());
@@ -65,14 +108,43 @@ void pre_auton( void )
   Brain.Screen.clearScreen();
   FrontRight.resetRotation();
   Scraper.resetRotation();
+  sideSelect();
+  Brain.Screen.clearScreen();
+  Brain.Screen.printAt(0, 30, ("Side:" + side).c_str());
+
+  Brain.Screen.printAt(0, 60, "AutonNum: %d", autonNum);
+  Brain.Screen.printAt(0, 90, "Parking: %d", parking);
+  Brain.Screen.printAt(0, 120, "Defensive: %d", isDefensive);
+
+
 }
 
 int autoNum = 0;
 void autonomous( void )
 {
-   side = "RED";
     task c(angleMonitor, 1);
-    superMetaAuton(drive);
+    if(autonNum == 1)
+    {
+      if(isDefensive)
+      {
+        thirdFrontAuton(drive);
+      }else
+      {
+        superMetaAuton(drive);
+      }
+
+
+    }else
+    {
+      if(isDefensive)
+      {
+        backDefense(drive);
+      }else
+      {
+        thirdBackAuton(drive);
+      }
+    }
+  //  superMetaAuton(drive);
   // drive.straightDrive(24, 100, 90);
   //drive.turnTo(90, 30, 1500);
   //backDefense(drive);
@@ -107,12 +179,12 @@ void usercontrol( void )
 int main() {
 
     //Run the pre-autonomous function.
-    pre_auton();
+
 
     //Set up callbacks for autonomous and driver control periods.
     Competition.autonomous( autonomous );
     Competition.drivercontrol( usercontrol );
-
+    pre_auton();
     //Prevent main from exiting with an infinite loop.
     while(1) {
       vex::task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.

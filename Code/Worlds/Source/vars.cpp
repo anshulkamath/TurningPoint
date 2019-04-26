@@ -12,8 +12,10 @@ bool intakeUse = false;
 int turnLimiter = 1;
 
 string side = "BLUE";
-int autonNum = 0;
+int autonNum = 1;
 int turnVal = 0;
+bool parking = true;
+bool isDefensive = false;
 bool pressed = false;
 
 int cataUp = 2525;

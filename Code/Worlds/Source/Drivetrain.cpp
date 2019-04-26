@@ -221,10 +221,10 @@ void Drivetrain::setDrive(int rightVel, int leftVel)
 
 void Drivetrain::setDrive(int vel)
 {
-    fRight.setStopping(brakeType::brake);
+    /*fRight.setStopping(brakeType::brake);
     fLeft.setStopping(brakeType::brake);
     bRight.setStopping(brakeType::brake);
-    bLeft.setStopping(brakeType::brake);
+    bLeft.setStopping(brakeType::brake);*/
 
     fLeft.spin(directionType::fwd, vel, velocityUnits::pct);
     fRight.spin(directionType::fwd, vel, velocityUnits::pct);
