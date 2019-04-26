@@ -62,9 +62,9 @@ int cataTask()
     CataL.setStopping(brakeType::hold);
     CataR.setStopping(brakeType::hold);
 
-    // if (Competition.isAutonomous()) resetCata();
+     if (Competition.isAutonomous()) resetCata();
     // while (Competition.isDriverControl() && !Controller.ButtonX.pressing()){ task::sleep(100); }
-    resetCata();
+    // resetCata();
 
     while(true)
     {
@@ -75,9 +75,19 @@ int cataTask()
           CataL.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, false);
           CataR.rotateFor(1, rotationUnits::rev, 100, velocityUnits::pct, true);
 
-
           resetCata();
         }
+
+        if (Controller.ButtonB.pressing())
+        {
+          CataL.stop(brakeType::coast);
+          CataR.stop(brakeType::coast);
+          while (!Controller.ButtonX.pressing()) {task::sleep(100);}
+          CataL.setStopping(brakeType::hold);
+          CataR.setStopping(brakeType::hold);
+          resetCata();
+        }
+
 
         CataL.spin(directionType::fwd, 0, velocityUnits::pct);
         CataR.spin(directionType::fwd, 0, velocityUnits::pct);
@@ -191,6 +201,7 @@ int driveTask()
     return 0;
 }
 
+bool scraperUp = true;
 int scraperTask()
 {
   Scraper.setStopping(brakeType::hold);
@@ -203,6 +214,17 @@ int scraperTask()
       scraperPower = -100;
     else
       scraperPower = 0;
+
+    if (Controller.ButtonLeft.pressing())
+    {
+      scraperUp = !scraperUp;
+
+      if (scraperUp)
+        Scraper.rotateTo(-800, rotationUnits::deg, 100, velocityUnits::pct);
+      else
+        Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
+    }
+
 
     Scraper.spin(directionType::fwd, scraperPower, velocityUnits::pct);
     task::sleep(50);

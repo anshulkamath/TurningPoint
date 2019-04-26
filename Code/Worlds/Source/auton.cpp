@@ -418,9 +418,10 @@ void firstBackAuton(Drivetrain drive) {
 }
 
 void defenseFunc() {
+  task cata(cataTask, 1);
   runIntake(1);
-  Scraper.rotateTo(-565, rotationUnits::deg, 1000, velocityUnits::pct, false);
-  drive.drivePID(-52.5, 100, 101, 101, 1600, 0);
+  Scraper.rotateTo(-740, rotationUnits::deg, 100, velocityUnits::pct, false);
+  drive.drivePID(-50.5, 70, 101, 101, 1600, 0);
   drive.setDrive(0, 0);
   Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct);
   task::sleep(300);
@@ -463,10 +464,11 @@ void scrapAndShoot() {
 }
 
 void superMetaAuton(Drivetrain drive) {
-  Scraper.rotateTo(-580, rotationUnits::deg, 100, velocityUnits::pct, false); //740
+  Scraper.rotateTo(-730, rotationUnits::deg, 100, velocityUnits::pct, false); //740
   task cata(cataTask, 1);
-  runIntake(1, 30);
+  runIntake(1, 100);
   drive.drivePID(side == "RED" ? -34 : -34, 100, 100, 100, 2300, 0);
+  return;
   Scraper.rotateTo(0, rotationUnits::deg, 100, velocityUnits::pct, false); //740
 
 

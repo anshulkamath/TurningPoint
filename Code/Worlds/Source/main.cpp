@@ -11,6 +11,16 @@ using namespace vex;
 
 int sideSelect()
 {
+    // Pre-auton
+    int gyroScale = 140;
+    int invertGyroScale = 140;
+    gyroscope.startCalibration(invertGyroScale);//133);
+    invertedGyro.startCalibration(invertGyroScale);//136);
+    Brain.Screen.printAt(0, 30, "GYRO CALIBRATING...");
+    task::sleep(6000);
+    Brain.Screen.clearScreen();
+    FrontRight.resetRotation();
+
     Brain.Screen.clearScreen();
     Brain.Screen.setFillColor(vex::color::red);
     Brain.Screen.drawRectangle(1,1,200,200);
@@ -18,17 +28,14 @@ int sideSelect()
     Brain.Screen.setFillColor(vex::color::blue);
     Brain.Screen.drawRectangle(202,1,200,200);
     Brain.Screen.printAt(242, 40, false, "BLUE");
-    while(!Brain.Screen.pressing());
-    while(Brain.Screen.pressing());
+    while(!Brain.Screen.pressing()) task::sleep(100);
+    while(Brain.Screen.pressing()) task::sleep(100);
     Brain.Screen.clearScreen();
     pressed = false;
     if(Brain.Screen.xPosition() < 200)
-    {
         side = "RED";
-    }else if(Brain.Screen.xPosition() > 200)
-    {
+    else if(Brain.Screen.xPosition() > 200)
         side = "BLUE";
-    }
     Brain.Screen.clearScreen();
     Brain.Screen.setFillColor(vex::color::white);
     Brain.Screen.drawRectangle(1,1,200,200);
@@ -41,12 +48,9 @@ int sideSelect()
     while(Brain.Screen.pressing());
     Brain.Screen.clearScreen();
     if(Brain.Screen.xPosition() < 200)
-    {
         autonNum = 1;
-    }else if(Brain.Screen.xPosition() > 200)
-    {
+    else if(Brain.Screen.xPosition() > 200)
         autonNum = 2;
-    }
 
     Brain.Screen.clearScreen();
     Brain.Screen.setFillColor(vex::color::red);
@@ -56,16 +60,13 @@ int sideSelect()
     Brain.Screen.drawRectangle(202,1,200,200);
     Brain.Screen.printAt(242, 40, false, "No Park");
 
-    while(!Brain.Screen.pressing());
-    while(Brain.Screen.pressing());
+    while(!Brain.Screen.pressing()) task::sleep(100);
+    while(Brain.Screen.pressing()) task::sleep(100);
     Brain.Screen.clearScreen();
     if(Brain.Screen.xPosition() < 200)
-    {
         parking = true;
-    }else if(Brain.Screen.xPosition() > 200)
-    {
+    else if(Brain.Screen.xPosition() > 200)
         parking = false;
-    }
   Brain.Screen.clearScreen();
   Brain.Screen.setFillColor(vex::color::blue);
   Brain.Screen.drawRectangle(1,1,200,200);
@@ -79,36 +80,24 @@ int sideSelect()
     Brain.Screen.printAt(242, 40, false, "Non Defensive");
   else
     Brain.Screen.printAt(242, 40, false, "Super Meta");
-  while(!Brain.Screen.pressing());
-  while(Brain.Screen.pressing());
+  while(!Brain.Screen.pressing()) task::sleep(100);
+  while(Brain.Screen.pressing()) task::sleep(100);
   Brain.Screen.clearScreen();
   if(Brain.Screen.xPosition() < 200)
-  {
       isDefensive = true;
-  }else if(Brain.Screen.xPosition() > 200)
-  {
+  else if(Brain.Screen.xPosition() > 200)
       isDefensive = false;
-  }
   Brain.Screen.clearScreen();
-    Brain.Screen.setPenColor(vex::color::red);
-    Brain.Screen.setFillColor(vex::color::black);
-    Brain.Screen.printAt(1,40, side.c_str());
-    Brain.Screen.printAt(1, 80, "%.2f", getAngle());
-    return 0;
+  Brain.Screen.setPenColor(vex::color::red);
+  Brain.Screen.setFillColor(vex::color::black);
+  Brain.Screen.printAt(1,40, side.c_str());
+  Brain.Screen.printAt(1, 80, "%.2f", getAngle());
+  return 0;
 }
 
 void pre_auton( void )
 {
-  int gyroScale = 140;
-  int invertGyroScale = 140;
-  gyroscope.startCalibration(invertGyroScale);//133);
-  invertedGyro.startCalibration(invertGyroScale);//136);
-  Brain.Screen.printAt(0, 30, "GYRO CALIBRATING...");
-  task::sleep(6000);
-  Brain.Screen.clearScreen();
-  FrontRight.resetRotation();
-  Scraper.resetRotation();
-  sideSelect();
+  task autonSelect(sideSelect, 1);
   Brain.Screen.clearScreen();
   Brain.Screen.printAt(0, 30, ("Side:" + side).c_str());
 
@@ -163,7 +152,6 @@ void usercontrol( void )
   task taskScraper(scraperTask, 1);
   task taskGyro(angleMonitor, 1);
   int minPotenVal = 2000;
-  //side == "RED";
   while (true)
   {
     if (CataPot.value(analogUnits::range12bit) < minPotenVal)
