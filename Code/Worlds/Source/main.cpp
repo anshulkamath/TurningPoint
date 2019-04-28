@@ -12,12 +12,7 @@ using namespace vex;
 int sideSelect()
 {
     // Pre-auton
-    int gyroScale = 140;
-    int invertGyroScale = 140;
-    gyroscope.startCalibration(invertGyroScale);//133);
-    invertedGyro.startCalibration(invertGyroScale);//136);
-    Brain.Screen.printAt(0, 30, "GYRO CALIBRATING...");
-    task::sleep(6000);
+
     Brain.Screen.clearScreen();
     FrontRight.resetRotation();
 
@@ -97,6 +92,12 @@ int sideSelect()
 
 void pre_auton( void )
 {
+  int gyroScale = 140;
+  int invertGyroScale = 140;
+  gyroscope.startCalibration(invertGyroScale);//133);
+  invertedGyro.startCalibration(invertGyroScale);//136);
+  Brain.Screen.printAt(0, 30, "GYRO CALIBRATING...");
+  task::sleep(6000);
   task autonSelect(sideSelect, 1);
   Brain.Screen.clearScreen();
   Brain.Screen.printAt(0, 30, ("Side:" + side).c_str());
@@ -112,6 +113,9 @@ int autoNum = 0;
 void autonomous( void )
 {
     task c(angleMonitor, 1);
+    side = "BLUE";
+            thirdBackAuton(drive);
+            return;
     if(autonNum == 1)
     {
       if(isDefensive)
@@ -130,7 +134,7 @@ void autonomous( void )
         backDefense(drive);
       }else
       {
-        thirdBackAuton(drive);
+
       }
     }
   //  superMetaAuton(drive);

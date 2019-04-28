@@ -59,7 +59,7 @@ class Drivetrain
     void slipAdjust(bool right, bool left, double speedRight = 100, double speedLeft = 100)
     {
       bool fR = false, fL = false, bL = false, bR = false;
-      double thresh = 0.16;
+      double thresh = 0.19;
       setDrive((right == 0 ? -1 : 1) * speedRight, (left == 0 ? -1 : 1) * speedLeft);
 
       while(!fR || !fL || !bL || !bR)
@@ -67,22 +67,22 @@ class Drivetrain
         if(fabs(fRight.torque(torqueUnits::Nm)) >= thresh)
         {
           fR = true;
-          fRight.stop();
+          fRight.stop(brakeType::hold);
         }
         if(fabs(fLeft.torque(torqueUnits::Nm)) >= thresh)
         {
           fL = true;
-          fLeft.stop();
+          fLeft.stop(brakeType::hold);
         }
         if(fabs(bLeft.torque(torqueUnits::Nm)) >= thresh)
         {
           bL = true;
-          bLeft.stop();
+          bLeft.stop(brakeType::hold);
         }
         if(fabs(bRight.torque(torqueUnits::Nm)) >= thresh)
         {
           bR = true;
-          bRight.stop();
+          bRight.stop(brakeType::hold);
         }
       }
 

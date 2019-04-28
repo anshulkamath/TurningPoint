@@ -62,9 +62,9 @@ int cataTask()
     CataL.setStopping(brakeType::hold);
     CataR.setStopping(brakeType::hold);
 
-     if (Competition.isAutonomous()) resetCata();
+     //if (Competition.isAutonomous()) resetCata();
     // while (Competition.isDriverControl() && !Controller.ButtonX.pressing()){ task::sleep(100); }
-    // resetCata();
+    resetCata();
 
     while(true)
     {
@@ -262,7 +262,7 @@ int angleMonitor()
     if(fabs(currentAngle - prevAngle) > rthreshold )
       rAngle += currentAngle - prevAngle;
 
-    double angleTemp = (rAngle + iAngle)/2;
+    double angleTemp = (iAngle);
     if(fabs(anglePrev - angleTemp) > threshold)
       angle += angleTemp - anglePrev;
 

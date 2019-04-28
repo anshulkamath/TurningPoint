@@ -65,9 +65,12 @@ int main()
     Scraper.resetRotation();
 
     task angleFilter(angleMonitor, 1);
-    side = "RED";
+    side = "BLUE";
     Brain.resetTimer();
-    superMetaAuton(drive);
+  //  drive.slipAdjust(true, true);
+    //drive.turnTo(135, 40, 3000);
+//    drive.turnTo(90+42, 35, 8000);
+    thirdBackAuton(drive);
     int time = Brain.timer(timeUnits::msec);
     Brain.Screen.clearScreen();
 
